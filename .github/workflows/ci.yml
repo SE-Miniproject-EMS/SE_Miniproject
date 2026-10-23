@@ -35,6 +35,10 @@ jobs:
         run: |
           find src -type f -name "*.js" -exec node --check {} \;
 
+      - name: Run backend API tests
+        working-directory: backend
+        run: npm test
+
   frontend:
     name: Frontend Build
     runs-on: ubuntu-latest

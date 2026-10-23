@@ -100,6 +100,18 @@ Notifications/Check-in/Dashboard), follow the pattern already in place:
 4. Reuse `useAuth()` from `AuthContext` to get the current user/token —
    don't build a second auth system.
 
+## Running Backend API Tests
+
+The backend uses Node.js's built-in test runner and starts an isolated SQLite database for the API integration tests. From the repository root, run:
+
+```bash
+cd backend
+npm ci
+npm test
+```
+
+The test suite exercises event API authentication and authorization, event lifecycle operations, invalid request data, event ownership, public event filters, rejected updates, cancelled-event behavior, and not-found responses. The same suite runs in GitHub Actions for pushes and pull requests targeting `main`.
+
 ## Branching Workflow
 
 - `main` is always the stable, working branch.

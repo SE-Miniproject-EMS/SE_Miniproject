@@ -308,3 +308,204 @@ test("organizers can modify their own events but not another organizer's event",
   assert.equal(ownerUpdate.response.status, 200, JSON.stringify(ownerUpdate.payload));
   assert.equal(ownerUpdate.payload.event.title, "Owner update succeeds");
 });
+
+test("public event listing supports category, location, search, and date filters", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const unique = `Filter-${process.pid}-${Date.now()}`;
+  const firstStart = Date.now() + 48 * 60 * 60 * 1000;
+  const secondStart = Date.now() + 72 * 60 * 60 * 1000;
+
+  const first = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({
+      title: `${unique} Alpha Event`,
+      description: `Needle-${unique} searchable description`,
+      category: "TestCategory",
+      venue: `${unique} Test Venue`,
+      startDateTime: new Date(firstStart).toISOString(),
+      endDateTime: new Date(firstStart + 60 * 60 * 1000).toISOString(),
+      status: "PUBLISHED",
+    }),
+  });
+  assert.equal(first.response.status, 201, JSON.stringify(first.payload));
+
+  const second = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({
+      title: `${unique} Beta Event`,
+      description: "A separate event for filtering tests",
+      category: "Workshop",
+      venue: "Different Test Venue",
+      startDateTime: new Date(secondStart).toISOString(),
+      endDateTime: new Date(secondStart + 60 * 60 * 1000).toISOString(),
+      status: "PUBLISHED",
+    }),
+  });
+  assert.equal(second.response.status, 201, JSON.stringify(second.payload));
+
+  const firstId = first.payload.event.id;
+  const secondId = second.payload.event.id;
+
+  const byCategory = await request("/api/events?category=TestCategory");
+  assert.equal(byCategory.response.status, 200);
+  assert.ok(byCategory.payload.events.some((event) => event.id === firstId));
+  assert.ok(!byCategory.payload.events.some((event) => event.id === secondId));
+
+  const byLocation = await request(
+    `/api/events?location=${encodeURIComponent(`${unique} Test Venue`)}`
+  );
+  assert.equal(byLocation.response.status, 200);
+  assert.ok(byLocation.payload.events.some((event) => event.id === firstId));
+  assert.ok(!byLocation.payload.events.some((event) => event.id === secondId));
+
+  const bySearch = await request(
+    `/api/events?search=${encodeURIComponent(`Needle-${unique}`)}`
+  );
+  assert.equal(bySearch.response.status, 200);
+  assert.ok(bySearch.payload.events.some((event) => event.id === firstId));
+  assert.ok(!bySearch.payload.events.some((event) => event.id === secondId));
+
+  const startDate = new Date(firstStart - 60 * 60 * 1000).toISOString();
+  const endDate = new Date(firstStart + 60 * 60 * 1000).toISOString();
+  const byDate = await request(
+    `/api/events?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`
+  );
+  assert.equal(byDate.response.status, 200);
+  assert.ok(byDate.payload.events.some((event) => event.id === firstId));
+  assert.ok(!byDate.payload.events.some((event) => event.id === secondId));
+
+  const invalidStartFilter = await request("/api/events?startDate=not-a-date");
+  assert.equal(invalidStartFilter.response.status, 400);
+  assert.equal(invalidStartFilter.payload.error.code, "INVALID_START_DATE");
+
+  const invalidEndFilter = await request("/api/events?endDate=not-a-date");
+  assert.equal(invalidEndFilter.response.status, 400);
+  assert.equal(invalidEndFilter.payload.error.code, "INVALID_END_DATE");
+});
+
+test("event updates reject invalid values without changing the stored event", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const originalTitle = `Validation event ${Date.now()}`;
+  const created = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ title: originalTitle }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+
+  const eventId = created.payload.event.id;
+  const badUpdates = [
+    { body: { title: "   " }, code: "INVALID_TITLE" },
+    { body: { category: "C".repeat(31) }, code: "INVALID_CATEGORY" },
+    { body: { venue: "   " }, code: "INVALID_VENUE" },
+    { body: { capacity: 0 }, code: "INVALID_CAPACITY" },
+    { body: { ticketPrice: -1 }, code: "INVALID_TICKET_PRICE" },
+    { body: { startDateTime: "not-a-date" }, code: "INVALID_START_DATE" },
+    {
+      body: { endDateTime: new Date(Date.now() + 60 * 60 * 1000).toISOString() },
+      code: "INVALID_DATE_RANGE",
+    },
+  ];
+
+  for (const { body, code } of badUpdates) {
+    const result = await request(`/api/events/${eventId}`, {
+      method: "PUT",
+      token: organizer.token,
+      body,
+    });
+
+    assert.equal(
+      result.response.status,
+      400,
+      `update ${JSON.stringify(body)} should return 400: ${JSON.stringify(result.payload)}`
+    );
+    assert.equal(result.payload.error.code, code);
+  }
+
+  const mine = await request("/api/events/manage/mine", {
+    token: organizer.token,
+  });
+  assert.equal(mine.response.status, 200);
+  const storedEvent = mine.payload.events.find((event) => event.id === eventId);
+  assert.ok(storedEvent, "the event should still exist after rejected updates");
+  assert.equal(storedEvent.title, originalTitle);
+  assert.equal(storedEvent.capacity, 100);
+});
+
+test("cancelled events cannot be edited or published again", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const created = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ title: `Cancelled event ${Date.now()}` }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+
+  const eventId = created.payload.event.id;
+  const cancelled = await request(`/api/events/${eventId}/cancel`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+  assert.equal(cancelled.payload.event.status, "CANCELLED");
+
+  const update = await request(`/api/events/${eventId}`, {
+    method: "PUT",
+    token: organizer.token,
+    body: { title: "This change must be rejected" },
+  });
+  assert.equal(update.response.status, 409);
+  assert.equal(update.payload.error.code, "EVENT_CANCELLED");
+
+  const publish = await request(`/api/events/${eventId}/publish`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(publish.response.status, 409);
+  assert.equal(publish.payload.error.code, "EVENT_CANCELLED");
+});
+
+test("event endpoints return 404 for unknown event IDs", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const unknownId = "987654321";
+
+  const publicDetails = await request(`/api/events/${unknownId}`);
+  assert.equal(publicDetails.response.status, 404);
+  assert.equal(publicDetails.payload.error.code, "NOT_FOUND");
+
+  const update = await request(`/api/events/${unknownId}`, {
+    method: "PUT",
+    token: organizer.token,
+    body: { title: "Nonexistent event" },
+  });
+  assert.equal(update.response.status, 404);
+  assert.equal(update.payload.error.code, "NOT_FOUND");
+
+  const publish = await request(`/api/events/${unknownId}/publish`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(publish.response.status, 404);
+  assert.equal(publish.payload.error.code, "NOT_FOUND");
+
+  const cancel = await request(`/api/events/${unknownId}/cancel`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(cancel.response.status, 404);
+  assert.equal(cancel.payload.error.code, "NOT_FOUND");
+});
+
+test("creating an event as PUBLISHED rejects invalid publishing data", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const result = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ status: "PUBLISHED", venue: "   " }),
+  });
+
+  assert.equal(result.response.status, 400);
+  assert.equal(result.payload.error.code, "INVALID_VENUE");
+});
