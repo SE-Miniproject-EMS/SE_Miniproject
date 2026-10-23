@@ -230,7 +230,7 @@ test("organizer can create, view, publish, and cancel an event", async () => {
 test("event creation returns 400 for missing required data or invalid values", async () => {
   const organizer = await createAccount();
 
-  for (const field of ["startDateTime", "endDateTime", "capacity"]) {
+  for (const field of ["title", "category", "startDateTime", "endDateTime", "venue", "capacity"]) {
     const body = validEvent();
     delete body[field];
 
