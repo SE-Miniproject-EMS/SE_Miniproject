@@ -15,17 +15,37 @@ function validateEventData(data, { publishing = false } = {}) {
     refundWindowHours,
   } = data;
 
-  if (title !== undefined && (!title || !String(title).trim())) {
+  if (title !== undefined && (typeof title !== "string" || !title.trim())) {
     throw new ApiError(400, "INVALID_TITLE", "Event title is required");
   }
+  if (title !== undefined && title.length > 100) {
+    throw new ApiError(400, "INVALID_TITLE", "Event title must be 100 characters or fewer");
+  }
 
-  if (category !== undefined && (!category || !String(category).trim())) {
+  if (category !== undefined && (typeof category !== "string" || !category.trim())) {
     throw new ApiError(400, "INVALID_CATEGORY", "Event category is required");
+  }
+  if (category !== undefined && category.length > 30) {
+    throw new ApiError(400, "INVALID_CATEGORY", "Event category must be 30 characters or fewer");
+  }
+
+  if (description !== undefined && description !== null && typeof description !== "string") {
+    throw new ApiError(400, "INVALID_DESCRIPTION", "Event description must be a string");
+  }
+
+  if (venue !== undefined && (typeof venue !== "string" || !venue.trim())) {
+    throw new ApiError(400, "INVALID_VENUE", "Event venue is required");
+  }
+  if (venue !== undefined && venue.length > 150) {
+    throw new ApiError(400, "INVALID_VENUE", "Event venue must be 150 characters or fewer");
   }
 
   if (
     capacity !== undefined &&
-    (!Number.isInteger(Number(capacity)) || Number(capacity) <= 0)
+    (!["number", "string"].includes(typeof capacity) ||
+      (typeof capacity === "string" && !capacity.trim()) ||
+      !Number.isInteger(Number(capacity)) ||
+      Number(capacity) <= 0)
   ) {
     throw new ApiError(
       400,
@@ -36,7 +56,10 @@ function validateEventData(data, { publishing = false } = {}) {
 
   if (
     ticketPrice !== undefined &&
-    (Number.isNaN(Number(ticketPrice)) || Number(ticketPrice) < 0)
+    (!["number", "string"].includes(typeof ticketPrice) ||
+      (typeof ticketPrice === "string" && !ticketPrice.trim()) ||
+      !Number.isFinite(Number(ticketPrice)) ||
+      Number(ticketPrice) < 0)
   ) {
     throw new ApiError(
       400,
@@ -48,7 +71,9 @@ function validateEventData(data, { publishing = false } = {}) {
   if (
     refundWindowHours !== undefined &&
     refundWindowHours !== null &&
-    (!Number.isInteger(Number(refundWindowHours)) ||
+    (!["number", "string"].includes(typeof refundWindowHours) ||
+      (typeof refundWindowHours === "string" && !refundWindowHours.trim()) ||
+      !Number.isInteger(Number(refundWindowHours)) ||
       Number(refundWindowHours) < 0)
   ) {
     throw new ApiError(
@@ -58,7 +83,12 @@ function validateEventData(data, { publishing = false } = {}) {
     );
   }
 
-  if (startDateTime !== undefined && Number.isNaN(Date.parse(startDateTime))) {
+  if (
+    startDateTime !== undefined &&
+    (!(typeof startDateTime === "string" || startDateTime instanceof Date) ||
+      !String(startDateTime).trim() ||
+      Number.isNaN(Date.parse(startDateTime)))
+  ) {
     throw new ApiError(
       400,
       "INVALID_START_DATE",
@@ -66,7 +96,12 @@ function validateEventData(data, { publishing = false } = {}) {
     );
   }
 
-  if (endDateTime !== undefined && Number.isNaN(Date.parse(endDateTime))) {
+  if (
+    endDateTime !== undefined &&
+    (!(typeof endDateTime === "string" || endDateTime instanceof Date) ||
+      !String(endDateTime).trim() ||
+      Number.isNaN(Date.parse(endDateTime)))
+  ) {
     throw new ApiError(
       400,
       "INVALID_END_DATE",
@@ -182,7 +217,14 @@ async function createEvent(req, res, next) {
       publishing: normalizedStatus === "PUBLISHED",
     });
 
-    for (const field of ["title", "category", "venue"]) {
+    for (const field of [
+      "title",
+      "category",
+      "startDateTime",
+      "endDateTime",
+      "venue",
+      "capacity",
+    ]) {
       if (
         eventData[field] === undefined ||
         eventData[field] === null ||
