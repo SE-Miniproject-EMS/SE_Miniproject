@@ -300,6 +300,31 @@ export default function EditEvent() {
       return;
     }
 
+    if (!form.title.trim() || !form.category.trim() || !form.venue.trim()) {
+      setError("Title, category, and venue are required.");
+      return;
+    }
+
+    const capacity = Number(form.capacity);
+    if (!Number.isInteger(capacity) || capacity < 1) {
+      setError("Capacity must be a whole number greater than zero.");
+      return;
+    }
+
+    const ticketPrice = Number(form.ticketPrice);
+    if (!Number.isFinite(ticketPrice) || ticketPrice < 0) {
+      setError("Ticket price must be zero or greater.");
+      return;
+    }
+
+    if (form.refundWindowHours !== "") {
+      const refundWindowHours = Number(form.refundWindowHours);
+      if (!Number.isInteger(refundWindowHours) || refundWindowHours < 0) {
+        setError("Refund window must be a whole number of zero or more hours.");
+        return;
+      }
+    }
+
     try {
       setSaving(true);
       setError("");
