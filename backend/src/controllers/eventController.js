@@ -6,6 +6,7 @@ const { ApiError } = require("../middleware/errorHandler");
 function validateEventData(data, { publishing = false } = {}) {
   const {
     title,
+    description,
     category,
     startDateTime,
     endDateTime,
