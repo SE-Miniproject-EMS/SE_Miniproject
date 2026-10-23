@@ -9,7 +9,7 @@ const path = require("node:path");
 const backendDir = path.resolve(__dirname, "..");
 const databaseFile = path.join(
   os.tmpdir(),
-  \`ems-backend-tests-\${process.pid}-\${Date.now()}.sqlite\`
+  `ems-backend-tests-${process.pid}-${Date.now()}.sqlite`
 );
 
 let server;
@@ -36,11 +36,11 @@ async function waitForServer() {
 
   while (Date.now() < deadline) {
     if (server.exitCode !== null) {
-      throw new Error(\`Backend exited before becoming healthy. Output:\\n\${serverOutput}\`);
+      throw new Error(`Backend exited before becoming healthy. Output:\n${serverOutput}`);
     }
 
     try {
-      const response = await fetch(\`\${baseUrl}/api/health\`);
+      const response = await fetch(`${baseUrl}/api/health`);
       if (response.ok) return;
     } catch {
       // The child process may need a moment to connect to SQLite and start listening.
@@ -50,12 +50,12 @@ async function waitForServer() {
   }
 
   server.kill("SIGTERM");
-  throw new Error(\`Backend did not become healthy in 15 seconds. Output:\\n\${serverOutput}\`);
+  throw new Error(`Backend did not become healthy in 15 seconds. Output:\n${serverOutput}`);
 }
 
 before(async () => {
   const port = await getFreePort();
-  baseUrl = \`http://127.0.0.1:\${port}\`;
+  baseUrl = `http://127.0.0.1:${port}`;
 
   server = spawn(process.execPath, ["src/server.js"], {
     cwd: backendDir,
@@ -103,9 +103,9 @@ after(async () => {
 async function request(route, { method = "GET", token, body } = {}) {
   const headers = {};
   if (body !== undefined) headers["content-type"] = "application/json";
-  if (token) headers.authorization = \`Bearer \${token}\`;
+  if (token) headers.authorization = `Bearer ${token}`;
 
-  const response = await fetch(\`\${baseUrl}\${route}\`, {
+  const response = await fetch(`${baseUrl}${route}`, {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -116,7 +116,7 @@ async function request(route, { method = "GET", token, body } = {}) {
 }
 
 async function createAccount(role = "ORGANIZER") {
-  const email = \`\${role.toLowerCase()}-\${process.pid}-\${accountCounter++}@example.com\`;
+  const email = `${role.toLowerCase()}-${process.pid}-${accountCounter++}@example.com`;
   const registration = await request("/api/auth/register", {
     method: "POST",
     body: {
@@ -130,7 +130,7 @@ async function createAccount(role = "ORGANIZER") {
   assert.equal(
     registration.response.status,
     201,
-    \`registration failed: \${JSON.stringify(registration.payload)}\`
+    `registration failed: ${JSON.stringify(registration.payload)}`
   );
 
   const login = await request("/api/auth/login", {
@@ -141,7 +141,7 @@ async function createAccount(role = "ORGANIZER") {
   assert.equal(
     login.response.status,
     200,
-    \`login failed: \${JSON.stringify(login.payload)}\`
+    `login failed: ${JSON.stringify(login.payload)}`
   );
 
   return { token: login.payload.token, user: login.payload.user };
@@ -150,7 +150,7 @@ async function createAccount(role = "ORGANIZER") {
 function validEvent(overrides = {}) {
   const starts = Date.now() + 48 * 60 * 60 * 1000;
   return {
-    title: \`Automated EMS event \${accountCounter}\`,
+    title: `Automated EMS event ${accountCounter}`,
     description: "Created by backend integration tests.",
     category: "Academic",
     startDateTime: new Date(starts).toISOString(),
@@ -183,7 +183,7 @@ test("event API requires authentication and organizer/admin authorization", asyn
 
 test("organizer can create, view, publish, and cancel an event", async () => {
   const organizer = await createAccount();
-  const title = \`Lifecycle event \${Date.now()}\`;
+  const title = `Lifecycle event ${Date.now()}`;
 
   const created = await request("/api/events", {
     method: "POST",
@@ -205,25 +205,25 @@ test("organizer can create, view, publish, and cancel an event", async () => {
   assert.equal(publicBeforePublish.response.status, 200);
   assert.ok(!publicBeforePublish.payload.events.some((event) => event.id === created.payload.event.id));
 
-  const published = await request(\`/api/events/\${created.payload.event.id}/publish\`, {
+  const published = await request(`/api/events/${created.payload.event.id}/publish`, {
     method: "POST",
     token: organizer.token,
   });
   assert.equal(published.response.status, 200, JSON.stringify(published.payload));
   assert.equal(published.payload.event.status, "PUBLISHED");
 
-  const publicDetails = await request(\`/api/events/\${created.payload.event.id}\`);
+  const publicDetails = await request(`/api/events/${created.payload.event.id}`);
   assert.equal(publicDetails.response.status, 200);
   assert.equal(publicDetails.payload.event.id, created.payload.event.id);
 
-  const cancelled = await request(\`/api/events/\${created.payload.event.id}/cancel\`, {
+  const cancelled = await request(`/api/events/${created.payload.event.id}/cancel`, {
     method: "POST",
     token: organizer.token,
   });
   assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
   assert.equal(cancelled.payload.event.status, "CANCELLED");
 
-  const unavailableDetails = await request(\`/api/events/\${created.payload.event.id}\`);
+  const unavailableDetails = await request(`/api/events/${created.payload.event.id}`);
   assert.equal(unavailableDetails.response.status, 404);
 });
 
@@ -243,7 +243,7 @@ test("event creation returns 400 for missing required data or invalid values", a
     assert.equal(
       result.response.status,
       400,
-      \`missing \${field} should return 400; received \${result.response.status}: \${JSON.stringify(result.payload)}\`
+      `missing ${field} should return 400; received ${result.response.status}: ${JSON.stringify(result.payload)}`
     );
   }
 
@@ -268,7 +268,7 @@ test("event creation returns 400 for missing required data or invalid values", a
     assert.equal(
       result.response.status,
       400,
-      \`invalid input should return 400; received \${result.response.status}: \${JSON.stringify(result.payload)}\`
+      `invalid input should return 400; received ${result.response.status}: ${JSON.stringify(result.payload)}`
     );
     assert.ok(result.payload.error?.code);
   }
@@ -281,12 +281,12 @@ test("organizers can modify their own events but not another organizer's event",
   const created = await request("/api/events", {
     method: "POST",
     token: owner.token,
-    body: validEvent({ title: \`Owner-only event \${Date.now()}\` }),
+    body: validEvent({ title: `Owner-only event ${Date.now()}` }),
   });
   assert.equal(created.response.status, 201);
 
   const eventId = created.payload.event.id;
-  const forbiddenUpdate = await request(\`/api/events/\${eventId}\`, {
+  const forbiddenUpdate = await request(`/api/events/${eventId}`, {
     method: "PUT",
     token: otherOrganizer.token,
     body: { title: "Unauthorized change" },
@@ -294,13 +294,13 @@ test("organizers can modify their own events but not another organizer's event",
   assert.equal(forbiddenUpdate.response.status, 403);
   assert.equal(forbiddenUpdate.payload.error.code, "FORBIDDEN");
 
-  const forbiddenCancel = await request(\`/api/events/\${eventId}/cancel\`, {
+  const forbiddenCancel = await request(`/api/events/${eventId}/cancel`, {
     method: "POST",
     token: otherOrganizer.token,
   });
   assert.equal(forbiddenCancel.response.status, 403);
 
-  const ownerUpdate = await request(\`/api/events/\${eventId}\`, {
+  const ownerUpdate = await request(`/api/events/${eventId}`, {
     method: "PUT",
     token: owner.token,
     body: { title: "Owner update succeeds" },
