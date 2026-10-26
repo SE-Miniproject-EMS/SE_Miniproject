@@ -262,59 +262,54 @@ async function createEvent(req, res, next) {
 
 async function listPublicEvents(req, res, next) {
   try {
-    const {
-      search,
-      category,
-      location,
-      startDate,
-      endDate,
-    } = req.query;
+    const { search, category, location, startDate, endDate } = req.query;
+    const pageValue = req.query.page === undefined ? 1 : Number(req.query.page);
+    const limitValue = req.query.limit === undefined ? 9 : Number(req.query.limit);
+
+    if (!Number.isSafeInteger(pageValue) || pageValue < 1) {
+      throw new ApiError(400, "INVALID_PAGE", "Page must be a positive whole number");
+    }
+    if (!Number.isSafeInteger(limitValue) || limitValue < 1 || limitValue > 50) {
+      throw new ApiError(400, "INVALID_LIMIT", "Limit must be a whole number from 1 to 50");
+    }
+    if (!Number.isSafeInteger((pageValue - 1) * limitValue)) {
+      throw new ApiError(400, "INVALID_PAGE", "Page is too large");
+    }
 
     const where = {
       status: "PUBLISHED",
-      startDateTime: {
-        [Op.gte]: new Date(),
-      },
+      startDateTime: { [Op.gte]: new Date() },
     };
 
-    if (category) {
-      where.category = category;
-    }
-
-    if (location) {
-      where.venue = {
-        [Op.like]: `%${location}%`,
-      };
-    }
+    if (category) where.category = category;
+    if (location) where.venue = { [Op.like]: `%${location}%` };
 
     if (startDate || endDate) {
-      where.startDateTime = {};
-
+      const dateRange = {};
       if (startDate) {
         const parsedStart = new Date(startDate);
         if (Number.isNaN(parsedStart.getTime())) {
-          throw new ApiError(
-            400,
-            "INVALID_START_DATE",
-            "Invalid start-date filter"
-          );
+          throw new ApiError(400, "INVALID_START_DATE", "Invalid start-date filter");
         }
-        where.startDateTime[Op.gte] = parsedStart;
+        dateRange[Op.gte] = new Date(Math.max(parsedStart.getTime(), Date.now()));
       } else {
-        where.startDateTime[Op.gte] = new Date();
+        dateRange[Op.gte] = new Date();
       }
 
       if (endDate) {
         const parsedEnd = new Date(endDate);
         if (Number.isNaN(parsedEnd.getTime())) {
-          throw new ApiError(
-            400,
-            "INVALID_END_DATE",
-            "Invalid end-date filter"
-          );
+          throw new ApiError(400, "INVALID_END_DATE", "Invalid end-date filter");
         }
-        where.startDateTime[Op.lte] = parsedEnd;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+          parsedEnd.setUTCHours(23, 59, 59, 999);
+        }
+        if (dateRange[Op.gte] && parsedEnd < dateRange[Op.gte]) {
+          throw new ApiError(400, "INVALID_DATE_RANGE", "End date must be on or after start date");
+        }
+        dateRange[Op.lte] = parsedEnd;
       }
+      where.startDateTime = dateRange;
     }
 
     if (search) {
@@ -324,19 +319,27 @@ async function listPublicEvents(req, res, next) {
       ];
     }
 
-    const events = await Event.findAll({
+    const { count, rows: events } = await Event.findAndCountAll({
       where,
-      order: [["startDateTime", "ASC"]],
-      include: [
-        {
-          model: User,
-          as: "organizer",
-          attributes: ["id", "name"],
-        },
-      ],
+      order: [["startDateTime", "ASC"], ["id", "ASC"]],
+      limit: limitValue,
+      offset: (pageValue - 1) * limitValue,
+      include: [{
+        model: User,
+        as: "organizer",
+        attributes: ["id", "name"],
+      }],
     });
 
-    res.json({ events });
+    res.json({
+      events,
+      pagination: {
+        page: pageValue,
+        limit: limitValue,
+        total: count,
+        pages: Math.ceil(count / limitValue),
+      },
+    });
   } catch (err) {
     next(err);
   }

@@ -133,7 +133,24 @@ async function registerAccount(overrides = {}) {
     method: "POST",
     body: account,
   });
+  if (result.response.status === 201) await verifyAccount(account);
   return { account, ...result };
+}
+
+async function verifyAccount(account) {
+  const marker = `[DEV ONLY] Verification link for ${account.email}: `;
+  const deadline = Date.now() + 3000;
+  let verificationPath;
+
+  while (Date.now() < deadline && !verificationPath) {
+    const line = serverOutput.split(/\r?\n/).reverse().find((entry) => entry.includes(marker));
+    if (line) verificationPath = new URL(line.slice(line.indexOf(marker) + marker.length).trim()).pathname;
+    else await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+
+  assert.ok(verificationPath, `verification link was not logged for ${account.email}`);
+  const result = await request(verificationPath);
+  assert.equal(result.response.status, 200, JSON.stringify(result.payload));
 }
 
 async function loginAccount(account) {

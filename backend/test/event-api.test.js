@@ -133,6 +133,20 @@ async function createAccount(role = "ORGANIZER") {
     `registration failed: ${JSON.stringify(registration.payload)}`
   );
 
+  const marker = `[DEV ONLY] Verification link for ${email}: `;
+  const deadline = Date.now() + 3000;
+  let verificationPath;
+
+  while (Date.now() < deadline && !verificationPath) {
+    const line = serverOutput.split(/\\r?\\n/).reverse().find((entry) => entry.includes(marker));
+    if (line) verificationPath = new URL(line.slice(line.indexOf(marker) + marker.length).trim()).pathname;
+    else await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+
+  assert.ok(verificationPath, `verification link was not logged for ${email}`);
+  const verification = await request(verificationPath);
+  assert.equal(verification.response.status, 200, JSON.stringify(verification.payload));
+
   const login = await request("/api/auth/login", {
     method: "POST",
     body: { email, password: "TestPassword123!" },
