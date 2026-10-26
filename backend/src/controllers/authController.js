@@ -109,6 +109,14 @@ async function login(req, res, next) {
       throw genericError;
     }
 
+    if (!user.isVerified) {
+      throw new ApiError(
+        403,
+        "EMAIL_NOT_VERIFIED",
+        "Verify your email before signing in"
+      );
+    }
+
     // Successful login: reset failed-attempt counter
     user.failedAttempts = 0;
     user.lockUntil = null;
