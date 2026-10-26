@@ -133,6 +133,7 @@ async function registerAccount(overrides = {}) {
     method: "POST",
     body: account,
   });
+  if (result.response.status === 201) await verifyAccount(account);
   return { account, ...result };
 }
 
@@ -153,7 +154,6 @@ async function verifyAccount(account) {
 }
 
 async function loginAccount(account) {
-  await verifyAccount(account);
   return request("/api/auth/login", {
     method: "POST",
     body: { email: account.email, password: account.password },
