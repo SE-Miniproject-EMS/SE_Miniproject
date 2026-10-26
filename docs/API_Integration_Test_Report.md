@@ -67,10 +67,10 @@ Record the manual results and screenshots in this report or in Issue #9 after ex
 
 ## Results
 
-- Automated API integration tests: **Passed** in GitHub Actions run [#40363476463](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/40363476463).
-- Backend Validation job: **Success** — dependencies installed, backend JavaScript syntax checked, and `npm test` passed.
-- Frontend Build job: **Success** — frontend dependencies installed and `npm run build` passed.
+- Automated API integration tests: **Passed: 18 tests, 0 failures** in GitHub Actions run [#40363629586](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/40363629586).
+- Backend Validation job: **Success** — `npm ci`, backend JavaScript syntax checks, and `npm test` passed.
+- Frontend Build job: **Success** — `npm ci` and `npm run build` passed.
 - Manual browser smoke-check: Pending team execution.
 - Issue #9 should remain open until the browser-level smoke-check is recorded and the team reviews the evidence.
 
-The workflow run above tested the event integration test suite and frontend build successfully. This report update changes documentation only; CI should be checked again on the latest pull-request commit before merging.
+Run #40363629586 tested commit `8c58e93888dc2de60735c947a9668326c7e90ffe` and passed both jobs. The automated test suite reported 18 passes, 0 failures, 0 skipped, and 0 cancelled.
