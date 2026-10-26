@@ -1,128 +1,71 @@
 # Event Management System
 
-A system to manage and organize events with registrations.
+A full-stack event management prototype built with React, Express, Sequelize, and SQLite.
 
-Tech stack: **JavaScript (React.js + Node.js)**. (Originally scoped to allow
-Python/Django as an alternative; this codebase implements the JS option —
-see `docs/SAD` for the architecture rationale if the team wants to revisit.)
+## Sprint 1 implementation
 
-## Status: Member 1 — Authentication & RBAC foundation
+Sprint 1 provides the authentication foundation and event-management flow:
 
-This is the first module merged into the project: a working, tested
-registration/login system with role-based access control. Everything else
-(events, registrations, payments, notifications, check-in, dashboards)
-plugs into the patterns established here.
+- Attendee and organizer registration with password hashing, email verification, and JWT login.
+- Account lockout after five failed login attempts for 15 minutes.
+- Server-side role checks and organizer ownership checks for event changes.
+- Draft event creation, editing, publishing, and cancellation.
+- Public upcoming-event discovery with search, category, location, and date filters.
+- Paginated event results, ordered by start date.
+- GitHub Actions CI for backend API checks and the frontend production build.
 
-**What's implemented and tested:**
-- User registration (Attendee / Organizer roles) — `POST /api/auth/register`
-- Email verification stub (logs a link to the console; swap in a real
-  provider when the Notification module exists) — `GET /api/auth/verify/:token`
-- Login with JWT issuance and account lockout after 5 failed attempts for
-  15 minutes — `POST /api/auth/login`
-- A protected "who am I" endpoint — `GET /api/auth/me`
-- Reusable `authenticate` + `authorize(...roles)` middleware for everyone
-  else to protect their own routes
-- A React frontend: Register page, Login page, a protected Dashboard page,
-  and an `AuthContext` that the rest of the team can reuse
+Email verification currently uses a development-only link printed to the backend console. Real email delivery requires a configured provider and credentials. Registrations and payments, waitlists, cancellation notifications/refunds, check-in, and reporting are outside the delivered Sprint 1 flow and remain planned work.
 
-## The Project Structure
+## Project structure
 
 ```
-event-management-system/
-├── backend/           Node.js + Express API
-│   ├── src/
-│   │   ├── config/db.js            Sequelize (SQLite) connection
-│   │   ├── models/User.js          User model (Member 1 owns this)
-│   │   ├── controllers/            Route handlers
-│   │   ├── routes/                 Route definitions
-│   │   ├── middleware/             auth.js (JWT + RBAC), errorHandler.js
-│   │   └── server.js               App entry point
-│   └── .env.example                Copy to .env and fill in
-├── frontend/           React (Vite) SPA
-│   └── src/
-│       ├── api/                    axios client + auth requests
-│       ├── context/AuthContext.jsx Login/register/logout state
-│       ├── components/             Navbar, ProtectedRoute
-│       └── pages/                  Home, Login, Register, Dashboard
-└── docs/                SRS, SAD, Test Plan (add these if not already here)
+backend/   Express API, Sequelize models, auth/event routes and controllers
+frontend/  React + Vite application
+docs/      SRS, architecture, test plan, Sprint 1 demo/deviation notes
 ```
 
-## Getting Started
+## Run locally
 
 ### Backend
 
 ```bash
 cd backend
-npm install
-cp .env.example .env     # fill in JWT secrets (any long random string works for dev)
-npm run dev               # starts on http://localhost:5000
+npm ci
+cp .env.example .env
+npm run dev
 ```
 
-The database is a local SQLite file (`backend/dev.db`), created
-automatically on first run — no separate database server needed for local
-dev. **Do not commit `dev.db` or `.env`** (already covered by `.gitignore`).
-
-> For a shared staging environment, switch `backend/src/config/db.js` to
-> Postgres/MySQL per the SAD's technology stack section.
+The development database is SQLite and is created automatically. Keep `.env` and local database files out of commits.
 
 ### Frontend
 
 ```bash
 cd frontend
-npm install
+npm ci
 cp .env.example .env.local
-npm run dev                # starts on http://localhost:5173
+npm run dev
 ```
 
-Open http://localhost:5173, sign up, log in, and you'll land on the
-Dashboard — confirming the full stack (React → Express → SQLite) works.
+Open the Vite URL shown in the terminal. Set the frontend API base URL in `.env.local` if it differs from the backend default.
 
-## For the Rest of the Team
+## Verify the code
 
-When you add your module (Event Management, Registration/Payment,
-Notifications/Check-in/Dashboard), follow the pattern already in place:
-
-**Backend:**
-1. Add your Sequelize model in `backend/src/models/` (see `User.js`).
-2. Add a controller in `backend/src/controllers/`.
-3. Add a router in `backend/src/routes/`, and protect routes with
-   `authenticate` and, where needed, `authorize("ORGANIZER", "ADMIN")` —
-   see `backend/src/routes/exampleProtectedRoutes.js` for a working example.
-4. Mount your router in `backend/src/server.js` (there's a comment marking
-   where to add it).
-5. Use the same error shape everywhere: `throw new ApiError(status, code, message)`
-   from `middleware/errorHandler.js` — don't invent a new error format.
-
-**Frontend:**
-1. Add your API calls in `frontend/src/api/`.
-2. Add your pages in `frontend/src/pages/`.
-3. Wrap role-restricted pages in `<ProtectedRoute roles={["ORGANIZER"]}>`.
-4. Reuse `useAuth()` from `AuthContext` to get the current user/token —
-   don't build a second auth system.
-
-## Running Backend API Tests
-
-The backend uses Node.js's built-in test runner and starts an isolated SQLite database for the API integration tests. From the repository root, run:
+From `backend/`:
 
 ```bash
-cd backend
-npm ci
 npm test
 ```
 
-The test suite exercises event API authentication and authorization, event lifecycle operations, invalid request data, event ownership, public event filters, rejected updates, cancelled-event behavior, and not-found responses. The same suite runs in GitHub Actions for pushes and pull requests targeting `main`.
+From `frontend/`:
 
-## Branching Workflow
+```bash
+npm run build
+```
 
-- `main` is always the stable, working branch.
-- Create a feature branch per module: `feature/event-management`,
-  `feature/registration-payment`, `feature/notifications-checkin`.
-- Open a Pull Request into `main` and get at least one teammate's review
-  before merging.
+GitHub Actions runs the backend API suite and frontend build for pushes and pull requests targeting `main`.
 
-## Related Documents
+## Team workflow
 
-See `/docs` for the SRS, Software Architecture & Design Specification (SAD),
-and Software Test Plan — this code follows the API design and security
-architecture defined there (e.g. REQ-1 through REQ-4 in the SRS map
-directly to the auth module in this repo).
+Create a feature branch for each change, open a pull request to `main`, and request a teammate review before merging. Link the pull request to its backlog issue in the PR description or with GitHub's issue-closing keywords when the work is ready to close that issue.
+
+See `docs/sprint-1-demo-and-deviations.md` for the Sprint 1 walkthrough and deviation log template. The SRS, Software Architecture & Design, and Software Test Plan are under `docs/`.
