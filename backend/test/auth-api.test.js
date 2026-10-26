@@ -142,7 +142,7 @@ async function verifyAccount(account) {
   let verificationPath;
 
   while (Date.now() < deadline && !verificationPath) {
-    const line = serverOutput.split(/\\r?\\n/).reverse().find((entry) => entry.includes(marker));
+    const line = serverOutput.split(/\r?\n/).reverse().find((entry) => entry.includes(marker));
     if (line) verificationPath = new URL(line.slice(line.indexOf(marker) + marker.length).trim()).pathname;
     else await new Promise((resolve) => setTimeout(resolve, 10));
   }
