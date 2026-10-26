@@ -55,27 +55,57 @@ Known limits to disclose:
     frontend/  React + Vite application
     docs/      SRS, architecture, test plan, Sprint 1 demo/deviation guide
 
-## Run locally
+## Run locally on Windows
 
-### Backend
+Install Git and Node.js with npm first. Open PowerShell and clone the repo once:
 
-    cd backend
+    Set-Location "$HOME\Documents"
+    git clone https://github.com/SE-Miniproject-EMS/SE_Miniproject.git
+    Set-Location .\SE_Miniproject
+
+If you already cloned it, skip git clone and go to the existing folder instead. For example:
+
+    Set-Location "$HOME\Documents\SE_Miniproject"
+
+Check that you are at the repository root before continuing:
+
+    Get-ChildItem
+
+You should see the backend and frontend folders. If PowerShell says a path or package.json cannot be found, you are not in the repository folder yet.
+
+### 1. Start the backend
+
+In the first PowerShell window, from the repository root:
+
+    Set-Location .\backend
     npm ci
-    cp .env.example .env
+    if (-not (Test-Path .env)) { Copy-Item .env.example .env }
     npm run dev
 
-The development database is created automatically. Keep .env and local database files out of commits.
+Keep this window open. The backend normally runs at http://localhost:5000. The local SQLite database file is created automatically. The example JWT secrets are for local development; replace them with secure values for any shared or deployed environment.
 
-### Frontend
+### 2. Start the frontend
 
-    cd frontend
+Open a second PowerShell window. Go to the same repository root, then run:
+
+    Set-Location "$HOME\Documents\SE_Miniproject\frontend"
     npm ci
-    cp .env.example .env.local
+    if (-not (Test-Path .env.local)) { Copy-Item .env.example .env.local }
     npm run dev
 
-Open the Vite URL shown in the terminal. Set the API base URL in .env.local if it differs from the backend default.
+Keep this window open too. Vite prints the frontend address; it is usually http://localhost:5173. Open that address in your browser. The frontend API URL defaults to http://localhost:5000/api.
 
-To demo account verification, register an organizer and open the development verification URL printed in the backend terminal before signing in.
+If you cloned the repository to a different folder, replace the example path in the second window with your actual repository path.
+
+### 3. Verify an account before signing in
+
+1. In the browser, open Sign Up and create an organizer account.
+2. Return to the backend PowerShell window.
+3. Find the line beginning with [DEV ONLY] Verification link for your email.
+4. Open the full http://localhost:5000/api/auth/verify/... link in your browser.
+5. Return to the app at http://localhost:5173/login and sign in.
+
+The verification link is printed in the backend window; this project does not send verification emails yet. If you cannot find the link, it was printed when you registered, so check the backend window's earlier output.
 
 ## Verify changes
 
