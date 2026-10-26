@@ -67,7 +67,10 @@ Record the manual results and screenshots in this report or in Issue #9 after ex
 
 ## Results
 
-- Automated API test coverage: Present in `backend/test/event-api.test.js`.
-- Automated pass/fail result: To be filled after the GitHub Actions run for the follow-up pull request.
+- Automated API integration tests: **Passed** in GitHub Actions run [#40363476463](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/40363476463).
+- Backend Validation job: **Success** — dependencies installed, backend JavaScript syntax checked, and `npm test` passed.
+- Frontend Build job: **Success** — frontend dependencies installed and `npm run build` passed.
 - Manual browser smoke-check: Pending team execution.
-- Issue #9 should remain open until the automated run succeeds, the manual smoke-check is recorded, and the team reviews the evidence.
+- Issue #9 should remain open until the browser-level smoke-check is recorded and the team reviews the evidence.
+
+The workflow run above tested the event integration test suite and frontend build successfully. This report update changes documentation only; CI should be checked again on the latest pull-request commit before merging.
