@@ -194,6 +194,24 @@ test("organizer can create, view, publish, and cancel an event", async () => {
   assert.equal(created.payload.event.title, title);
   assert.equal(created.payload.event.status, "DRAFT");
   assert.equal(created.payload.event.organizerId, organizer.user.id);
+  for (const field of [
+    "id",
+    "title",
+    "description",
+    "category",
+    "startDateTime",
+    "endDateTime",
+    "venue",
+    "capacity",
+    "ticketPrice",
+    "status",
+    "organizerId",
+  ]) {
+    assert.ok(
+      Object.prototype.hasOwnProperty.call(created.payload.event, field),
+      `create response should include event.${field}`
+    );
+  }
 
   const ownEvents = await request("/api/events/manage/mine", {
     token: organizer.token,
@@ -212,9 +230,22 @@ test("organizer can create, view, publish, and cancel an event", async () => {
   assert.equal(published.response.status, 200, JSON.stringify(published.payload));
   assert.equal(published.payload.event.status, "PUBLISHED");
 
+  const publicListing = await request("/api/events", {
+    method: "GET",
+  });
+  assert.equal(publicListing.response.status, 200);
+  assert.ok(Array.isArray(publicListing.payload.events));
+  assert.ok(
+    publicListing.payload.events.some((event) => event.id === created.payload.event.id),
+    "a published upcoming event should appear in the public listing"
+  );
+
   const publicDetails = await request(`/api/events/${created.payload.event.id}`);
   assert.equal(publicDetails.response.status, 200);
   assert.equal(publicDetails.payload.event.id, created.payload.event.id);
+  assert.equal(publicDetails.payload.event.title, title);
+  assert.equal(publicDetails.payload.event.status, "PUBLISHED");
+  assert.ok(publicDetails.payload.event.organizer);
 
   const cancelled = await request(`/api/events/${created.payload.event.id}/cancel`, {
     method: "POST",
