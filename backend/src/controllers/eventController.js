@@ -272,6 +272,9 @@ async function listPublicEvents(req, res, next) {
     if (!Number.isSafeInteger(limitValue) || limitValue < 1 || limitValue > 50) {
       throw new ApiError(400, "INVALID_LIMIT", "Limit must be a whole number from 1 to 50");
     }
+    if (!Number.isSafeInteger((pageValue - 1) * limitValue)) {
+      throw new ApiError(400, "INVALID_PAGE", "Page is too large");
+    }
 
     const where = {
       status: "PUBLISHED",
@@ -288,7 +291,7 @@ async function listPublicEvents(req, res, next) {
         if (Number.isNaN(parsedStart.getTime())) {
           throw new ApiError(400, "INVALID_START_DATE", "Invalid start-date filter");
         }
-        dateRange[Op.gte] = parsedStart;
+        dateRange[Op.gte] = new Date(Math.max(parsedStart.getTime(), Date.now()));
       } else {
         dateRange[Op.gte] = new Date();
       }
