@@ -195,7 +195,7 @@ test("event API requires authentication and organizer/admin authorization", asyn
   assert.equal(forbidden.payload.error.code, "FORBIDDEN");
 });
 
-test("organizer can create, view, publish, and cancel an event", async () => {
+test("organizer can create, view, edit, publish, and cancel an event", async () => {
   const organizer = await createAccount();
   const title = `Lifecycle event ${Date.now()}`;
 
@@ -219,6 +219,16 @@ test("organizer can create, view, publish, and cancel an event", async () => {
   assert.equal(publicBeforePublish.response.status, 200);
   assert.ok(!publicBeforePublish.payload.events.some((event) => event.id === created.payload.event.id));
 
+  const updatedTitle = `${title} updated`;
+  const updated = await request(`/api/events/${created.payload.event.id}`, {
+    method: "PUT",
+    token: organizer.token,
+    body: { title: updatedTitle, venue: "Updated Test Auditorium" },
+  });
+  assert.equal(updated.response.status, 200, JSON.stringify(updated.payload));
+  assert.equal(updated.payload.event.title, updatedTitle);
+  assert.equal(updated.payload.event.venue, "Updated Test Auditorium");
+
   const published = await request(`/api/events/${created.payload.event.id}/publish`, {
     method: "POST",
     token: organizer.token,
@@ -229,6 +239,8 @@ test("organizer can create, view, publish, and cancel an event", async () => {
   const publicDetails = await request(`/api/events/${created.payload.event.id}`);
   assert.equal(publicDetails.response.status, 200);
   assert.equal(publicDetails.payload.event.id, created.payload.event.id);
+  assert.equal(publicDetails.payload.event.title, updatedTitle);
+  assert.equal(publicDetails.payload.event.venue, "Updated Test Auditorium");
 
   const cancelled = await request(`/api/events/${created.payload.event.id}/cancel`, {
     method: "POST",
@@ -397,6 +409,46 @@ test("public event listing supports category, location, search, and date filters
   const invalidEndFilter = await request("/api/events?endDate=not-a-date");
   assert.equal(invalidEndFilter.response.status, 400);
   assert.equal(invalidEndFilter.payload.error.code, "INVALID_END_DATE");
+});
+
+test("public event listing paginates future published events and validates page bounds", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const unique = `Pagination-${process.pid}-${Date.now()}`;
+  const start = Date.now() + 96 * 60 * 60 * 1000;
+  const eventIds = [];
+
+  for (let index = 0; index < 3; index += 1) {
+    const eventStart = start + index * 60 * 60 * 1000;
+    const created = await request("/api/events", {
+      method: "POST",
+      token: organizer.token,
+      body: validEvent({
+        title: `${unique} Event ${index + 1}`,
+        startDateTime: new Date(eventStart).toISOString(),
+        endDateTime: new Date(eventStart + 30 * 60 * 1000).toISOString(),
+        status: "PUBLISHED",
+      }),
+    });
+    assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+    eventIds.push(created.payload.event.id);
+  }
+
+  const firstPage = await request(`/api/events?search=${encodeURIComponent(unique)}&page=1&limit=2`);
+  const secondPage = await request(`/api/events?search=${encodeURIComponent(unique)}&page=2&limit=2`);
+  assert.equal(firstPage.response.status, 200, JSON.stringify(firstPage.payload));
+  assert.equal(secondPage.response.status, 200, JSON.stringify(secondPage.payload));
+  assert.deepEqual(firstPage.payload.events.map((event) => event.id), eventIds.slice(0, 2));
+  assert.deepEqual(secondPage.payload.events.map((event) => event.id), eventIds.slice(2));
+  assert.deepEqual(firstPage.payload.pagination, { page: 1, limit: 2, total: 3, pages: 2 });
+  assert.deepEqual(secondPage.payload.pagination, { page: 2, limit: 2, total: 3, pages: 2 });
+
+  const invalidPage = await request("/api/events?page=0");
+  assert.equal(invalidPage.response.status, 400);
+  assert.equal(invalidPage.payload.error.code, "INVALID_PAGE");
+
+  const invalidLimit = await request("/api/events?limit=51");
+  assert.equal(invalidLimit.response.status, 400);
+  assert.equal(invalidLimit.payload.error.code, "INVALID_LIMIT");
 });
 
 test("event updates reject invalid values without changing the stored event", async () => {

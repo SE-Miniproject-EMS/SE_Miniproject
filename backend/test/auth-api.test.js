@@ -221,6 +221,24 @@ test("valid login returns an access token and a public user record", async () =>
   assert.equal(Object.hasOwn(login.payload.user, "passwordHash"), false);
 });
 
+test("login rejects an unverified account until its verification link is used", async () => {
+  const account = accountDetails();
+  const registration = await request("/api/auth/register", {
+    method: "POST",
+    body: account,
+  });
+  assert.equal(registration.response.status, 201, JSON.stringify(registration.payload));
+
+  const blockedLogin = await loginAccount(account);
+  assert.equal(blockedLogin.response.status, 403);
+  assert.equal(blockedLogin.payload.error.code, "EMAIL_NOT_VERIFIED");
+
+  await verifyAccount(account);
+  const verifiedLogin = await loginAccount(account);
+  assert.equal(verifiedLogin.response.status, 200, JSON.stringify(verifiedLogin.payload));
+  assert.equal(verifiedLogin.payload.user.email, account.email);
+});
+
 test("invalid credentials are rejected without revealing whether the email exists", async () => {
   const registered = await registerAccount();
   assert.equal(registered.response.status, 201, JSON.stringify(registered.payload));
