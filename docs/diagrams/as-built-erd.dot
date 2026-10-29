@@ -1,0 +1,41 @@
+digraph erd {
+  graph [rankdir=LR, bgcolor="#ffffff", pad="0.25", nodesep="0.9", ranksep="1.1", fontname="Arial", fontsize=22, labelloc=t,
+         label="EMS AS-BUILT DATA MODEL — SQLITE MODELS (29 OCT 2026)"];
+  node [shape=plain, fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=10, color="#536273", penwidth=1.4, arrowsize=0.8];
+
+  User [label=<
+  <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#375a7f">
+    <TR><TD BGCOLOR="#e9f2ff" COLSPAN="2"><B>User</B></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B> id</TD><TD ALIGN="LEFT">INTEGER, autoincrement</TD></TR>
+    <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">STRING, required</TD></TR>
+    <TR><TD ALIGN="LEFT">email</TD><TD ALIGN="LEFT">STRING, unique</TD></TR>
+    <TR><TD ALIGN="LEFT">passwordHash</TD><TD ALIGN="LEFT">bcrypt hash</TD></TR>
+    <TR><TD ALIGN="LEFT">role</TD><TD ALIGN="LEFT">ATTENDEE / ORGANIZER / ADMIN</TD></TR>
+    <TR><TD ALIGN="LEFT">isVerified</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+    <TR><TD ALIGN="LEFT">failedAttempts</TD><TD ALIGN="LEFT">INTEGER</TD></TR>
+    <TR><TD ALIGN="LEFT">lockUntil</TD><TD ALIGN="LEFT">DATE or NULL</TD></TR>
+    <TR><TD ALIGN="LEFT">createdAt, updatedAt</TD><TD ALIGN="LEFT">Sequelize timestamps</TD></TR>
+  </TABLE>>];
+
+  Event [label=<
+  <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#2f7756">
+    <TR><TD BGCOLOR="#e4f5e9" COLSPAN="2"><B>Event</B></TD></TR>
+    <TR><TD ALIGN="LEFT"><B>PK</B> id</TD><TD ALIGN="LEFT">INTEGER, autoincrement</TD></TR>
+    <TR><TD ALIGN="LEFT">title</TD><TD ALIGN="LEFT">STRING(100), required</TD></TR>
+    <TR><TD ALIGN="LEFT">description</TD><TD ALIGN="LEFT">TEXT, nullable</TD></TR>
+    <TR><TD ALIGN="LEFT">category</TD><TD ALIGN="LEFT">STRING(30), required</TD></TR>
+    <TR><TD ALIGN="LEFT">startDateTime / endDateTime</TD><TD ALIGN="LEFT">DATE, required</TD></TR>
+    <TR><TD ALIGN="LEFT">venue</TD><TD ALIGN="LEFT">STRING(150), required</TD></TR>
+    <TR><TD ALIGN="LEFT">capacity</TD><TD ALIGN="LEFT">INTEGER, required</TD></TR>
+    <TR><TD ALIGN="LEFT">ticketPrice</TD><TD ALIGN="LEFT">DECIMAL(10,2), default 0</TD></TR>
+    <TR><TD ALIGN="LEFT">refundWindowHours</TD><TD ALIGN="LEFT">INTEGER, nullable</TD></TR>
+    <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">DRAFT / PUBLISHED / CANCELLED</TD></TR>
+    <TR><TD ALIGN="LEFT"><B>FK</B> organizerId</TD><TD ALIGN="LEFT">User.id, required</TD></TR>
+    <TR><TD ALIGN="LEFT">createdAt, updatedAt</TD><TD ALIGN="LEFT">Sequelize timestamps</TD></TR>
+  </TABLE>>];
+
+  User -> Event [label="organizes / owns", taillabel="1", headlabel="0..*", labeldistance=1.6];
+  note [shape=note, style=filled, fillcolor="#fff7dc", color="#aa8b31", label="No Registration, Payment, Waitlist, Notification, Ticket or Feedback model exists in this baseline.", fontsize=10];
+  note -> Event [style=dashed, arrowhead=none, color="#aa8b31"];
+}
