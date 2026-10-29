@@ -23,7 +23,7 @@ export default function Home() {
           <div className="hero-sun" />
           <div className="hero-orbit" />
           <div className="hero-ticket">
-            <div className="ticket-top"><span>Gather / EMS</span><span className="ticket-stamp">G</span></div>
+            <div className="ticket-top"><span>Event Management System</span><span className="ticket-stamp" aria-hidden="true">✳</span></div>
             <div className="ticket-title">Good things happen when we meet.</div>
             <div className="ticket-bottom"><span>Discover your next event</span><span>✳</span></div>
             <span className="ticket-squiggle">〰</span>
