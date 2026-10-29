@@ -64,16 +64,16 @@ export default function Events() {
   }
 
   function formatDate(date) {
-    return new Date(date).toLocaleString();
+    return new Date(date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
   }
 
   return (
     <main className="page">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Discover</p>
-          <h1>Upcoming Events</h1>
-          <p>Explore published events and find something worth attending.</p>
+          <p className="eyebrow">Out there, happening soon</p>
+          <h1>Find your people.</h1>
+          <p>Explore what’s coming up and find a gathering that feels like yours.</p>
         </div>
       </section>
 
@@ -81,7 +81,7 @@ export default function Events() {
         <input
           type="search"
           aria-label="Search events"
-          placeholder="Search events..."
+          placeholder="Search by event..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -125,39 +125,40 @@ export default function Events() {
       {!loading && !error && pagination.total > 0 && (
         <p aria-live="polite">{pagination.total} upcoming event{pagination.total === 1 ? "" : "s"} found.</p>
       )}
-      {loading && <p>Loading events...</p>}
-      {error && <p className="error-message">{error}</p>}
+      {loading && <p className="loading-state" role="status">Finding events…</p>}
+      {error && <p className="error-message" role="alert">{error}</p>}
 
       {!loading && !error && events.length === 0 && (
         <div className="empty-state">
-          <h2>No events found</h2>
-          <p>There are currently no published upcoming events matching your search.</p>
+          <h2>No events found just yet</h2>
+          <p>Try adjusting your search, category, location, or date range.</p>
         </div>
       )}
 
       <div className="event-grid">
         {events.map((event) => (
           <article className="event-card" key={event.id}>
+            <div className="event-card-art" aria-hidden="true"><span>Gather / {event.category}</span></div>
             <div className="event-card-top">
               <span className="event-category">{event.category}</span>
-              <span className="event-status">{event.status}</span>
+              <span className="event-status status-published">{event.status}</span>
             </div>
             <h2>{event.title}</h2>
-            <p>{event.description || "No description provided."}</p>
+            <p>{event.description || "A gathering awaits. Open the details to find out more."}</p>
             <div className="event-info">
-              <p><strong>Starts:</strong> {formatDate(event.startDateTime)}</p>
-              <p><strong>Venue:</strong> {event.venue}</p>
-              <p><strong>Capacity:</strong> {event.capacity}</p>
+              <p><strong>When</strong><br />{formatDate(event.startDateTime)}</p>
+              <p><strong>Where</strong><br />{event.venue}</p>
+              <p><strong>Capacity</strong><br />{event.capacity}</p>
               <p>
-                <strong>Price:</strong>{" "}
+                <strong>Entry</strong><br />
                 {Number(event.ticketPrice) === 0 ? "Free" : `₹${event.ticketPrice}`}
               </p>
               {event.organizer?.name && (
-                <p><strong>Organizer:</strong> {event.organizer.name}</p>
+                <p><strong>Hosted by</strong><br />{event.organizer.name}</p>
               )}
             </div>
             <Link className="event-details-link" to={`/events/${event.id}`}>
-              View Details
+              Event details <span aria-hidden="true">↗</span>
             </Link>
           </article>
         ))}
@@ -170,7 +171,7 @@ export default function Events() {
             onClick={() => loadEvents(currentFilters(), page - 1)}
             disabled={page <= 1}
           >
-            Previous
+            ← Previous
           </button>
           <span>Page {page} of {pagination.pages}</span>
           <button
@@ -178,7 +179,7 @@ export default function Events() {
             onClick={() => loadEvents(currentFilters(), page + 1)}
             disabled={page >= pagination.pages}
           >
-            Next
+            Next →
           </button>
         </nav>
       )}

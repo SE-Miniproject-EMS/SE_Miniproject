@@ -19,13 +19,13 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <Link to="/" className="brand">
-        Event Management System
+      <Link to="/" className="brand" aria-label="Event Management System home">
+        <span>Event Management System</span>
       </Link>
 
       <nav className="nav-links" aria-label="Main navigation">
         <NavLink to="/events" className={navLinkClass}>
-          Explore Events
+          Explore events
         </NavLink>
 
         {!loading && user && (
@@ -40,14 +40,14 @@ export default function Navbar() {
                   to="/manage-events"
                   className={navLinkClass}
                 >
-                  Manage Events
+                  Manage events
                 </NavLink>
 
                 <NavLink
                   to="/events/create"
                   className={navLinkClass}
                 >
-                  Create Event
+                  Create event
                 </NavLink>
               </>
             )}
@@ -57,7 +57,7 @@ export default function Navbar() {
               className="nav-logout"
               onClick={handleLogout}
             >
-              Logout
+              Log out
             </button>
           </>
         )}
@@ -65,11 +65,11 @@ export default function Navbar() {
         {!loading && !user && (
           <>
             <NavLink to="/login" className={navLinkClass}>
-              Login
+              Log in
             </NavLink>
 
             <NavLink to="/register" className={navLinkClass}>
-              Sign Up
+              Sign up
             </NavLink>
           </>
         )}
