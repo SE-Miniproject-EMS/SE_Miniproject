@@ -106,9 +106,9 @@ export default function CreateEvent() {
     <main className="page">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Organizer</p>
-          <h1>Create Event</h1>
-          <p>Create a new event. It will initially be saved as a draft.</p>
+          <p className="eyebrow">Organizer space</p>
+          <h1>Start a new gathering.</h1>
+          <p>Add the essentials now. Your event will stay a draft until it’s ready to publish.</p>
         </div>
       </section>
 

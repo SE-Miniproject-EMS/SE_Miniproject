@@ -1,32 +1,36 @@
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const { user } = useAuth();
 
+  const isOrganizer = user?.role === "ORGANIZER" || user?.role === "ADMIN";
   return (
-    <div className="page-content">
-      <div className="card dashboard-card">
-        <h1>Welcome, {user.name}</h1>
-        <p className="subtitle">
-          <span className="badge">{user.role}</span>{" "}
-          {!user.isVerified && "(email not yet verified)"}
-        </p>
-
-        <p>
-          This is a placeholder dashboard proving the auth module works
-          end-to-end: you registered, logged in, and this page is protected
-          by <code>ProtectedRoute</code> + a verified JWT.
-        </p>
-
-        <p style={{ fontSize: 14, color: "#6b7684" }}>
-          This is where the rest of the team's modules will plug in:
-        </p>
-        <ul className="module-list">
-          <li>Event listing &amp; creation (Member 2)</li>
-          <li>Event registration &amp; payment (Member 3)</li>
-          <li>Notifications, QR check-in &amp; reporting (Member 4)</li>
-        </ul>
+    <main className="page">
+      <section className="page-header">
+        <div>
+          <p className="eyebrow">Your Gather space</p>
+          <h1>Welcome, {user.name.split(" ")[0]}.</h1>
+          <p>Your account is ready. Pick up where you left off.</p>
+        </div>
+        <span className="badge">{user.role}</span>
+      </section>
+      {!user.isVerified && <p className="alert-success">Your account is not yet verified.</p>}
+      <div className="dashboard-card card">
+        <h2>{isOrganizer ? "Make something happen" : "See what’s happening"}</h2>
+        <p>{isOrganizer ? "Create an event when you’re ready, then keep drafts and published events organized here." : "Browse public events and open any listing to see its date, venue, and host."}</p>
+        <div className="dashboard-actions">
+          <Link className="dashboard-action" to="/events"><strong>Explore events ↗</strong><span>Discover published events and use search and date filters.</span></Link>
+          {isOrganizer ? (
+            <>
+              <Link className="dashboard-action" to="/events/create"><strong>Create an event ↗</strong><span>Start a draft with the existing event form.</span></Link>
+              <Link className="dashboard-action" to="/manage-events"><strong>Manage your events ↗</strong><span>Edit, publish, or cancel your event drafts.</span></Link>
+            </>
+          ) : (
+            <Link className="dashboard-action" to="/events"><strong>Browse the calendar ↗</strong><span>Use category, location, and date filters to narrow your search.</span></Link>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

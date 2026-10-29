@@ -40,15 +40,16 @@ export default function EventDetails() {
   }, [id]);
 
   if (loading) {
-    return <main className="page"><p>Loading event details...</p></main>;
+    return <main className="page"><p className="loading-state" role="status">Loading event details…</p></main>;
   }
 
   if (error || !event) {
     return (
       <main className="page">
+        <p className="eyebrow">Event details</p>
         <h1>Event unavailable</h1>
-        <p>{error || "This event could not be found."}</p>
-        <Link to="/events">Back to Events</Link>
+        <p className="error-message" role="alert">{error || "This event could not be found."}</p>
+        <Link className="back-link" to="/events">← Back to events</Link>
       </main>
     );
   }
@@ -62,13 +63,23 @@ export default function EventDetails() {
   return (
     <main className="page">
       <section className="page-header">
-        <p className="eyebrow">{event.category}</p>
-        <h1>{event.title}</h1>
-        <p>{event.description || "No description provided."}</p>
+        <div>
+          <p className="eyebrow">{event.category}</p>
+          <h1>{event.title}</h1>
+          <p>{event.description || "No description provided."}</p>
+        </div>
+        <span className={"event-status status-" + (event.status?.toLowerCase() || "draft")}>{event.status}</span>
       </section>
 
-      <article className="event-card">
-        <h2>Event Information</h2>
+      <section className="details-panel">
+        <article className="details-main">
+          <p className="eyebrow">The gathering</p>
+          <h2>Everything you need to know.</h2>
+          <p>{event.description || "The host has not added a description yet."}</p>
+          <Link className="back-link" to="/events">← Back to upcoming events</Link>
+        </article>
+        <aside className="details-aside" aria-label="Event information">
+          <p className="eyebrow">Event information</p>
 
         <div className="event-info">
           <p><strong>Starts:</strong> {formatDate(event.startDateTime)}</p>
@@ -79,7 +90,7 @@ export default function EventDetails() {
             <strong>Ticket Price:</strong>{" "}
             {Number(event.ticketPrice) === 0
               ? "Free"
-              : `INR ${Number(event.ticketPrice).toFixed(2)}`}
+              : "₹" + Number(event.ticketPrice).toFixed(2)}
           </p>
           <p>
             <strong>Organizer:</strong>{" "}
@@ -87,11 +98,8 @@ export default function EventDetails() {
           </p>
           <p><strong>Status:</strong> {event.status}</p>
         </div>
-      </article>
-
-      <p>
-        <Link to="/events">← Back to Upcoming Events</Link>
-      </p>
+        </aside>
+      </section>
     </main>
   );
 }

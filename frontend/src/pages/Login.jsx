@@ -34,7 +34,7 @@ export default function Login() {
         <h1>Log in</h1>
         <p className="subtitle">Welcome back to the Event Management System.</p>
 
-        {error && <div className="alert-error">{error}</div>}
+        {error && <div className="alert-error" role="alert">{error}</div>}
 
         <div className="field">
           <label htmlFor="email">Email</label>

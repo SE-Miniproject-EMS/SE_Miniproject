@@ -99,21 +99,8 @@ function combineDateTime(date, hour, minute, period) {
 
 function DateTimeFields({ label, prefix, form, onChange }) {
   return (
-    <fieldset
-      style={{
-        border: "1px solid #d9e0ea",
-        borderRadius: "10px",
-        padding: "18px",
-        marginBottom: "20px",
-      }}
-    >
-      <legend
-        style={{
-          fontWeight: 700,
-          color: "#1f3864",
-          padding: "0 8px",
-        }}
-      >
+    <fieldset className="datetime-fieldset">
+      <legend>
         {label}
       </legend>
 
@@ -128,13 +115,7 @@ function DateTimeFields({ label, prefix, form, onChange }) {
         />
       </label>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: "12px",
-        }}
-      >
+      <div className="time-fields">
         <label>
           Hour
           <select
@@ -377,11 +358,13 @@ export default function EditEvent() {
   return (
     <main className="page">
       <section className="page-header">
-        <p className="eyebrow">Organizer</p>
-        <h1>Edit Event</h1>
+        <div>
+        <p className="eyebrow">Organizer space</p>
+        <h1>Refine your gathering.</h1>
         <p>
           Update your event information and save the changes.
         </p>
+        </div>
       </section>
 
       <form className="event-form" onSubmit={handleSubmit}>

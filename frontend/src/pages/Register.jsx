@@ -37,8 +37,8 @@ export default function Register() {
         <h1>Create your account</h1>
         <p className="subtitle">Join as an attendee or an event organizer.</p>
 
-        {error && <div className="alert-error">{error}</div>}
-        {success && <div className="alert-success">{success}</div>}
+        {error && <div className="alert-error" role="alert">{error}</div>}
+        {success && <div className="alert-success" role="status">{success}</div>}
 
         <div className="field">
           <label htmlFor="name">Full name</label>

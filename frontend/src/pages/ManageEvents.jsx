@@ -67,53 +67,55 @@ export default function ManageEvents() {
   }
 
   function formatDate(date) {
-    return new Date(date).toLocaleString();
+    return new Date(date).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
   }
 
   return (
     <main className="page">
       <section className="page-header">
         <div>
-          <p className="eyebrow">Organizer</p>
-          <h1>Manage Events</h1>
-          <p>Create, review, publish and cancel your events.</p>
+          <p className="eyebrow">Organizer space</p>
+          <h1>Your events, in hand.</h1>
+          <p>Shape a draft, publish when it’s ready, and keep the details up to date.</p>
         </div>
 
         <Link className="primary-link" to="/events/create">
-          + Create Event
+          ＋ Create event
         </Link>
       </section>
 
       {message && (
-        <p className="success-message">
+        <p className="success-message" role="status">
           {message}
         </p>
       )}
 
       {error && (
-        <p className="error-message">
+        <p className="error-message" role="alert">
           {error}
         </p>
       )}
 
-      {loading && <p>Loading your events...</p>}
+      {loading && <p className="loading-state" role="status">Loading your events…</p>}
 
       {!loading && !error && events.length === 0 && (
         <div className="empty-state">
-          <h2>No events yet</h2>
-          <p>Create your first event to get started.</p>
+          <h2>Your first event starts here</h2>
+          <p>Create a draft and fill in the details when you’re ready.</p>
+          <Link className="button-primary" to="/events/create">Create an event ↗</Link>
         </div>
       )}
 
       <div className="event-grid">
         {events.map((event) => (
           <article className="event-card" key={event.id}>
+            <div className="event-card-art" aria-hidden="true"><span>Organizer / {event.category}</span></div>
             <div className="event-card-top">
               <span className="event-category">
                 {event.category}
               </span>
 
-              <span className="event-status">
+              <span className={"event-status status-" + (event.status?.toLowerCase() || "draft")}>
                 {event.status}
               </span>
             </div>
@@ -150,8 +152,8 @@ export default function ManageEvents() {
 
             <div className="event-actions">
               {event.status !== "CANCELLED" && (
-                <Link to={`/events/${event.id}/edit`}>
-                  Edit
+                <Link className="event-details-link" to={`/events/${event.id}/edit`}>
+                  Edit details
                 </Link>
               )}
 
