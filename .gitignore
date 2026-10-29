@@ -21,3 +21,6 @@ npm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Default output directory for local Issue #31 performance runs
+backend/benchmark-results/
