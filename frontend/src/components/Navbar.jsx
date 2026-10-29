@@ -19,9 +19,9 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <Link to="/" className="brand" aria-label="Gather home">
+      <Link to="/" className="brand" aria-label="Event Management System home">
         <span className="brand-mark" aria-hidden="true">G</span>
-        <span>Gather<span aria-hidden="true">.</span></span>
+        <span>Event Management System</span>
       </Link>
 
       <nav className="nav-links" aria-label="Main navigation">
