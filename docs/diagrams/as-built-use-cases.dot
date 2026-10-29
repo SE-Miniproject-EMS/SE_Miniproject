@@ -1,0 +1,54 @@
+digraph use_cases {
+  graph [rankdir=LR, bgcolor="#ffffff", pad="0.25", nodesep="0.45", ranksep="0.85", fontname="Arial", fontsize=22, labelloc=t,
+         label="EMS AS-BUILT USE CASES — CURRENT CODE BASELINE (29 OCT 2026)"];
+  node [fontname="Arial", fontsize=11, color="#375a7f", penwidth=1.2];
+  edge [fontname="Arial", fontsize=9, color="#5b6573", arrowsize=0.7];
+
+  attendee [shape=box, style="rounded,filled", fillcolor="#e9f2ff", label="ATTENDEE\n(public user)"];
+  organizer [shape=box, style="rounded,filled", fillcolor="#e4f5e9", label="ORGANIZER\n(verified account)"];
+  admin [shape=box, style="rounded,filled", fillcolor="#f8edff", label="ADMIN\n(pre-provisioned role)"];
+
+  subgraph cluster_ems {
+    label="Implemented in the current application";
+    labelloc=t; style="rounded"; color="#8a97a8"; penwidth=1.4; margin=20;
+    node [shape=ellipse, style="filled", fillcolor="#f5f8fc", color="#53749a"];
+    register [label="Register account\n(Attendee or Organizer)"];
+    verify [label="Verify email\n(dev link in server log)"];
+    login [label="Log in / receive JWT"];
+    browse [label="Browse upcoming published events"];
+    filter [label="Search, filter and paginate events"];
+    details [label="View published event details"];
+    create [label="Create event as draft"];
+    edit [label="Edit an owned event"];
+    publish [label="Publish a valid event"];
+    cancel [label="Cancel an owned event"];
+    mine [label="View/manage own events"];
+    all [label="Manage all events\n(ADMIN route permission)"];
+  }
+
+  attendee -> register;
+  attendee -> verify;
+  attendee -> login;
+  attendee -> browse;
+  attendee -> filter;
+  attendee -> details;
+  organizer -> register;
+  organizer -> login;
+  organizer -> create;
+  organizer -> edit;
+  organizer -> publish;
+  organizer -> cancel;
+  organizer -> mine;
+  admin -> login;
+  admin -> all;
+  admin -> create;
+  admin -> edit;
+  admin -> publish;
+  admin -> cancel;
+  admin -> mine;
+
+  note [shape=note, style=filled, fillcolor="#fff7dc", color="#aa8b31", fontsize=10,
+        label="Not implemented in this baseline: event registrations, waitlist, payments, notifications, QR/check-in, dashboards, CSV reporting and feedback."];
+  {rank=same; attendee; organizer; admin;}
+  note -> all [style=dashed, arrowhead=none, color="#aa8b31"];
+}
