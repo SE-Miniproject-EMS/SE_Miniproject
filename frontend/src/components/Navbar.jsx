@@ -20,7 +20,6 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <Link to="/" className="brand" aria-label="Event Management System home">
-        <span className="brand-mark" aria-hidden="true">G</span>
         <span>Event Management System</span>
       </Link>
 
