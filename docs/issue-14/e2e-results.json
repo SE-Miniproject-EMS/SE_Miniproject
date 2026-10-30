@@ -1,0 +1,37 @@
+{
+  "base_url": "http://localhost:5173",
+  "viewport": "1280x720",
+  "flows": [
+    {
+      "name": "organizer event lifecycle",
+      "outcome": "passed",
+      "steps": [
+        "register",
+        "verify email",
+        "login",
+        "create draft",
+        "edit",
+        "publish",
+        "search and view public details",
+        "cancel",
+        "confirm cancelled event is hidden"
+      ]
+    },
+    {
+      "name": "technical and authorization checks",
+      "outcome": "passed",
+      "checks": [
+        "health endpoint 200",
+        "unverified login rejected",
+        "verified attendee login succeeds",
+        "attendee blocked from organizer create route",
+        "390px viewport has no horizontal overflow"
+      ],
+      "mobile_width_check": {
+        "innerWidth": 390,
+        "scrollWidth": 390
+      }
+    }
+  ],
+  "browser_errors": []
+}
