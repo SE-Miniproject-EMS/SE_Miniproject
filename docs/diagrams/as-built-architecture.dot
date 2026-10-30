@@ -1,0 +1,28 @@
+digraph asbuilt {
+  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.65", fontname="Arial", fontsize=18, labelloc=t, label="EMS — AS-BUILT ARCHITECTURE (29 OCT 2026 BASELINE)"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, color="#375a7f", penwidth=1.2, margin="0.15,0.1"];
+  edge [fontname="Arial", fontsize=9, color="#536273", arrowsize=0.75];
+
+  browser [label="Browser UI\nReact 18 + Vite\nPages · AuthContext · Axios client", fillcolor="#e9f2ff"];
+  express [label="Express API\nJSON · CORS · routes · error handling", fillcolor="#f0f4fb"];
+  {rank=same; auth; events; middleware;}
+  auth [label="Auth routes + controller\nregister · verify · login · current user", fillcolor="#e4f5e9"];
+  events [label="Event routes + controller\ncreate · list/search · detail · edit · publish · cancel", fillcolor="#e4f5e9"];
+  middleware [label="Shared middleware\nJWT authentication · role/ownership checks", fillcolor="#fff2d8"];
+  models [label="Sequelize models\nUser · Event\nController-to-model coupling", fillcolor="#f0f4fb"];
+  sqlite [shape=cylinder, label="SQLite file\nDATABASE_FILE (default ./dev.db)\nLOCAL DEVELOPMENT / TESTS", fillcolor="#f4eaff", color="#74509c"];
+  ci [label="GitHub Actions CI\nsyntax · backend tests · frontend build\n(not runtime infrastructure)", fillcolor="#f5f5f5", color="#6b7280"];
+  missing [label="Not present in reviewed baseline\nregistration · payment · ticket/check-in\nnotifications · feedback · reporting", fillcolor="#fff7dc", color="#aa8b31"];
+
+  browser -> express [label="HTTP / JSON"];
+  express -> auth [label="/api/auth"];
+  express -> events [label="/api/events"];
+  express -> middleware [label="protected routes"];
+  auth -> middleware [dir=both, label="JWT / role checks", constraint=false];
+  events -> middleware [dir=both, label="JWT / ownership checks", constraint=false];
+  auth -> models;
+  events -> models;
+  models -> sqlite [label="Sequelize persistence"];
+  ci -> express [style=dashed, arrowhead=none, label="validates code"];
+  missing -> express [style=dashed, arrowhead=none, label="future backlog only"];
+}
