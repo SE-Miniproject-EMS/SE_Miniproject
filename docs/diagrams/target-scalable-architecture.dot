@@ -1,0 +1,31 @@
+digraph target {
+  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.4", ranksep="0.65", fontname="Arial", fontsize=18, labelloc=t, label="EMS — RECOMMENDED TARGET ARCHITECTURE (NOT YET DEPLOYED)"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, color="#375a7f", penwidth=1.2, margin="0.15,0.1"];
+  edge [fontname="Arial", fontsize=9, color="#536273", arrowsize=0.75];
+
+  clients [label="Browser / mobile clients\nReact UI", fillcolor="#e9f2ff"];
+  lb [label="Load balancer / reverse proxy\nTLS · health checks", fillcolor="#f0f4fb"];
+  api [label="Stateless Express API replicas (N)\nHTTP routes · auth middleware · controllers", fillcolor="#e4f5e9"];
+  services [label="Modular monolith — application services\nAuth · Events · Registrations · Tickets\nFeedback · Notifications", fillcolor="#e4f5e9"];
+  repos [label="Repository / persistence boundary\nSequelize · explicit transactions", fillcolor="#f0f4fb"];
+  pg [shape=cylinder, label="Managed PostgreSQL\nshared authoritative state\nconstraints · indexes · row locks", fillcolor="#f4eaff", color="#74509c"];
+  outbox [label="Transactional outbox\ncommitted with business transaction", fillcolor="#fff2d8"];
+  queue [label="Durable queue\nnotification / reminder jobs", fillcolor="#fff2d8"];
+  workers [label="Worker replicas (N)\nemail/SMS adapter · retries · idempotency", fillcolor="#e4f5e9"];
+  provider [label="External providers\nemail / SMS / payment", fillcolor="#f5f5f5"];
+  observability [label="Central logs · metrics · traces\nrequest IDs · alerts · readiness", fillcolor="#f5f5f5"];
+  objectstore [label="Optional shared object storage\nuploads / exports (if required)", fillcolor="#f5f5f5"];
+
+  clients -> lb [label="HTTPS"];
+  lb -> api [label="distributes requests"];
+  api -> services [label="use cases"];
+  services -> repos;
+  repos -> pg [label="read / write"];
+  services -> outbox [label="same DB transaction"];
+  outbox -> queue [label="publisher"];
+  queue -> workers;
+  workers -> provider;
+  api -> observability [style=dashed, label="telemetry"];
+  workers -> observability [style=dashed];
+  api -> objectstore [style=dashed, label="optional shared files"];
+}
