@@ -1,18 +1,10 @@
 # Event Management System
 
-A full-stack event management prototype built with React 18, Vite, Node.js, Express, Sequelize, and SQLite. The current delivered slice supports account access and event management/discovery; registration, payments, notifications, QR check-in, reporting and feedback are planned backlog features, not implemented routes in this snapshot.
-
-## Documentation map
-
-- [Implemented functionality baseline](docs/IMPLEMENTATION_BASELINE.md) — delivered versus planned requirements.
-- [API reference](docs/API_REFERENCE.md) — implemented endpoints, request/query parameters, authorization and error shapes.
-- [Testing approach and results](docs/TESTING_AND_RESULTS.md) — reproducible commands, recorded results and known gaps.
-- [Sprint 1 demo and deviations](docs/sprint-1-demo-and-deviations.md) — current demo flow and limitations.
-- [SRS](docs/Event_Management_System_SRS.docx) · [Architecture/design (SAD)](docs/Event_Management_System_SAD.docx) · [Test plan](docs/Event_Management_System_Test_Plan.docx).
+A full-stack event management prototype built with React, Express, Sequelize, and SQLite.
 
 ## Project progress
 
-**Progress updated: 29 October 2026.** Sprint 1 implementation is merged. Sprint 2 backlog work remains open and is assigned across the four teammates.
+**Progress updated: 26 October 2026.** Sprint 1 implementation is merged. Sprint 2 backlog work remains open and is assigned across the four teammates.
 
 ### Sprint 1 — delivered
 
@@ -39,7 +31,7 @@ All items below are open in the project backlog. Assignments and estimates refle
 | [#13](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/13) | Finalize project documentation | 3 points | minestevealex-ux | Open |
 | [#14](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/14) | Final demonstration and release | 3 points | dshivasaivarun-lgtm, ChiragBasanth | Open |
 
-The CI workflow is present: it installs backend/frontend dependencies, syntax-checks backend source, runs backend tests, and builds the frontend. Issue #11 remains open for the team to review its acceptance criteria and record completion.
+The CI workflow is already present and the latest checks on PR #19 passed. Issue #11 remains open for the team to complete its acceptance criteria and document the workflow.
 
 ## Sprint 1 demo and known deviations
 
@@ -47,10 +39,10 @@ Use [docs/sprint-1-demo-and-deviations.md](docs/sprint-1-demo-and-deviations.md)
 
 Known limits to disclose:
 - Email verification is enforced, but the development verification link is printed to the backend console. Real email delivery requires a configured provider.
-- Cancellation changes the event status; registrant notifications and refunds are not implemented because event registration/payments are not implemented.
-- Event registration, payments, waitlists, QR check-in, feedback, and reporting remain future product scope. See the [implementation baseline](docs/IMPLEMENTATION_BASELINE.md) for the requirement-by-requirement status.
-- SQLite is used for local development; production deployment, shared database operations, and availability testing are not included in this repository snapshot.
-- Backend integration tests and the frontend production build have recorded passing results. Browser-level manual smoke testing remains pending; see [testing results](docs/TESTING_AND_RESULTS.md). Earlier report notes about individual coverage gaps refer to their report date, so consult the current test files before making a claim about any specific assertion.
+- Cancellation changes the event status, but registrant notifications and refund processing are not implemented in the current flow.
+- Event registration, payments, waitlists, check-in/QR, feedback, and reporting remain outside the delivered Sprint 1 flow.
+- The repository uses local SQLite for development; production deployment, shared database operations, and load testing remain future work.
+- CI passes the current backend suite and frontend build. Dedicated test assertions for lockout, rejection of unverified login, and pagination remain coverage gaps.
 
 ## Technology and structure
 
@@ -61,40 +53,7 @@ Known limits to disclose:
 
     backend/   Express API, Sequelize models, authentication and event routes
     frontend/  React + Vite application
-    docs/      SRS, SAD, test plan, API reference, implementation baseline, test results and diagrams
-
-## Run locally on macOS / Linux
-
-Install Git and Node.js (Node 24 is used by CI). From the directory where you keep projects, clone the repository once, or `cd` to your existing clone:
-
-```bash
-git clone https://github.com/SE-Miniproject-EMS/SE_Miniproject.git
-cd SE_Miniproject
-```
-
-In Terminal window 1, start the backend:
-
-```bash
-cd backend
-npm ci
-cp -n .env.example .env
-npm run dev
-```
-
-The backend normally listens at `http://localhost:5000`. The SQLite database file is created automatically. Keep this terminal open.
-
-In Terminal window 2, from the repository root, start the frontend:
-
-```bash
-cd frontend
-npm ci
-cp -n .env.example .env.local
-npm run dev
-```
-
-Open the Vite URL printed in Terminal (usually `http://localhost:5173`). The frontend API URL defaults to `http://localhost:5000/api`; override `VITE_API_URL` in `frontend/.env.local` if needed.
-
-To verify a new account, find the `[DEV ONLY] Verification link` printed in the backend terminal, open that URL in a browser, and then sign in. This is a development-only verification mechanism; no real email is sent. Never commit `.env` or `.env.local`, and replace the example secrets before using a shared environment.
+    docs/      SRS, architecture, test plan, Sprint 1 demo/deviation guide
 
 ## Run locally on Windows
 
@@ -150,15 +109,24 @@ The verification link is printed in the backend window; this project does not se
 
 ## Verify changes
 
-From the repository root:
+From backend/:
 
-```bash
-(cd backend && npm ci && npm test)
-(cd frontend && npm ci && npm run build)
-```
+    npm test
 
-See [Testing and Results](docs/TESTING_AND_RESULTS.md) for the recorded evidence and the difference between automated API tests and manual browser smoke testing. GitHub Actions runs the backend API suite and frontend build for pull requests and pushes to `main`.
+From frontend/:
+
+    npm run build
+
+GitHub Actions runs the backend API suite and frontend build for pull requests and pushes to main.
 
 ## Team workflow
 
 Create a feature branch for each change, open a pull request to main, and request a teammate review before merging. Reference the related backlog issue in the PR. Update issue status only after the work is reviewed and complete.
+
+## Registration, QR check-in, notifications, and feedback APIs
+
+The backend now includes the supporting registration/waitlist API plus the feature foundations for issues #27, #28, and #30. See [`docs/feature-issues/notifications-qr-feedback.md`](docs/feature-issues/notifications-qr-feedback.md) for endpoint contracts, reminder-job scheduling, provider configuration, security notes, and current limitations.
+
+## Documentation
+
+- [Functional requirements traceability matrix](docs/FR_TRACEABILITY_MATRIX.md) — requirement status, backlog links, verification approach and implementation gaps.
