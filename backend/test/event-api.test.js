@@ -575,3 +575,53 @@ test("creating an event as PUBLISHED rejects invalid publishing data", async () 
   assert.equal(result.response.status, 400);
   assert.equal(result.payload.error.code, "INVALID_VENUE");
 });
+
+
+test("registrations enforce capacity, issue one-use tickets, and gate feedback to checked-in attendees", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const secondAttendee = await createAccount("ATTENDEE");
+  const otherOrganizer = await createAccount("ORGANIZER");
+  const registrationEvent = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1 }),
+  });
+  const secondEventId = registrationEvent.payload.event.id;
+  await request(`/api/events/${secondEventId}/publish`, { method: "POST", token: organizer.token });
+
+  const first = await request(`/api/registrations/events/${secondEventId}`, { method: "POST", token: attendee.token });
+  assert.equal(first.response.status, 201, JSON.stringify(first.payload));
+  assert.equal(first.payload.registration.status, "CONFIRMED");
+  assert.ok(first.payload.ticketToken);
+  const duplicate = await request(`/api/registrations/events/${secondEventId}`, { method: "POST", token: attendee.token });
+  assert.equal(duplicate.response.status, 409);
+  const waitlisted = await request(`/api/registrations/events/${secondEventId}`, { method: "POST", token: secondAttendee.token });
+  assert.equal(waitlisted.response.status, 201);
+  assert.equal(waitlisted.payload.registration.status, "WAITLISTED");
+  assert.equal(waitlisted.payload.ticketToken, null);
+
+  const wrongOrganizer = await request("/api/registrations/check-in", { method: "POST", token: otherOrganizer.token, body: { eventId: secondEventId, ticketToken: first.payload.ticketToken } });
+  assert.equal(wrongOrganizer.response.status, 403);
+  const checkedIn = await request("/api/registrations/check-in", { method: "POST", token: organizer.token, body: { eventId: secondEventId, ticketToken: first.payload.ticketToken } });
+  assert.equal(checkedIn.response.status, 200, JSON.stringify(checkedIn.payload));
+  const reused = await request("/api/registrations/check-in", { method: "POST", token: organizer.token, body: { eventId: secondEventId, ticketToken: first.payload.ticketToken } });
+  assert.equal(reused.response.status, 409);
+  const wrongEvent = await request("/api/registrations/check-in", { method: "POST", token: organizer.token, body: { eventId: secondEventId + 999, ticketToken: first.payload.ticketToken } });
+  assert.equal(wrongEvent.response.status, 404);
+  const prematureFeedback = await request(`/api/feedback/events/${secondEventId}`, { method: "POST", token: attendee.token, body: { rating: 5, comment: "Great" } });
+  assert.equal(prematureFeedback.response.status, 400);
+
+  const pastStart = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+  const pastEnd = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const concludeEvent = await request(`/api/events/${secondEventId}`, { method: "PUT", token: organizer.token, body: { startDateTime: pastStart, endDateTime: pastEnd } });
+  assert.equal(concludeEvent.response.status, 200, JSON.stringify(concludeEvent.payload));
+  const feedback = await request(`/api/feedback/events/${secondEventId}`, { method: "POST", token: attendee.token, body: { rating: 5, comment: "Great event" } });
+  assert.equal(feedback.response.status, 201, JSON.stringify(feedback.payload));
+  const duplicateFeedback = await request(`/api/feedback/events/${secondEventId}`, { method: "POST", token: attendee.token, body: { rating: 4 } });
+  assert.equal(duplicateFeedback.response.status, 409);
+  const organizerView = await request(`/api/feedback/events/${secondEventId}`, { token: organizer.token });
+  assert.equal(organizerView.response.status, 200);
+  assert.equal(organizerView.payload.aggregate.count, 1);
+  const unauthorizedView = await request(`/api/feedback/events/${secondEventId}`, { token: otherOrganizer.token });
+  assert.equal(unauthorizedView.response.status, 403);
+});

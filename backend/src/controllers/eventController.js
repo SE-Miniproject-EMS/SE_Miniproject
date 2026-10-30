@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const Event = require("../models/Event");
 const User = require("../models/User");
 const { ApiError } = require("../middleware/errorHandler");
+const { queueEventNotice } = require("../services/notificationService");
 
 function validateEventData(data, { publishing = false } = {}) {
   const {
@@ -493,7 +494,12 @@ async function updateEvent(req, res, next) {
       updates.refundWindowHours = Number(updates.refundWindowHours);
     }
 
+    if (updates.capacity !== undefined && updates.capacity < Number(event.seatsTaken || 0)) {
+      throw new ApiError(409, "CAPACITY_BELOW_REGISTRATIONS", "Capacity cannot be lower than the number of confirmed registrations");
+    }
+    const scheduleChanged = updates.startDateTime !== undefined || updates.endDateTime !== undefined || updates.venue !== undefined;
     await event.update(updates);
+    if (scheduleChanged && event.status === "PUBLISHED") await queueEventNotice(event, "EVENT_RESCHEDULED");
 
     res.json({ event });
   } catch (err) {
@@ -553,10 +559,11 @@ async function cancelEvent(req, res, next) {
 
     event.status = "CANCELLED";
     await event.save();
+    await queueEventNotice(event, "EVENT_CANCELLED");
 
     res.json({
       message:
-        "Event cancelled successfully. Refund and notification processing will be handled by their respective modules.",
+        "Event cancelled successfully. Attendees have been queued for cancellation notification.",
       event,
     });
   } catch (err) {

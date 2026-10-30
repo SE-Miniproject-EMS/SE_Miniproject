@@ -46,6 +46,8 @@ const Event = sequelize.define(
       allowNull: false,
     },
 
+    seatsTaken: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+
     ticketPrice: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
