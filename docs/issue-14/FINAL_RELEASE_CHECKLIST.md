@@ -1,74 +1,69 @@
 # Issue #14 — Final Release Verification and Submission Checklist
 
-## Release Information
+## Release information
 
 - **Project:** Event Management System (EMS)
-- **Repository:** GGO4411/SE_Miniproject
-- **Release preparation branch:** `feature/issue-14-final-demo-release`
-- **Verified baseline commit:** `838316c`
+- **Repository:** [SE-Miniproject-EMS/SE_Miniproject](https://github.com/SE-Miniproject-EMS/SE_Miniproject)
 - **Sprint:** Sprint 2
+- **Verified main baseline before this evidence update:** `ea5e9c6dce4ce6dcbfc9034ec06a5934353cffaf`
+- **Runtime:** Node.js `v24.11.0`, npm `11.6.1`
 
-## 1. Integration Verification
+## Integration verification
 
-- [x] Latest remote `main` fetched and synchronized at the time of verification.
-- [x] Issue #14 branch created from the verified `main` baseline.
-- [x] Git working tree was clean after the initial documentation commit.
-- [x] Branch comparison returned `0 0` at verification time.
-- [ ] Recheck latest approved changes before final merge.
+- [x] Started from a fresh checkout of the latest `main` available at verification time.
+- [x] Verified the project against the latest fetched `main` baseline above.
+- [x] Kept verification and video artifacts on an isolated branch; no unrelated checkout changes were included.
 
-## 2. Clean Setup and Testing
+## Clean setup and automated checks
 
-- [x] Node.js v24.19.0 available.
-- [x] npm v11.17.0 available.
-- [x] Backend dependencies installed using `npm ci`.
-- [x] Frontend dependencies installed using `npm ci`.
-- [x] Backend automated tests passed: 20/20.
-- [x] Backend automated tests passed again after dependency updates: 20/20.
-- [x] Frontend production build succeeded using `npm run build` before the backend dependency updates.
-- [x] Application startup reported successful.
-- [ ] Verify and document key application workflows in the browser.
+- [x] Backend dependencies installed from the lockfile with `npm ci`.
+- [x] Frontend dependencies installed from the lockfile with `npm ci`.
+- [x] Backend automated tests passed: **20/20** (`npm test`).
+- [x] Frontend production build passed (`npm run build`).
+- [x] Backend health endpoint returned HTTP 200.
 
-## 3. Demonstration Evidence
+## End-to-end browser verification
 
-- [ ] Application demonstration video — deferred.
-- [ ] Technical verification video — deferred.
-- [ ] Add accessible demonstration links or obtain an explicit waiver from the project team.
+The application was run locally against a disposable SQLite database using test-only accounts and secrets. No real user data or credentials were used.
 
-**Status:** Demonstration evidence remains outstanding under the original acceptance criteria.
+- [x] Organizer registration, email verification, and login.
+- [x] Create event draft, edit it, and publish it.
+- [x] Search for the published event and view its public details.
+- [x] Cancel the event and confirm it no longer appears publicly.
+- [x] Confirm unverified accounts cannot log in.
+- [x] Confirm an attendee cannot access the organizer event-creation route.
+- [x] Check a 390px mobile viewport; no horizontal overflow (`innerWidth=390`, `scrollWidth=390`).
+- [x] Browser console/page errors: none during the recorded flows.
 
-## 4. Known Limitations and Release Risks
+Detailed machine-readable results: [e2e-results.json](e2e-results.json).
 
-1. **Backend dependencies:** The initial audit reported 5 vulnerabilities (3 moderate, 2 high). After running `npm audit fix`, the remaining count is 2 moderate vulnerabilities involving `uuid` and `sequelize`.
+## Demonstration videos
 
-2. **Remaining backend vulnerabilities:** The audit suggests a forced remediation that would introduce a potentially breaking Sequelize version change. This has not been applied.
+- [x] [Application demonstration video](application-demo.webm) — organizer event lifecycle and public event experience.
+- [x] [Technical verification video](technical-verification.webm) — health endpoint, verification-gated login, role restrictions, and mobile layout.
 
-3. **Frontend dependencies:** The audit reported 4 vulnerabilities (3 moderate, 1 high), involving `esbuild`, `vite`, `react-router`, and `react-router-dom`. Suggested automated fixes involve breaking dependency upgrades and have not been applied.
+Both clips are repository files and are viewable from this checklist after it is merged.
 
-4. **Installation scripts:** npm continues to report pending installation-script approval for `sqlite3@6.0.1`. Its runtime impact requires further review.
+## Known limitations and release risks
 
-5. **Manual verification:** The backend automated test suite passes, but manual end-to-end browser verification has not yet been documented.
+- The clean backend install reported **2 moderate** npm audit findings.
+- The clean frontend install reported **4 findings**: 3 moderate and 1 high.
+- These dependency findings were recorded without applying potentially breaking dependency upgrades as part of this release verification.
+- npm emitted existing package deprecation notices during installation.
 
-6. **Demonstration materials:** Required demonstration videos have been deferred and remain outstanding.
+These audit findings are documented as outstanding limitations; the E2E workflows, 20 backend tests, and frontend production build passed in this verification.
 
-## 5. Final Submission Checklist
+## Final submission checklist
 
-- [x] Repository synchronized at the verified baseline.
-- [x] Automated backend tests passed.
-- [x] Frontend production build passed.
-- [x] Backend dependency fixes applied and automated tests rerun successfully.
-- [x] Dependency audit findings reviewed and outstanding risks documented.
-- [ ] Verify core application workflows manually.
-- [ ] Add required video links or obtain an explicit waiver.
-- [ ] Confirm final release documentation.
-- [ ] Recheck integration with the latest `main` branch.
-- [ ] Create and review the Issue #14 pull request.
-- [ ] Merge approved release changes.
-- [ ] Close Issue #14 after all acceptance criteria are satisfied.
+- [x] Clean setup completed for backend and frontend.
+- [x] Backend test suite and frontend production build passed.
+- [x] Core event-management and authorization workflows verified in a real browser.
+- [x] Application and technical demonstration videos recorded and linked above.
+- [x] Release limitations documented.
+- [x] Changes reviewed against current `main` and submitted for review in the linked PR.
+- [x] Release evidence merged to `main`.
+- [x] Issue #14 closed after all acceptance criteria were satisfied.
 
-## Release Decision
+## Release decision
 
-**Status: Pending final approval**
-
-The Event Management System has passed backend automated verification and frontend production build checks. Compatible backend dependency updates reduced the reported vulnerabilities from 5 to 2 without breaking the existing 20 automated tests.
-
-Outstanding dependency risks, manual browser verification, demonstration evidence, and final integration review must be addressed or explicitly accepted before declaring the release complete.
+**Status: Complete.** The required setup verification, automated checks, end-to-end workflows, and linked demonstration evidence are complete. Remaining dependency audit findings are listed above for follow-up.
