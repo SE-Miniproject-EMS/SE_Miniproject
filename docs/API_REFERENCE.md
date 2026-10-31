@@ -1,6 +1,6 @@
 # EMS API Reference
 
-This reference describes the routes mounted by `backend/src/server.js`. It documents the current implementation and calls out payment and real notification delivery as unavailable.
+This reference describes the routes mounted by `backend/src/server.js`, including the provider-independent mock payment and refund workflow. Mock outcomes are development simulations; no real payment provider is configured.
 
 ## Local base URL
 
@@ -150,19 +150,19 @@ All registration routes require a Bearer JWT. Registration and cancellation are 
 
 ### `POST /registrations/events/:eventId`
 
-Registers the authenticated attendee for a published, not-yet-ended free event. The database transaction reserves a seat atomically. If no seat is available, a `WAITLISTED` registration is created. Repeated registration or waitlist attempts for the same attendee/event return `409 ALREADY_REGISTERED`. A cancelled registration cannot be reused because the event/attendee pair is protected by a unique constraint. Paid events return `402 PAYMENT_INTEGRATION_REQUIRED` until Issue #26 payment support exists.
+Registers an authenticated attendee for a published, not-yet-ended event. Free events retain the atomic confirmation/waitlist behavior. Paid events atomically reserve one seat and create a 10-minute pending mock checkout; pending reservations count toward capacity. If full, the attendee joins the FIFO waitlist. Repeated registration attempts return `409 ALREADY_REGISTERED`.
 
-Confirmed success: `201 Created` with a registration status and one-time ticket token. Waitlist success: `201 Created` with `WAITLISTED`, a null ticket token, and a message. Other errors include `400 INVALID_EVENT_ID`, `401 UNAUTHENTICATED`, `403 FORBIDDEN`, `404 EVENT_UNAVAILABLE`, `409 EVENT_ENDED`, and `402 PAYMENT_INTEGRATION_REQUIRED`.
+Free confirmed success: `201 Created` with registration status and one-time ticket token. Waitlist success: `201 Created` with `WAITLISTED` and a null token. Paid checkout success: `201 Created` with a pending payment, expiry time, amount in paise, and explicit mock-adapter messaging. Other errors include `400 INVALID_EVENT_ID`, `401 UNAUTHENTICATED`, `403 FORBIDDEN`, `404 EVENT_UNAVAILABLE`, and `409` for ended/full/duplicate states.
 
-When full, a new eligible attendee is added to the waitlist. On a confirmed attendee's cancellation, the earliest waitlist entry (FIFO by registration time, with registration ID as a tie-break) is promoted in the same transaction. A `WAITLIST_PROMOTED` notification record is queued. This checkout has no configured external email/SMS provider, so queued notification records do not claim external delivery.
+FIFO ordering uses `waitlistPositionAt` then registration ID. A released paid seat is offered to the queue head using a 10-minute mock checkout; a failed or expired offer moves that attendee to the tail before advancing the queue. Notifications are queued internally and do not claim external email/SMS delivery.
 
 ### `GET /registrations/mine`
 
-Requires an `ATTENDEE` or `ADMIN` token. Returns the authenticated user's registration history and public event summary. Ticket token hashes are excluded. The response reflects confirmed, waitlisted, and cancelled states and can be used to restore the UI after refresh.
+Requires an `ATTENDEE` or `ADMIN` token. Returns the authenticated user's registration history and public event summary. Ticket token hashes are excluded. The response reflects confirmed, waitlisted, pending-payment, payment-required, and cancelled states, with safe payment/refund status summaries for the attendee. It can restore the UI after refresh; secret token hashes and idempotency keys are not returned.
 
 ### `POST /registrations/:id/cancel`
 
-Requires an `ATTENDEE` token and only permits cancellation of the caller's own registration. A confirmed registration can be cancelled before the event's configured `refundWindowHours` cutoff; null means no configured cutoff. A waitlisted registration can be cancelled without changing the seat count. Confirmed cancellations release the seat and promote the earliest waitlisted attendee if the event is still published and active. Errors include `404 REGISTRATION_NOT_FOUND`, `403 FORBIDDEN`, `409 ALREADY_CANCELLED`, and `400 CANCELLATION_CUTOFF_PASSED`.
+Requires an `ATTENDEE` token and only permits cancellation of the caller's own registration. Paid attendee cancellations are allowed through the refund cutoff (inclusive): null uses 24 hours, zero means until event start, and negative values are rejected on event writes. Eligible paid cancellations create/reuse a full-refund record for captured paise; free behavior is unchanged. Confirmed cancellation releases capacity once and can offer the seat to the FIFO head. Late-success refund-pending registrations cannot retry checkout or receive another offer until resolved.
 
 ### Capacity and concurrency
 
@@ -180,9 +180,15 @@ Requires an `ATTENDEE` token and only permits cancellation of the caller's own r
 | `POST /registrations/events/:eventId`, `GET /registrations/mine`, `POST /registrations/:id/cancel` | No | Own attendee records | No | `GET /mine` only for own records |
 | `PUT`, `publish`, `cancel` event | No | No | Own events only | Any event |
 
-## Not available in this API
+### Payment and refund APIs
 
-Payment/refund processing, QR image generation/scanner UI, reporting/CSV export, and complete feedback UI are not available. Notification records are queued, but external email/SMS delivery is not configured.
+`POST /registrations/:registrationId/retry-payment` creates a distinct payment attempt only when the registration is retryable and capacity can be atomically reclaimed. `POST /payments/:paymentId/mock-outcome` accepts `SUCCESS`, `FAILURE`, or `PENDING`; `POST /payments/:paymentId/mock-refund-outcome` accepts the same outcomes for an existing refund. These authenticated attendee-only simulation routes are disabled in production. Mock refund success is recorded as `SIMULATED`, never provider-confirmed `COMPLETED`. No card data is collected or stored.
+
+Organizer cancellation creates full-refund records for confirmed paid registrations, expires pending checkouts, releases capacity once, and does not promote the waitlist. Refund provider execution remains unimplemented pending team provider selection.
+
+### Not available in this API
+
+QR image generation/scanner UI, reporting/CSV export, complete feedback UI, and real payment/refund settlement are not available. Notification records are queued, but external email/SMS delivery is not configured.
 
 ## Route source files
 
