@@ -840,3 +840,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .registration-button.secondary:hover:not(:disabled) { background: #d8e5d9; }
 .registration-button:disabled { opacity: .6; cursor: not-allowed; }
 .registration-panel [role="status"], .registration-panel [role="alert"] { line-height: 1.5; }
+
+
+.payment-demo-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.75rem; }
+.registration-history { margin: 1.5rem 0; }
+.registration-history-list { display: grid; gap: 1rem; }
+.registration-history-card { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding: 1.1rem; border: 1px solid var(--line, #dbe3df); border-radius: 1rem; background: var(--surface, #fff); }
+.registration-history-card h3 { margin: 0 0 0.5rem; }
+.registration-history-card p { margin: 0.35rem 0; }
+@media (max-width: 640px) { .registration-history-card { flex-direction: column; } .payment-demo-actions { width: 100%; } }

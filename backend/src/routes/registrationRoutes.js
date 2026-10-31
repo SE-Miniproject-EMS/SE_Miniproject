@@ -1,10 +1,12 @@
 const express = require("express");
 const { authenticate, authorize } = require("../middleware/auth");
 const { register, myRegistrations, cancelRegistration, checkIn } = require("../controllers/registrationController");
+const { retryPayment } = require("../controllers/paymentController");
 const router = express.Router();
 router.use(authenticate);
 router.get("/mine", authorize("ATTENDEE", "ADMIN"), myRegistrations);
 router.post("/events/:eventId", authorize("ATTENDEE"), register);
 router.post("/:id/cancel", authorize("ATTENDEE"), cancelRegistration);
+router.post("/:registrationId/retry-payment", authorize("ATTENDEE"), retryPayment);
 router.post("/check-in", authorize("ORGANIZER", "ADMIN"), checkIn);
 module.exports = router;
