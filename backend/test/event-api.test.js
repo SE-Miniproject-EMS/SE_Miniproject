@@ -5,6 +5,10 @@ const fs = require("node:fs");
 const net = require("node:net");
 const os = require("node:os");
 const path = require("node:path");
+const sqlite3 = require("sqlite3");
+const TEST_JWT_SECRET = "ems-test-jwt-secret-change-me";
+process.env.JWT_SECRET = TEST_JWT_SECRET;
+const { signAccessToken } = require("../src/utils/jwt");
 
 const backendDir = path.resolve(__dirname, "..");
 const databaseFile = path.join(
@@ -63,7 +67,7 @@ before(async () => {
       ...process.env,
       PORT: String(port),
       DATABASE_FILE: databaseFile,
-      JWT_SECRET: "ems-test-jwt-secret-change-me",
+      JWT_SECRET: TEST_JWT_SECRET,
       EMAIL_VERIFICATION_SECRET: "ems-test-email-secret-change-me",
       NODE_ENV: "test",
     },
@@ -99,6 +103,21 @@ after(async () => {
     }
   }
 });
+
+async function queryTestDatabase(sql, parameters) {
+  return new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, sqlite3.OPEN_READONLY, (openError) => {
+      if (openError) return reject(openError);
+      database.get(sql, parameters, (queryError, row) => {
+        database.close((closeError) => {
+          if (queryError) reject(queryError);
+          else if (closeError) reject(closeError);
+          else resolve(row);
+        });
+      });
+    });
+  });
+}
 
 async function request(route, { method = "GET", token, body } = {}) {
   const headers = {};
@@ -147,18 +166,8 @@ async function createAccount(role = "ORGANIZER") {
   const verification = await request(verificationPath);
   assert.equal(verification.response.status, 200, JSON.stringify(verification.payload));
 
-  const login = await request("/api/auth/login", {
-    method: "POST",
-    body: { email, password: "TestPassword123!" },
-  });
-
-  assert.equal(
-    login.response.status,
-    200,
-    `login failed: ${JSON.stringify(login.payload)}`
-  );
-
-  return { token: login.payload.token, user: login.payload.user };
+  const user = verification.payload.user;
+  return { token: signAccessToken(user), user };
 }
 
 function validEvent(overrides = {}) {
@@ -624,4 +633,231 @@ test("registrations enforce capacity, issue one-use tickets, and gate feedback t
   assert.equal(organizerView.payload.aggregate.count, 1);
   const unauthorizedView = await request(`/api/feedback/events/${secondEventId}`, { token: otherOrganizer.token });
   assert.equal(unauthorizedView.response.status, 403);
+});
+
+test("cancelling a confirmed registration promotes a waitlisted attendee", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const confirmedAttendee = await createAccount("ATTENDEE");
+  const waitingAttendee = await createAccount("ATTENDEE");
+  const laterWaitingAttendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1 }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+  const published = await request(`/api/events/${eventId}/publish`, {
+    method: "POST", token: organizer.token,
+  });
+  assert.equal(published.response.status, 200, JSON.stringify(published.payload));
+
+  const first = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: confirmedAttendee.token,
+  });
+  const waiting = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: waitingAttendee.token,
+  });
+  assert.equal(first.payload.registration.status, "CONFIRMED");
+  assert.equal(waiting.payload.registration.status, "WAITLISTED");
+  let details = await request(`/api/events/${eventId}`);
+  assert.equal(details.payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CONFIRMED"]
+  ).then((row) => row.count), 1);
+  const ownStatus = await request("/api/registrations/mine", { token: confirmedAttendee.token });
+  assert.equal(ownStatus.payload.registrations[0].status, "CONFIRMED");
+  assert.equal(Object.hasOwn(ownStatus.payload.registrations[0], "ticketTokenHash"), false);
+  const duplicateWaitlist = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: waitingAttendee.token,
+  });
+  assert.equal(duplicateWaitlist.response.status, 409);
+  const laterWaiting = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: laterWaitingAttendee.token,
+  });
+  assert.equal(laterWaiting.payload.registration.status, "WAITLISTED");
+
+  const cancelled = await request(`/api/registrations/${first.payload.registration.id}/cancel`, {
+    method: "POST", token: confirmedAttendee.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+  const mine = await request("/api/registrations/mine", { token: waitingAttendee.token });
+  const promoted = mine.payload.registrations.find((item) => item.id === waiting.payload.registration.id);
+  assert.equal(promoted.status, "CONFIRMED");
+  const promotionNotice = await queryTestDatabase(
+    'SELECT "type", "status" FROM "notifications" WHERE "registrationId" = ? AND "type" = ?',
+    [waiting.payload.registration.id, "WAITLIST_PROMOTED"]
+  );
+  assert.deepEqual(promotionNotice, { type: "WAITLIST_PROMOTED", status: "PENDING" });
+  const laterMine = await request("/api/registrations/mine", { token: laterWaitingAttendee.token });
+  assert.equal(laterMine.payload.registrations[0].status, "WAITLISTED");
+
+  details = await request(`/api/events/${eventId}`);
+  assert.equal(details.payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CONFIRMED"]
+  ).then((row) => row.count), 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CANCELLED"]
+  ).then((row) => row.count), 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "WAITLISTED"]
+  ).then((row) => row.count), 1);
+});
+
+test("cancelling a registration for a cancelled event does not promote its waitlist", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const confirmedAttendee = await createAccount("ATTENDEE");
+  const waitingAttendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token, body: validEvent({ capacity: 1 }),
+  });
+  const eventId = created.payload.event.id;
+  await request(`/api/events/${eventId}/publish`, { method: "POST", token: organizer.token });
+  const confirmed = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: confirmedAttendee.token,
+  });
+  const waiting = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: waitingAttendee.token,
+  });
+  await request(`/api/events/${eventId}/cancel`, { method: "POST", token: organizer.token });
+
+  const cancelled = await request(`/api/registrations/${confirmed.payload.registration.id}/cancel`, {
+    method: "POST", token: confirmedAttendee.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+  const mine = await request("/api/registrations/mine", { token: waitingAttendee.token });
+  assert.equal(mine.payload.registrations[0].status, "WAITLISTED");
+  const details = await queryTestDatabase('SELECT "status", "seatsTaken" FROM "events" WHERE "id" = ?', [eventId]);
+  assert.deepEqual(details, { status: "CANCELLED", seatsTaken: 0 });
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CONFIRMED"]
+  ).then((row) => row.count), 0);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "id" = ? AND "status" = ?',
+    [waiting.payload.registration.id, "WAITLISTED"]
+  ).then((row) => row.count), 1);
+});
+
+test("simultaneous registrations for the last seat never overbook the event", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendees = [];
+  for (let index = 0; index < 6; index += 1) attendees.push(await createAccount("ATTENDEE"));
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1 }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+  await request(`/api/events/${eventId}/publish`, { method: "POST", token: organizer.token });
+
+  const results = await Promise.all(attendees.map((attendee) => request(
+    `/api/registrations/events/${eventId}`, { method: "POST", token: attendee.token }
+  )));
+  assert.ok(results.every((result) => result.response.status === 201), JSON.stringify(results.map((item) => item.payload)));
+  assert.equal(results.filter((result) => result.payload.registration.status === "CONFIRMED").length, 1);
+  assert.equal(results.filter((result) => result.payload.registration.status === "WAITLISTED").length, 5);
+
+  const details = await request(`/api/events/${eventId}`);
+  assert.equal(details.payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CONFIRMED"]
+  ).then((row) => row.count), 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "WAITLISTED"]
+  ).then((row) => row.count), 5);
+});
+
+test("attendees can only cancel their own registration", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const otherAttendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token, body: validEvent({ capacity: 2 }),
+  });
+  const eventId = created.payload.event.id;
+  await request(`/api/events/${eventId}/publish`, { method: "POST", token: organizer.token });
+  const registered = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: attendee.token,
+  });
+
+  const forbidden = await request(`/api/registrations/${registered.payload.registration.id}/cancel`, {
+    method: "POST", token: otherAttendee.token,
+  });
+  assert.equal(forbidden.response.status, 403);
+  let details = await request(`/api/events/${eventId}`);
+  assert.equal(details.payload.event.seatsTaken, 1);
+  const stillMine = await request("/api/registrations/mine", { token: attendee.token });
+  assert.equal(stillMine.payload.registrations[0].status, "CONFIRMED");
+  const cancelled = await request(`/api/registrations/${registered.payload.registration.id}/cancel`, {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+  details = await request(`/api/events/${eventId}`);
+  assert.equal(details.payload.event.seatsTaken, 0);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CONFIRMED"]
+  ).then((row) => row.count), 0);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ? AND "status" = ?',
+    [eventId, "CANCELLED"]
+  ).then((row) => row.count), 1);
+});
+
+test("cancellation is rejected after the event's configured cutoff", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const starts = Date.now() + 6 * 60 * 60 * 1000;
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({
+      capacity: 1,
+      startDateTime: new Date(starts).toISOString(),
+      endDateTime: new Date(starts + 60 * 60 * 1000).toISOString(),
+      refundWindowHours: 24,
+    }),
+  });
+  const eventId = created.payload.event.id;
+  await request(`/api/events/${eventId}/publish`, { method: "POST", token: organizer.token });
+  const registered = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: attendee.token,
+  });
+  const cancelled = await request(`/api/registrations/${registered.payload.registration.id}/cancel`, {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(cancelled.response.status, 400);
+  assert.equal(cancelled.payload.error.code, "CANCELLATION_CUTOFF_PASSED");
+  const mine = await request("/api/registrations/mine", { token: attendee.token });
+  assert.equal(mine.payload.registrations[0].status, "CONFIRMED");
+});
+
+test("registration rejects unauthenticated, malformed, organizer, and unavailable-event requests", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const unauthenticated = await request("/api/registrations/events/1", { method: "POST" });
+  assert.equal(unauthenticated.response.status, 401);
+
+  const malformed = await request("/api/registrations/events/not-an-id", {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(malformed.response.status, 400);
+  assert.equal(malformed.payload.error.code, "INVALID_EVENT_ID");
+
+  const organizerAttempt = await request("/api/registrations/events/1", {
+    method: "POST", token: organizer.token,
+  });
+  assert.equal(organizerAttempt.response.status, 403);
+
+  const missingEvent = await request("/api/registrations/events/987654321", {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(missingEvent.response.status, 404);
+  assert.equal(missingEvent.payload.error.code, "EVENT_UNAVAILABLE");
 });
