@@ -798,3 +798,45 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* EVENT REGISTRATION */
+.registration-panel {
+  margin-top: 24px;
+  padding: 22px;
+  background: #f7f6ef;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.registration-panel h2 {
+  margin: 0 0 12px;
+  color: var(--forest);
+  font: 700 24px/1.2 var(--font-display);
+}
+.registration-state {
+  color: var(--forest-dark);
+  font-weight: 700;
+}
+.registration-note {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.registration-note a { color: var(--forest); font-weight: 700; }
+.registration-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 20px;
+  color: white;
+  background: var(--coral);
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.registration-button:hover:not(:disabled) { background: var(--coral-dark); }
+.registration-button.secondary { color: var(--forest); background: #e7eee7; }
+.registration-button.secondary:hover:not(:disabled) { background: #d8e5d9; }
+.registration-button:disabled { opacity: .6; cursor: not-allowed; }
+.registration-panel [role="status"], .registration-panel [role="alert"] { line-height: 1.5; }

@@ -1,6 +1,6 @@
 # Implemented functionality baseline
 
-**Snapshot reviewed:** 29 October 2026  
+**Snapshot updated:** 31 October 2026
 **Purpose:** Distinguish delivered behavior from the intended full-product requirements in the SRS. This status reflects the source files in this repository snapshot; it is not a release certification.
 
 ## Delivered in the current code baseline
@@ -23,20 +23,20 @@ The following are still target requirements/backlog items, not delivered feature
 
 | SRS area | Status | Current evidence / consequence |
 | --- | --- | --- |
-| REQ-11–REQ-14: Event registrations and waitlist | **Not implemented** | No Registration model or registration route is mounted. Event capacity is validated on event data, but no attendee booking/reservation flow exists. |
+| REQ-11–REQ-14: Event registration, waitlist and cancellation | **Partially implemented** | Free-event registration, capacity protection, FIFO waitlist promotion, attendee cancellation and configured cutoff are implemented. Paid checkout/refunds and external notification delivery are absent. Six simultaneous last-seat requests are covered by integration testing; the SRS 500-attempt load target is not verified. |
 | REQ-15–REQ-17: Payments and refunds | **Not implemented** | No Payment model, payment route, gateway integration or refund workflow exists. |
 | REQ-18–REQ-20: Confirmation/reminder/change notifications | **Not implemented** | No notification service/provider integration. Event cancellation does not contact registrants. The development verification link is a console log, not an email. |
 | REQ-21–REQ-23: QR tickets and check-in | **Not implemented** | No registration ticket, QR-code generator or check-in endpoint exists. |
 | REQ-24–REQ-26: Dashboards and CSV reporting | **Not implemented** | No organizer/admin dashboard or export endpoints exist. ADMIN is an access role for event management routes, not a delivered dashboard. |
 | REQ-27–REQ-28: Feedback and ratings | **Not implemented** | No feedback model, API or UI exists. |
-| NFR-PERF-02: 500 concurrent registrations / no overbooking | **Not tested / not applicable to current flow** | There is no registration flow to load test. Do not claim the registration integrity target is met. |
+| NFR-PERF-02: 500 concurrent registrations / no overbooking | **Functional concurrency covered; load target not verified** | Six simultaneous attempts for the last seat are covered by the registration integration suite and preserve capacity; the SRS target of 500 concurrent attempts has not been run. |
 | NFR-SEC-02: Payment data / PCI gateway flow | **Not implemented** | There is no payment workflow in this snapshot. This is not evidence of PCI compliance. |
 | NFR-SEC-04: Expiration after inactivity | **Partially implemented** | JWTs have a configured expiry (default one day); the application does not implement an inactivity timer that refreshes or expires sessions based on idle time. |
 | NFR-REL-01 / NFR-SCAL-01: 99% uptime / horizontal scale | **Not verified** | No deployed production environment or availability study is included. Local SQLite results are not production reliability evidence. |
 
 ## Local performance observation for the event search/listing API
 
-A developer-run benchmark on 29 October 2026 used 1,000 synthetic future published events, 100 concurrent workers and 1,000 measured requests against a local SQLite-backed API. The terminal output recorded 1,000/1,000 successful requests, p95 latency **178.211 ms**, maximum latency **259.926 ms**, and **100%** under two seconds. This is evidence for that specific local workload only, not a production service-level guarantee. Registration concurrency, capacity integrity and data preservation were explicitly **NOT TESTED** because the current snapshot has no registration workflow. The reproducible benchmark harness and raw artifacts should be merged with the related Issue #31 work before another developer relies on this number.
+A developer-run benchmark on 29 October 2026 used 1,000 synthetic future published events, 100 concurrent workers and 1,000 measured requests against a local SQLite-backed API. The terminal output recorded 1,000/1,000 successful requests, p95 latency **178.211 ms**, maximum latency **259.926 ms**, and **100%** under two seconds. This is evidence for that specific local workload only, not a production service-level guarantee. The historical search benchmark did not exercise registration. The current registration API has functional concurrency coverage, but the SRS 500-attempt load target and paid-record retention remain **NOT VERIFIED**. The reproducible benchmark harness and raw artifacts should be merged with the related Issue #31 work before another developer relies on this number.
 
 ## Source of truth and maintenance
 
