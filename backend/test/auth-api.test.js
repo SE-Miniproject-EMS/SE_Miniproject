@@ -66,6 +66,8 @@ before(async () => {
       PORT: String(port),
       DATABASE_FILE: databaseFile,
       JWT_SECRET: "ems-test-jwt-secret-change-me",
+      JWT_EXPIRES_IN: "10m",
+      SESSION_IDLE_TIMEOUT_SECONDS: "1800",
       EMAIL_VERIFICATION_SECRET: "ems-test-email-secret-change-me",
       NODE_ENV: "test",
     },
@@ -322,4 +324,38 @@ test("self-registration cannot grant the ADMIN role", async () => {
   const result = await registerAccount({ role: "ADMIN" });
   assert.equal(result.response.status, 400, JSON.stringify(result.payload));
   assert.equal(result.payload.error.code, "INVALID_ROLE");
+});
+
+test("authenticated activity extends a session and expired or removed sessions stay invalid", async () => {
+  const { account } = await registerAccount();
+  const login = await loginAccount(account);
+  assert.equal(login.response.status, 200);
+  const { token } = login.payload;
+  const { jti, exp } = require("jsonwebtoken").decode(token);
+  const db = new Sequelize({ dialect: "sqlite", storage: databaseFile, logging: false });
+  const options = { replacements: { id: jti } };
+  const currentTime = "CAST(unixepoch('subsec') * 1000 AS INTEGER)";
+
+  try {
+    await db.query(`UPDATE sessions SET idleExpiresAt = ${currentTime} + 10000 WHERE id = :id`, options);
+    const [[before]] = await db.query("SELECT idleExpiresAt FROM sessions WHERE id = :id", options);
+    const active = await request("/api/auth/me", { token });
+    assert.equal(active.response.status, 200);
+    const [[after]] = await db.query("SELECT idleExpiresAt FROM sessions WHERE id = :id", options);
+    assert.ok(after.idleExpiresAt > before.idleExpiresAt);
+    assert.equal(after.idleExpiresAt, exp * 1000);
+
+    await db.query(`UPDATE sessions SET idleExpiresAt = ${currentTime} WHERE id = :id`, options);
+    const expired = await Promise.all([
+      request("/api/auth/me", { token }),
+      request("/api/auth/me", { token }),
+    ]);
+    assert.deepEqual(expired.map(({ response }) => response.status), [401, 401]);
+
+    await db.query("DELETE FROM sessions WHERE id = :id", options);
+    const removed = await request("/api/auth/me", { token });
+    assert.equal(removed.response.status, 401);
+  } finally {
+    await db.close();
+  }
 });

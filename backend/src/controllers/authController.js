@@ -1,8 +1,10 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const { startSession } = require("../models/Session");
 const { ApiError } = require("../middleware/errorHandler");
 const {
   signAccessToken,
+  verifyAccessToken,
   signEmailVerificationToken,
   verifyEmailVerificationToken,
 } = require("../utils/jwt");
@@ -123,6 +125,7 @@ async function login(req, res, next) {
     await user.save();
 
     const token = signAccessToken(user);
+    await startSession(verifyAccessToken(token));
     res.json({ token, user: toPublicUser(user) });
   } catch (err) {
     next(err);
