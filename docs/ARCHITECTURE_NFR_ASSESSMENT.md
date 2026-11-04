@@ -2,6 +2,7 @@
 
 **Issue:** [#35 — Verify maintainability and scalability architecture NFRs](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/35)  
 **SRS traceability:** NFR-MAINT-01, NFR-SCAL-01  
+**Cross-document NFR matrix:** [`docs/NFR_TRACEABILITY.md`](NFR_TRACEABILITY.md)
 **Review baseline:** repository snapshot `476204cb491f9aa542dd1dc5510bf560d12ceb89`, dated 29 October 2026  
 **Scope:** architecture inspection and recommendations. This document does not claim that the future architecture has been implemented or load-tested.
 

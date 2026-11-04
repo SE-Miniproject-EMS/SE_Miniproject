@@ -2,11 +2,13 @@
 
 ## Status and scope
 
+**Baseline note (31 October 2026):** The search benchmark was recorded before the current registration implementation. The current checkout includes a Registration model/API and conditional transactional capacity update; the integration suite covers basic one-seat capacity and waitlisting, but no 500-concurrent load run is recorded.
+
 This report records the repeatable benchmark procedure and the current repository limitations for SRS requirements NFR-PERF-01, NFR-PERF-02, and the data-integrity/safety requirement in SRS §6.2.
 
 - **NFR-PERF-01 (event search/listing):** can be measured now using the public `GET /api/events` endpoint.
-- **NFR-PERF-02 (500 concurrent registration attempts):** blocked/not tested in this repository snapshot. There is no registration route, registration model, or confirmed-paid registration record to exercise.
-- **Capacity and record integrity:** blocked/not tested. The current delivered application has no event-registration/capacity reservation transaction or paid-registration records. A performance run against `GET /api/events` cannot establish that these guarantees hold.
+- **NFR-PERF-02 (500 concurrent registration attempts):** not tested. Registration and transactional capacity gating exist, but no 500-concurrent load test is recorded. Paid-registration integrity cannot be exercised because payment is absent.
+- **Capacity and record integrity:** basic free-event capacity/waitlist behavior has functional test coverage. Concurrency integrity is not verified under load, and paid-record retention cannot be assessed because payments are absent. A `GET /api/events` benchmark does not establish either guarantee.
 
 Do not mark the full issue as passed based on the event search benchmark alone.
 
@@ -43,7 +45,7 @@ The default output directory (`backend/benchmark-results`) is ignored by Git. Th
 
 ## Results
 
-One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v22.19.0, 100 concurrent workers and 1,000 measured requests against 1,000 synthetic published events. Result: 1000/1000 requests succeeded; p95 latency was 178.211 ms, maximum latency was 259.926 ms, and 100.00% completed under two seconds. This result applies only to this local search/listing workload. Registration concurrency and capacity/record integrity remain BLOCKED_NOT_TESTED because the registration flow is absent. The generated JSON and CSV files are retained in docs/issue-31-results.
+One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v22.19.0, 100 concurrent workers and 1,000 measured requests against 1,000 synthetic published events. Result: 1000/1000 requests succeeded; p95 latency was 178.211 ms, maximum latency was 259.926 ms, and 100.00% completed under two seconds. This result applies only to this local search/listing workload. Registration concurrency and paid-record integrity remain NOT_TESTED; the registration flow exists, but this search benchmark did not exercise it. The generated JSON and CSV files are retained in docs/issue-31-results.
 
 | Workload | Dataset | Concurrent workers | Requests | p50 | p95 | p99 | Max | Failures | Under 2 s | Disposition |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
@@ -51,17 +53,12 @@ One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v2
 
 Use the generated JSON as the raw evidence and replace the pending values with the measured values. If you change the dataset size or request count, update this table accordingly.
 
-## Blocked data-integrity checks and required follow-up
+## Not-yet-verified data-integrity checks and required follow-up
 
-The benchmark's JSON marks registration concurrency and capacity integrity as `BLOCKED_NOT_TESTED`. This is intentional, not a passing result. Before those criteria can be verified, the system needs at least:
+The historical search benchmark artifacts do not include registration-load results. The current checkout has registration routes/models, duplicate constraints and a conditional transactional capacity update. Remaining verification is a controlled 500-attempt test against an isolated event/database, including final capacity and record-retention assertions; separately test waitlist promotion and cancellation cutoff. Paid-registration integrity remains pending payment support.
 
-- A registration model/route with explicit event and attendee relationships and duplicate-registration rules.
-- Atomic/transactional capacity reservation so concurrent requests cannot push confirmed registrations above event capacity.
-- A defined paid-registration/confirmation state and persistence rules.
-- Integration tests that issue concurrent registration attempts against a single event, then assert confirmed registrations never exceed capacity and confirmed records remain present after the test.
-
-After those features exist, run a separate controlled registration-load test (including 500 simultaneous attempts) against an isolated database and record successes, rejections, duplicate behavior, final confirmed count, capacity, and any lost/duplicated records. Avoid sending such load to shared or production data.
+Run a separate controlled registration-load test (including 500 simultaneous attempts) against an isolated database and record successes, rejections, duplicate behavior, final confirmed count, capacity, and any lost/duplicated records. Avoid sending such load to shared or production data.
 
 ## Failures and follow-up defects
 
-This patch adds the repeatable event search/listing benchmark and records the registration/data-integrity blockers. It does not claim a target was met before an actual run. Record any observed slow scenario, HTTP error, timeout, or payload failure here and create a separate defect issue if needed.
+The historical search/listing benchmark does not verify current registration concurrency or paid-record integrity. It does not claim a target was met before an actual run. Record any observed slow scenario, HTTP error, timeout, or payload failure here and create a separate defect issue if needed.
