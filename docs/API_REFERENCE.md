@@ -56,7 +56,7 @@ Request:
 }
 ```
 
-Success: `200 OK` with `token` (JWT) and a public `user`. The `JWT_EXPIRES_IN` setting controls token life and defaults to `1d`.
+Success: `200 OK` with `token` (JWT) and a public `user`. The `JWT_EXPIRES_IN` setting controls token life and defaults to `1d`. `SESSION_IDLE_TIMEOUT_SECONDS` sets the maximum idle interval and defaults to 1800 seconds. A request that successfully authenticates with a bearer token advances its idle deadline up to the JWT expiry. A missing or expired session returns HTTP 401. After upgrading, sign in again to replace tokens issued before session tracking was added.
 
 Behavior and common errors:
 
