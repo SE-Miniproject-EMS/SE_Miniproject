@@ -130,3 +130,7 @@ The backend now includes the supporting registration/waitlist API plus the featu
 ## Documentation
 
 - [Functional requirements traceability matrix](docs/FR_TRACEABILITY_MATRIX.md) — requirement status, backlog links, verification approach and implementation gaps.
+
+## Payment workflow demo (Issue #26)
+
+Paid checkouts use a provider-independent **mock adapter** for local development. A pending checkout reserves capacity for 10 minutes; success, failure, expiry, FIFO waitlist offers, and full-refund states are demonstrable in the UI. Refund results from the mock adapter are labelled simulated and do not represent money movement or provider confirmation. No real payment provider is configured, and the application does not store card numbers or CVVs. See [API reference](docs/API_REFERENCE.md) for endpoints and behavior.
