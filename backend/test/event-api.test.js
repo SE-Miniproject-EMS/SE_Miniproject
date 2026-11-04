@@ -9,7 +9,7 @@ const sqlite3 = require("sqlite3");
 const TEST_JWT_SECRET = "ems-test-jwt-secret-change-me";
 process.env.JWT_SECRET = TEST_JWT_SECRET;
 const { signAccessToken, verifyAccessToken } = require("../src/utils/jwt");
-const { startSession } = require("../src/models/Session");
+
 
 const backendDir = path.resolve(__dirname, "..");
 const databaseFile = path.join(
@@ -71,6 +71,7 @@ before(async () => {
       JWT_SECRET: TEST_JWT_SECRET,
       EMAIL_VERIFICATION_SECRET: "ems-test-email-secret-change-me",
       NODE_ENV: "test",
+      SESSION_IDLE_TIMEOUT_SECONDS: "1800",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -116,6 +117,27 @@ async function queryTestDatabase(sql, parameters) {
           else resolve(row);
         });
       });
+    });
+  });
+}
+
+async function insertSession(token) {
+  const { jti, exp } = verifyAccessToken(token);
+  const idleExpiresAt = Math.min(exp * 1000, Date.now() + 30 * 60 * 1000);
+  await new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, (openError) => {
+      if (openError) return reject(openError);
+      database.run(
+        "INSERT INTO sessions (id, idleExpiresAt) VALUES (?, ?)",
+        [jti, idleExpiresAt],
+        (insertError) => {
+          database.close((closeError) => {
+            if (insertError) reject(insertError);
+            else if (closeError) reject(closeError);
+            else resolve();
+          });
+        }
+      );
     });
   });
 }
@@ -171,7 +193,7 @@ async function createAccount(role = "ORGANIZER") {
   // Avoid exhausting the shared login rate limit while still creating a
   // persisted session required by the authenticated-route middleware.
   const token = signAccessToken(user);
-  await startSession(verifyAccessToken(token));
+  await insertSession(token);
   return { token, user };
 }
 
