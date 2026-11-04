@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const sequelize = require("./config/db");
 require("./models/User"); // ensures the model is registered before sync()
+require("./models/Session"); // register idle-session table before sync()
 require("./models/Event"); // Event Management model
 const Event = require("./models/Event");
 const Registration = require("./models/Registration");
