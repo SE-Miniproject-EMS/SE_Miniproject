@@ -7,6 +7,9 @@ const os = require("node:os");
 const path = require("node:path");
 const sqlite3 = require("sqlite3");
 const TEST_JWT_SECRET = "ems-test-jwt-secret-change-me";
+process.env.JWT_SECRET = TEST_JWT_SECRET;
+const { signAccessToken, verifyAccessToken } = require("../src/utils/jwt");
+const { startSession } = require("../src/models/Session");
 
 const backendDir = path.resolve(__dirname, "..");
 const databaseFile = path.join(
@@ -165,12 +168,11 @@ async function createAccount(role = "ORGANIZER") {
   assert.equal(verification.response.status, 200, JSON.stringify(verification.payload));
 
   const user = verification.payload.user;
-  const login = await request("/api/auth/login", {
-    method: "POST",
-    body: { email, password: "TestPassword123!" },
-  });
-  assert.equal(login.response.status, 200, `login failed: ${JSON.stringify(login.payload)}`);
-  return { token: login.payload.token, user: login.payload.user };
+  // Avoid exhausting the shared login rate limit while still creating a
+  // persisted session required by the authenticated-route middleware.
+  const token = signAccessToken(user);
+  await startSession(verifyAccessToken(token));
+  return { token, user };
 }
 
 function validEvent(overrides = {}) {
