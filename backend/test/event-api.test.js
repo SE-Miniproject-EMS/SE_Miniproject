@@ -625,3 +625,31 @@ test("registrations enforce capacity, issue one-use tickets, and gate feedback t
   const unauthorizedView = await request(`/api/feedback/events/${secondEventId}`, { token: otherOrganizer.token });
   assert.equal(unauthorizedView.response.status, 403);
 });
+
+test("paid-event registration requires a gateway and creates no registration", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ ticketPrice: 25 }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+  const published = await request(`/api/events/${eventId}/publish`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(published.response.status, 200, JSON.stringify(published.payload));
+
+  const registration = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST",
+    token: attendee.token,
+  });
+  assert.equal(registration.response.status, 402);
+  assert.equal(registration.payload.error.code, "PAYMENT_INTEGRATION_REQUIRED");
+
+  const mine = await request("/api/registrations/mine", { token: attendee.token });
+  assert.equal(mine.response.status, 200);
+  assert.deepEqual(mine.payload.registrations, []);
+});

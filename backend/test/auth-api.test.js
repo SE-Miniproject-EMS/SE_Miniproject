@@ -206,6 +206,7 @@ test("registration stores a bcrypt password hash rather than plaintext", async (
     assert.notEqual(rows[0].passwordHash, registered.account.password);
     assert.match(rows[0].passwordHash, /^\$2[aby]\$\d\d\$/);
     assert.equal(await bcrypt.compare(registered.account.password, rows[0].passwordHash), true);
+    assert.equal(serverOutput.includes(registered.account.password), false);
   } finally {
     await inspectionDb.close();
   }
