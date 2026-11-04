@@ -1,5 +1,5 @@
 const crypto = require("node:crypto");
-const { Op, literal } = require("sequelize");
+const { Op, literal, Transaction } = require("sequelize");
 const sequelize = require("../config/db");
 const Event = require("../models/Event");
 const User = require("../models/User");
@@ -13,7 +13,7 @@ async function register(req, res, next) {
   try {
     const eventId = Number(req.params.eventId);
     if (!Number.isInteger(eventId) || eventId < 1) throw new ApiError(400, "INVALID_EVENT_ID", "Event ID must be a positive integer");
-    const result = await sequelize.transaction(async (transaction) => {
+    const result = await sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
       const event = await Event.findByPk(eventId, { transaction });
       if (!event || event.status !== "PUBLISHED") throw new ApiError(404, "EVENT_UNAVAILABLE", "Published event not found");
       if (new Date(event.endDateTime).getTime() <= Date.now()) throw new ApiError(409, "EVENT_ENDED", "Registration is closed because the event has ended");
@@ -44,26 +44,28 @@ async function register(req, res, next) {
 }
 
 async function myRegistrations(req, res, next) {
-  try { const registrations = await Registration.findAll({ where: { attendeeId: req.user.id }, include: [{ model: Event, as: "event", attributes: ["id", "title", "startDateTime", "endDateTime", "venue", "status"] }], order: [["createdAt", "DESC"]] }); res.json({ registrations }); }
+  try { const registrations = await Registration.findAll({ where: { attendeeId: req.user.id }, attributes: { exclude: ["ticketTokenHash"] }, include: [{ model: Event, as: "event", attributes: ["id", "title", "startDateTime", "endDateTime", "venue", "status"] }], order: [["createdAt", "DESC"]] }); res.json({ registrations }); }
   catch (err) { next(err); }
 }
 
 async function cancelRegistration(req, res, next) {
   try {
     const regId = Number(req.params.id);
-    const result = await sequelize.transaction(async (transaction) => {
+    const result = await sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
       const reg = await Registration.findByPk(regId, { transaction });
       if (!reg) throw new ApiError(404, "REGISTRATION_NOT_FOUND", "Registration not found");
       if (reg.attendeeId !== Number(req.user.id)) throw new ApiError(403, "FORBIDDEN", "You may only cancel your own registration");
       if (reg.status === "CANCELLED") throw new ApiError(409, "ALREADY_CANCELLED", "Registration is already cancelled");
       const event = await Event.findByPk(reg.eventId, { transaction });
-      if (reg.status === "CONFIRMED") {
+      const wasConfirmed = reg.status === "CONFIRMED";
+      if (wasConfirmed) {
         if (event.refundWindowHours !== null && event.startDateTime.getTime() - Date.now() < event.refundWindowHours * 3600000) throw new ApiError(400, "CANCELLATION_CUTOFF_PASSED", "The cancellation window has closed");
         await Event.update({ seatsTaken: literal('CASE WHEN "seatsTaken" > 0 THEN "seatsTaken" - 1 ELSE 0 END') }, { where: { id: event.id }, transaction });
       }
       await reg.update({ status: "CANCELLED", ticketTokenHash: null }, { transaction });
-      if (reg.status === "CONFIRMED") {
-        const next = await Registration.findOne({ where: { eventId: event.id, status: "WAITLISTED" }, order: [["createdAt", "ASC"]], transaction });
+      const eventIsActive = event.status === "PUBLISHED" && event.endDateTime.getTime() > Date.now();
+      if (wasConfirmed && eventIsActive) {
+        const next = await Registration.findOne({ where: { eventId: event.id, status: "WAITLISTED" }, order: [["createdAt", "ASC"], ["id", "ASC"]], transaction });
         if (next) {
           const rawToken = crypto.randomBytes(32).toString("base64url");
           await next.update({ status: "CONFIRMED", ticketTokenHash: digest(rawToken) }, { transaction });

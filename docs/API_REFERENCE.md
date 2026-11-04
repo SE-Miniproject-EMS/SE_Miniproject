@@ -1,6 +1,6 @@
 # EMS API Reference
 
-This reference describes the routes mounted by `backend/src/server.js` in the repository snapshot reviewed on 29 October 2026. It documents the implementation that exists today; it does not describe planned registration/payment/ticket endpoints.
+This reference describes the routes mounted by `backend/src/server.js`. It documents the current implementation and calls out payment and real notification delivery as unavailable.
 
 ## Local base URL
 
@@ -144,6 +144,30 @@ Requires a Bearer JWT and `ORGANIZER` or `ADMIN` role. Only the owner or ADMIN m
 
 Requires a Bearer JWT and `ORGANIZER` or `ADMIN` role. Only the owner or ADMIN may cancel. Success changes status to `CANCELLED` and returns a message and `event`. Repeated cancellation returns `409 ALREADY_CANCELLED`. The response explicitly states that attendee notifications/refunds are to be handled by future modules; no such workflow exists in the current baseline.
 
+## Registration APIs
+
+All registration routes require a Bearer JWT. Registration and cancellation are restricted to `ATTENDEE`; organizer and admin roles cannot register through these endpoints.
+
+### `POST /registrations/events/:eventId`
+
+Registers the authenticated attendee for a published, not-yet-ended free event. The database transaction reserves a seat atomically. If no seat is available, a `WAITLISTED` registration is created. Repeated registration or waitlist attempts for the same attendee/event return `409 ALREADY_REGISTERED`. A cancelled registration cannot be reused because the event/attendee pair is protected by a unique constraint. Paid events return `402 PAYMENT_INTEGRATION_REQUIRED` until Issue #26 payment support exists.
+
+Confirmed success: `201 Created` with a registration status and one-time ticket token. Waitlist success: `201 Created` with `WAITLISTED`, a null ticket token, and a message. Other errors include `400 INVALID_EVENT_ID`, `401 UNAUTHENTICATED`, `403 FORBIDDEN`, `404 EVENT_UNAVAILABLE`, `409 EVENT_ENDED`, and `402 PAYMENT_INTEGRATION_REQUIRED`.
+
+When full, a new eligible attendee is added to the waitlist. On a confirmed attendee's cancellation, the earliest waitlist entry (FIFO by registration time, with registration ID as a tie-break) is promoted in the same transaction. A `WAITLIST_PROMOTED` notification record is queued. This checkout has no configured external email/SMS provider, so queued notification records do not claim external delivery.
+
+### `GET /registrations/mine`
+
+Requires an `ATTENDEE` or `ADMIN` token. Returns the authenticated user's registration history and public event summary. Ticket token hashes are excluded. The response reflects confirmed, waitlisted, and cancelled states and can be used to restore the UI after refresh.
+
+### `POST /registrations/:id/cancel`
+
+Requires an `ATTENDEE` token and only permits cancellation of the caller's own registration. A confirmed registration can be cancelled before the event's configured `refundWindowHours` cutoff; null means no configured cutoff. A waitlisted registration can be cancelled without changing the seat count. Confirmed cancellations release the seat and promote the earliest waitlisted attendee if the event is still published and active. Errors include `404 REGISTRATION_NOT_FOUND`, `403 FORBIDDEN`, `409 ALREADY_CANCELLED`, and `400 CANCELLATION_CUTOFF_PASSED`.
+
+### Capacity and concurrency
+
+`Event.seatsTaken` is updated within the registration transaction using a conditional database update. SQLite immediate transactions serialize the capacity/cancellation critical sections; the integration suite exercises simultaneous last-seat attempts. The SRS target of 500 concurrent attempts remains unverified until a dedicated load test is run.
+
 ## Access matrix
 
 | Endpoint | Anonymous | Attendee | Organizer (owner) | ADMIN |
@@ -153,17 +177,20 @@ Requires a Bearer JWT and `ORGANIZER` or `ADMIN` role. Only the owner or ADMIN m
 | `GET /auth/me` | No | Yes | Yes | Yes |
 | `GET /events/manage/mine` | No | Own events | Own events | All events |
 | `POST /events` | No | No | Yes | Yes |
+| `POST /registrations/events/:eventId`, `GET /registrations/mine`, `POST /registrations/:id/cancel` | No | Own attendee records | No | `GET /mine` only for own records |
 | `PUT`, `publish`, `cancel` event | No | No | Own events only | Any event |
 
 ## Not available in this API
 
-There are no implemented endpoints for attendee event registration, waitlisting, payment or refunds, notifications/reminders, digital ticket or QR check-in, reporting/CSV export, or feedback/ratings. Do not call guessed URLs for these functions; they must be designed and implemented before they can be documented as APIs.
+Payment/refund processing, QR image generation/scanner UI, reporting/CSV export, and complete feedback UI are not available. Notification records are queued, but external email/SMS delivery is not configured.
 
 ## Route source files
 
 - `backend/src/server.js`
 - `backend/src/routes/authRoutes.js`
 - `backend/src/routes/eventRoutes.js`
+- `backend/src/routes/registrationRoutes.js`
+- `backend/src/controllers/registrationController.js`
 - `backend/src/controllers/authController.js`
 - `backend/src/controllers/eventController.js`
 - `backend/src/middleware/auth.js`

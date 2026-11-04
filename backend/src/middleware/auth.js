@@ -3,8 +3,8 @@ const { touchSession } = require("../models/Session");
 const { ApiError } = require("./errorHandler");
 
 /**
- * Verifies the Bearer token on the Authorization header and attaches
- * the decoded payload to req.user. Use on any route that requires login.
+ * Verifies the Bearer token and confirms that its server-side idle session is
+ * still active. Activity extends the idle deadline, but never beyond JWT exp.
  */
 async function authenticate(req, res, next) {
   const header = req.headers.authorization || "";
