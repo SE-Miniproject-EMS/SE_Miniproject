@@ -1,11 +1,12 @@
 const { verifyAccessToken } = require("../utils/jwt");
+const { touchSession } = require("../models/Session");
 const { ApiError } = require("./errorHandler");
 
 /**
- * Verifies the Bearer token on the Authorization header and attaches
- * the decoded payload to req.user. Use on any route that requires login.
+ * Verifies the Bearer token and confirms that its server-side idle session is
+ * still active. Activity extends the idle deadline, but never beyond JWT exp.
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const header = req.headers.authorization || "";
   const [scheme, token] = header.split(" ");
 
@@ -13,13 +14,23 @@ function authenticate(req, res, next) {
     return next(new ApiError(401, "UNAUTHENTICATED", "Missing or malformed Authorization header"));
   }
 
+  let payload;
   try {
-    const payload = verifyAccessToken(token);
-    req.user = { id: payload.sub, role: payload.role, email: payload.email };
-    next();
-  } catch (err) {
-    next(new ApiError(401, "UNAUTHENTICATED", "Invalid or expired token"));
+    payload = verifyAccessToken(token);
+  } catch {
+    return next(new ApiError(401, "UNAUTHENTICATED", "Invalid or expired token"));
   }
+
+  try {
+    if (!(await touchSession(payload))) {
+      return next(new ApiError(401, "UNAUTHENTICATED", "Invalid or expired session"));
+    }
+  } catch (err) {
+    return next(err);
+  }
+
+  req.user = { id: payload.sub, role: payload.role, email: payload.email };
+  next();
 }
 
 /**
