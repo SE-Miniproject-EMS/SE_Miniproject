@@ -4,9 +4,9 @@
 
 This report records the repeatable benchmark procedure and the current repository limitations for SRS requirements NFR-PERF-01, NFR-PERF-02, and the data-integrity/safety requirement in SRS §6.2.
 
-- **NFR-PERF-01 (event search/listing):** can be measured now using the public `GET /api/events` endpoint.
-- **NFR-PERF-02 (500 concurrent registration attempts):** blocked/not tested in this repository snapshot. There is no registration route, registration model, or confirmed-paid registration record to exercise.
-- **Capacity and record integrity:** blocked/not tested. The current delivered application has no event-registration/capacity reservation transaction or paid-registration records. A performance run against `GET /api/events` cannot establish that these guarantees hold.
+- **NFR-PERF-01 (event search/listing):** measured in one local synthetic-data run using the public `GET /api/events` endpoint. The result is specific to that machine and workload, not a production service-level guarantee.
+- **NFR-PERF-02 (500 concurrent registration attempts):** **not verified**. The free-event registration route/model and transactional capacity gate now exist, but no 500-attempt registration load test is recorded.
+- **Capacity and record integrity:** the API integration suite covers capacity reservation, FIFO waitlist promotion/cancellation, and six simultaneous attempts for the last available seat. This is functional concurrency evidence only; it does not establish the 500-attempt SRS target. Paid-registration record retention cannot be verified because no real payment provider or paid-registration persistence is present on this `main` baseline.
 
 Do not mark the full issue as passed based on the event search benchmark alone.
 
@@ -43,7 +43,7 @@ The default output directory (`backend/benchmark-results`) is ignored by Git. Th
 
 ## Results
 
-One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v22.19.0, 100 concurrent workers and 1,000 measured requests against 1,000 synthetic published events. Result: 1000/1000 requests succeeded; p95 latency was 178.211 ms, maximum latency was 259.926 ms, and 100.00% completed under two seconds. This result applies only to this local search/listing workload. Registration concurrency and capacity/record integrity remain BLOCKED_NOT_TESTED because the registration flow is absent. The generated JSON and CSV files are retained in docs/issue-31-results.
+One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v22.19.0, 100 concurrent workers and 1,000 measured requests against 1,000 synthetic published events. Result: 1,000/1,000 requests succeeded; p95 latency was 178.211 ms, maximum latency was 259.926 ms, and 100.00% completed under two seconds. This result applies only to this local search/listing workload. It does not exercise registration. The current API integration suite covers six simultaneous attempts for the last seat, but the 500-attempt registration load target remains **NOT VERIFIED**. The generated JSON and CSV files are retained in docs/issue-31-results.
 
 | Workload | Dataset | Concurrent workers | Requests | p50 | p95 | p99 | Max | Failures | Under 2 s | Disposition |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
@@ -51,17 +51,19 @@ One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v2
 
 Use the generated JSON as the raw evidence and replace the pending values with the measured values. If you change the dataset size or request count, update this table accordingly.
 
-## Blocked data-integrity checks and required follow-up
+## Not-yet-verified data-integrity checks and required follow-up
 
-The benchmark's JSON marks registration concurrency and capacity integrity as `BLOCKED_NOT_TESTED`. This is intentional, not a passing result. Before those criteria can be verified, the system needs at least:
+The current code has a free-event registration model/route, duplicate-registration constraint, SQLite IMMEDIATE transaction, conditional capacity update and FIFO waitlist behavior. The API suite verifies basic functional cases, including six simultaneous requests contending for the last seat. These tests do not replace a controlled 500-attempt stress run.
 
-- A registration model/route with explicit event and attendee relationships and duplicate-registration rules.
-- Atomic/transactional capacity reservation so concurrent requests cannot push confirmed registrations above event capacity.
-- A defined paid-registration/confirmation state and persistence rules.
-- Integration tests that issue concurrent registration attempts against a single event, then assert confirmed registrations never exceed capacity and confirmed records remain present after the test.
+Before claiming NFR-PERF-02 or the full SRS §6.2 concurrency/data-integrity target:
+- Run 500 concurrent attempts from unique attendees against an isolated, capacity-limited event/database.
+- Record the environment, application/database versions, workload generation method, success/rejection/error counts, elapsed time and latency distribution.
+- Inspect the final confirmed count and ensure it never exceeds capacity; verify no duplicate or lost confirmed registration records.
+- Exercise retries, timeouts and concurrent cancellation/waitlist promotion separately.
+- Preserve raw results and the exact command/script used; do not send load traffic to shared or production data.
 
-After those features exist, run a separate controlled registration-load test (including 500 simultaneous attempts) against an isolated database and record successes, rejections, duplicate behavior, final confirmed count, capacity, and any lost/duplicated records. Avoid sending such load to shared or production data.
-
+Paid-registration retention remains not assessable until a provider-backed paid-registration flow is implemented and verified. The local search benchmark is not evidence for registration integrity, high availability or horizontal scaling.
+ 
 ## Failures and follow-up defects
 
-This patch adds the repeatable event search/listing benchmark and records the registration/data-integrity blockers. It does not claim a target was met before an actual run. Record any observed slow scenario, HTTP error, timeout, or payload failure here and create a separate defect issue if needed.
+This report preserves the historical local search/listing benchmark and records the remaining registration-load and data-integrity gap. It does not claim the 500-attempt target was met. Record any observed slow scenario, HTTP error, timeout, or payload failure here and create a separate defect issue if needed.
