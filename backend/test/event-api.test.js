@@ -888,3 +888,36 @@ test("registration rejects unauthenticated, malformed, organizer, and unavailabl
   assert.equal(missingEvent.response.status, 404);
   assert.equal(missingEvent.payload.error.code, "EVENT_UNAVAILABLE");
 });
+
+test("paid-event registration is rejected until a payment provider is configured", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ ticketPrice: 25 }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+  const published = await request(`/api/events/${eventId}/publish`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(published.response.status, 200, JSON.stringify(published.payload));
+
+  const panFixture = "test-pan-must-never-be-accepted-or-logged";
+  const cvvFixture = "test-cvv-must-never-be-accepted-or-logged";
+  const registration = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST",
+    token: attendee.token,
+    body: { cardNumber: panFixture, cvv: cvvFixture },
+  });
+  assert.equal(registration.response.status, 402);
+  assert.equal(registration.payload.error.code, "PAYMENT_INTEGRATION_REQUIRED");
+  assert.equal(serverOutput.includes(panFixture), false);
+  assert.equal(serverOutput.includes(cvvFixture), false);
+
+  const mine = await request("/api/registrations/mine", { token: attendee.token });
+  assert.equal(mine.response.status, 200, JSON.stringify(mine.payload));
+  assert.deepEqual(mine.payload.registrations, []);
+});
