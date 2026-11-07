@@ -34,7 +34,7 @@ npm ci
 npm test
 ```
 
-The test harness uses temporary SQLite databases and HTTP requests against the Express API. GitHub Actions runs backend syntax validation, the backend API test suite, and the frontend production build. Use the passing Actions run linked from the security PR as the authoritative CI evidence for this commit.
+The test harness uses temporary SQLite databases and HTTP requests against the Express API. GitHub Actions run [#42396062692](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42396062692) completed successfully on this PR head: **30 tests passed, 0 failed**. Backend syntax validation and the frontend production build also passed. The workflow does not run a browser automation suite.
 
 ## Explicit limitations
 
