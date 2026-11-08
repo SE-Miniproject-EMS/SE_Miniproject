@@ -8,7 +8,9 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "test": "node --test",
-    "reminders": "node src/jobs/sendReminders.js"
+    "reminders": "node src/jobs/sendReminders.js",
+    "benchmark:events": "node scripts/benchmark-event-search.js",
+    "benchmark:registrations": "node scripts/benchmark-registration-concurrency.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
