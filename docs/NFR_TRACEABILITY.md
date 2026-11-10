@@ -1,6 +1,6 @@
 # Non-Functional Requirements Traceability
 
-**Repository:** SE-Miniproject-EMS/SE_Miniproject  
+**Repository:** SE-Miniproject-EMS/SE_Miniproject
 **Review baseline:** `main` at `407924b619a30dbfc577a0360136b7f57ea62899` (10 November 2026).
 
 **Source:** SRS v1.7, including the submitted NFR-SEC-04 inactivity-expiry requirement. This matrix records implementation evidence available on the reviewed baseline; it does not claim production guarantees.
