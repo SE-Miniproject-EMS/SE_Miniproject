@@ -596,6 +596,46 @@ test("cancelled events cannot be edited or published again", async () => {
   assert.equal(publish.payload.error.code, "EVENT_CANCELLED");
 });
 
+test("cancelling an event cancels its waitlisted registrations", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const confirmedAttendee = await createAccount("ATTENDEE");
+  const waitlistedAttendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ capacity: 1, status: "PUBLISHED" }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+
+  const confirmed = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST",
+    token: confirmedAttendee.token,
+  });
+  const waitlisted = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST",
+    token: waitlistedAttendee.token,
+  });
+  assert.equal(confirmed.payload.registration.status, "CONFIRMED");
+  assert.equal(waitlisted.payload.registration.status, "WAITLISTED");
+
+  const cancelled = await request(`/api/events/${eventId}/cancel`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+
+  const mine = await request("/api/registrations/mine", { token: waitlistedAttendee.token });
+  const registration = mine.payload.registrations.find((item) => item.id === waitlisted.payload.registration.id);
+  assert.equal(registration.status, "CANCELLED");
+
+  const remainingWaitlisted = await queryTestDatabase(
+    "SELECT COUNT(*) AS count FROM registrations WHERE eventId = ? AND status = ?",
+    [eventId, "WAITLISTED"]
+  );
+  assert.equal(remainingWaitlisted.count, 0);
+});
+
 test("event endpoints return 404 for unknown event IDs", async () => {
   const organizer = await createAccount("ORGANIZER");
   const unknownId = "987654321";
@@ -762,7 +802,7 @@ test("cancelling a confirmed registration promotes a waitlisted attendee", async
   ).then((row) => row.count), 1);
 });
 
-test("cancelling a registration for a cancelled event does not promote its waitlist", async () => {
+test("cancelling a registration for a cancelled event does not promote its cancelled waitlist", async () => {
   const organizer = await createAccount("ORGANIZER");
   const confirmedAttendee = await createAccount("ATTENDEE");
   const waitingAttendee = await createAccount("ATTENDEE");
@@ -784,7 +824,7 @@ test("cancelling a registration for a cancelled event does not promote its waitl
   });
   assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
   const mine = await request("/api/registrations/mine", { token: waitingAttendee.token });
-  assert.equal(mine.payload.registrations[0].status, "WAITLISTED");
+  assert.equal(mine.payload.registrations[0].status, "CANCELLED");
   const details = await queryTestDatabase('SELECT "status", "seatsTaken" FROM "events" WHERE "id" = ?', [eventId]);
   assert.deepEqual(details, { status: "CANCELLED", seatsTaken: 0 });
   assert.equal(await queryTestDatabase(
@@ -793,7 +833,7 @@ test("cancelling a registration for a cancelled event does not promote its waitl
   ).then((row) => row.count), 0);
   assert.equal(await queryTestDatabase(
     'SELECT COUNT(*) AS count FROM "registrations" WHERE "id" = ? AND "status" = ?',
-    [waiting.payload.registration.id, "WAITLISTED"]
+    [waiting.payload.registration.id, "CANCELLED"]
   ).then((row) => row.count), 1);
 });
 
@@ -915,7 +955,6 @@ test("registration rejects unauthenticated, malformed, organizer, and unavailabl
   assert.equal(missingEvent.response.status, 404);
   assert.equal(missingEvent.payload.error.code, "EVENT_UNAVAILABLE");
 });
-
 
 test("security NFR route matrix: every mounted protected endpoint enforces role authorization", async () => {
   const attendee = await createAccount("ATTENDEE");
@@ -1061,7 +1100,7 @@ test("security NFR route matrix: every mounted protected endpoint enforces role 
   assert.equal(publicList.response.status, 200);
 });
 
-test("paid registration fails closed and never reflects or logs submitted card-data sentinels", async () => {
+test("paid checkout ignores and never reflects or logs submitted card-data sentinels", async () => {
   const organizer = await createAccount("ORGANIZER");
   const attendee = await createAccount("ATTENDEE");
   const created = await request("/api/events", {
@@ -1090,8 +1129,10 @@ test("paid registration fails closed and never reflects or logs submitted card-d
     },
   });
 
-  assert.equal(result.response.status, 402, JSON.stringify(result.payload));
-  assert.equal(result.payload.error.code, "PAYMENT_INTEGRATION_REQUIRED");
+  assert.equal(result.response.status, 201, JSON.stringify(result.payload));
+  assert.equal(result.payload.registration.status, "PENDING_PAYMENT");
+  assert.equal(result.payload.payment.status, "PENDING");
+  assert.equal(result.payload.payment.adapter, "MOCK");
   assert.equal(JSON.stringify(result.payload).includes(cardSentinel), false);
   assert.equal(JSON.stringify(result.payload).includes(cvvSentinel), false);
   assert.equal(serverOutput.includes(cardSentinel), false);
@@ -1101,6 +1142,693 @@ test("paid registration fails closed and never reflects or logs submitted card-d
     'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ?',
     [eventId]
   );
-  assert.equal(registrationCount.count, 0, "paid registration must not be created without verified provider payment");
+  assert.equal(registrationCount.count, 1, "checkout should create a pending registration without persisting card data");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ?',
+    [result.payload.registration.id]
+  ).then((row) => row.count), 1);
   assert.equal(serverOutput.includes("TestPassword123!"), false, "backend output must not contain the test plaintext password");
+});
+
+test("paid checkout reserves one seat and stores the exact paise amount and checkout purpose", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 2, ticketPrice: "12.34" }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+  await request(`/api/events/${eventId}/publish`, { method: "POST", token: organizer.token });
+
+  const checkout = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(checkout.response.status, 201, JSON.stringify(checkout.payload));
+  assert.equal(checkout.payload.registration.status, "PENDING_PAYMENT");
+  assert.equal(checkout.payload.payment.status, "PENDING");
+  assert.equal(checkout.payload.payment.paymentPurpose, "INITIAL_CHECKOUT");
+
+  const event = await request(`/api/events/${eventId}`);
+  assert.equal(event.payload.event.seatsTaken, 1);
+  const payment = await queryTestDatabase(
+    'SELECT "amountPaise", "paymentPurpose", "status" FROM "payments" WHERE "id" = ?',
+    [checkout.payload.payment.id]
+  );
+  assert.deepEqual(payment, { amountPaise: 1234, paymentPurpose: "INITIAL_CHECKOUT", status: "PENDING" });
+});
+test("mock payment success confirms a paid registration without incrementing its reserved seat", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "21.07" }),
+  });
+  const eventId = created.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  assert.equal(checkout.payload.registration.status, "PENDING_PAYMENT");
+  assert.equal(checkout.payload.payment.amountPaise, 2107);
+  const before = await request("/api/events/" + eventId);
+  assert.equal(before.payload.event.seatsTaken, 1);
+
+  const outcome = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(outcome.response.status, 200, JSON.stringify(outcome.payload));
+  assert.equal(outcome.payload.payment.status, "SUCCEEDED");
+  assert.equal(outcome.payload.registration.status, "CONFIRMED");
+  assert.equal(outcome.payload.adapter, "MOCK");
+  assert.match(outcome.payload.message, /simulated/i);
+
+  const after = await request("/api/events/" + eventId);
+  assert.equal(after.payload.event.seatsTaken, 1);
+});
+test("failed paid checkout releases once and retries create a distinct payment attempt", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "8.50" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const first = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  const firstPayment = first.payload.payment;
+
+  const failed = await request("/api/payments/" + firstPayment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "FAILURE" },
+  });
+  assert.equal(failed.response.status, 200, JSON.stringify(failed.payload));
+  assert.equal(failed.payload.registration.status, "PAYMENT_REQUIRED");
+  assert.equal(failed.payload.payment.status, "FAILED");
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 0);
+
+  const repeatedFailure = await request("/api/payments/" + firstPayment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "FAILURE" },
+  });
+  assert.equal(repeatedFailure.response.status, 200);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 0);
+
+  const retry = await request("/api/registrations/" + first.payload.registration.id + "/retry-payment", {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(retry.response.status, 201, JSON.stringify(retry.payload));
+  assert.equal(retry.payload.registration.status, "PENDING_PAYMENT");
+  assert.notEqual(retry.payload.payment.id, firstPayment.id);
+  const retryKeys = await queryTestDatabase("SELECT COUNT(DISTINCT idempotencyKey) AS count FROM payments WHERE registrationId = ?", [first.payload.registration.id]);
+  assert.equal(retryKeys.count, 2);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ?',
+    [first.payload.registration.id]
+  ).then((row) => row.count), 2);
+});
+
+test("retry is rejected while the event is full without creating a payment attempt", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const firstAttendee = await createAccount("ATTENDEE");
+  const secondAttendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "4.00" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const first = await request("/api/registrations/events/" + eventId, { method: "POST", token: firstAttendee.token });
+  const waitlisted = await request("/api/registrations/events/" + eventId, { method: "POST", token: secondAttendee.token });
+  assert.equal(waitlisted.payload.registration.status, "WAITLISTED");
+  await request("/api/payments/" + first.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: firstAttendee.token, body: { outcome: "FAILURE" },
+  });
+  const offered = await request("/api/registrations/mine", { token: secondAttendee.token });
+  assert.equal(offered.payload.registrations[0].status, "PENDING_PAYMENT");
+  const countBefore = await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ?',
+    [first.payload.registration.id]
+  ).then((row) => row.count);
+  const retry = await request("/api/registrations/" + first.payload.registration.id + "/retry-payment", {
+    method: "POST", token: firstAttendee.token,
+  });
+  assert.equal(retry.response.status, 409);
+  assert.equal(retry.payload.error.code, "CAPACITY_UNAVAILABLE");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ?',
+    [first.payload.registration.id]
+  ).then((row) => row.count), countBefore);
+});
+
+test("late mock payment after expiry stays unconfirmed and creates a pending refund", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "17.25" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  await new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, (error) => {
+      if (error) return reject(error);
+      database.run('UPDATE "payments" SET "expiresAt" = datetime("now", "-1 minute") WHERE "id" = ?', [checkout.payload.payment.id], (updateError) => {
+        database.close((closeError) => updateError || closeError ? reject(updateError || closeError) : resolve());
+      });
+    });
+  });
+
+  const late = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(late.response.status, 200, JSON.stringify(late.payload));
+  assert.equal(late.payload.payment.status, "LATE_SUCCEEDED");
+  assert.equal(late.payload.registration.status, "PAYMENT_REQUIRED");
+  assert.equal(late.payload.refund.status, "PENDING");
+  assert.match(late.payload.message, /no real payment or refund occurred/i);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 0);
+
+  const retry = await request("/api/registrations/" + checkout.payload.registration.id + "/retry-payment", {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(retry.response.status, 409);
+  assert.equal(retry.payload.error.code, "REFUND_PENDING");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ?',
+    [checkout.payload.registration.id]
+  ).then((row) => row.count), 1);
+});
+test("cancelling a confirmed paid registration creates a full refund and reserves the next FIFO offer", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const payingAttendee = await createAccount("ATTENDEE");
+  const firstWaiting = await createAccount("ATTENDEE");
+  const secondWaiting = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "10.50", refundWindowHours: 24 }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const paid = await request("/api/registrations/events/" + eventId, { method: "POST", token: payingAttendee.token });
+  await request("/api/payments/" + paid.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: payingAttendee.token, body: { outcome: "SUCCESS" },
+  });
+  const first = await request("/api/registrations/events/" + eventId, { method: "POST", token: firstWaiting.token });
+  const second = await request("/api/registrations/events/" + eventId, { method: "POST", token: secondWaiting.token });
+  assert.equal(first.payload.registration.status, "WAITLISTED");
+  assert.equal(second.payload.registration.status, "WAITLISTED");
+
+  const cancellation = await request("/api/registrations/" + paid.payload.registration.id + "/cancel", {
+    method: "POST", token: payingAttendee.token,
+  });
+  assert.equal(cancellation.response.status, 200, JSON.stringify(cancellation.payload));
+  assert.equal(cancellation.payload.refund.status, "PENDING");
+  assert.equal(cancellation.payload.refund.amountPaise, 1050);
+  const firstMine = await request("/api/registrations/mine", { token: firstWaiting.token });
+  assert.equal(firstMine.payload.registrations[0].status, "PENDING_PAYMENT");
+  const firstOffer = await queryTestDatabase(
+    'SELECT "paymentPurpose", "status" FROM "payments" WHERE "registrationId" = ? ORDER BY "id" DESC LIMIT 1',
+    [first.payload.registration.id]
+  );
+  assert.deepEqual(firstOffer, { paymentPurpose: "WAITLIST_OFFER", status: "PENDING" });
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+  const laterMine = await request("/api/registrations/mine", { token: secondWaiting.token });
+  assert.equal(laterMine.payload.registrations[0].status, "WAITLISTED");
+});
+test("organizer cancellation refunds paid confirmations, releases all seats once, and never promotes waitlist", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const payingAttendee = await createAccount("ATTENDEE");
+  const waitingAttendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "31.20" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: payingAttendee.token });
+  await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: payingAttendee.token, body: { outcome: "SUCCESS" },
+  });
+  const waiting = await request("/api/registrations/events/" + eventId, { method: "POST", token: waitingAttendee.token });
+  assert.equal(waiting.payload.registration.status, "WAITLISTED");
+
+  const cancelled = await request("/api/events/" + eventId + "/cancel", {
+    method: "POST", token: organizer.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+  const eventAfter = await queryTestDatabase('SELECT "status", "seatsTaken" FROM "events" WHERE "id" = ?', [eventId]);
+  assert.deepEqual(eventAfter, { status: "CANCELLED", seatsTaken: 0 });
+  const reg = await queryTestDatabase(
+    'SELECT "status" FROM "registrations" WHERE "id" = ?',
+    [checkout.payload.registration.id]
+  );
+  assert.deepEqual(reg, { status: "CANCELLED" });
+  const payment = await queryTestDatabase(
+    'SELECT "status" FROM "payments" WHERE "id" = ?',
+    [checkout.payload.payment.id]
+  );
+  assert.deepEqual(payment, { status: "SUCCEEDED" });
+  const refund = await queryTestDatabase(
+    'SELECT "amountPaise", "status" FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  );
+  assert.deepEqual(refund, { amountPaise: 3120, status: "PENDING" });
+  const waitingMine = await request("/api/registrations/mine", { token: waitingAttendee.token });
+  assert.equal(waitingMine.payload.registrations[0].status, "CANCELLED");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [waiting.payload.registration.id, "WAITLIST_OFFER"]
+  ).then((row) => row.count), 0);
+});
+test("concurrent organizer cancellation requests create one refund and release capacity once", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const waiting = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "19.99" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  const waitingRegistration = await request("/api/registrations/events/" + eventId, { method: "POST", token: waiting.token });
+  assert.equal(waitingRegistration.payload.registration.status, "WAITLISTED");
+
+  const results = await Promise.all([1, 2].map(() => request("/api/events/" + eventId + "/cancel", {
+    method: "POST", token: organizer.token,
+  })));
+  assert.deepEqual(results.map((result) => result.response.status).sort(), [200, 409]);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.count), 1);
+  assert.deepEqual(await queryTestDatabase('SELECT "status", "seatsTaken" FROM "events" WHERE "id" = ?', [eventId]), {
+    status: "CANCELLED", seatsTaken: 0,
+  });
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [waitingRegistration.payload.registration.id, "WAITLIST_OFFER"]
+  ).then((row) => row.count), 0);
+});
+test("expired and failed paid FIFO offers move attendees to the tail exactly once", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const owner = await createAccount("ATTENDEE");
+  const attendees = [await createAccount("ATTENDEE"), await createAccount("ATTENDEE"), await createAccount("ATTENDEE")];
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "6.75" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const ownerCheckout = await request("/api/registrations/events/" + eventId, { method: "POST", token: owner.token });
+  await request("/api/payments/" + ownerCheckout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: owner.token, body: { outcome: "SUCCESS" },
+  });
+  const waiters = [];
+  for (const attendee of attendees) {
+    waiters.push(await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token }));
+  }
+  await request("/api/registrations/" + ownerCheckout.payload.registration.id + "/cancel", {
+    method: "POST", token: owner.token,
+  });
+  const firstPayment = await queryTestDatabase(
+    'SELECT "id" FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [waiters[0].payload.registration.id, "WAITLIST_OFFER"]
+  );
+  await new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, (error) => {
+      if (error) return reject(error);
+      database.run('UPDATE "payments" SET "expiresAt" = datetime("now", "-1 minute") WHERE "id" = ?', [firstPayment.id], (updateError) => {
+        database.close((closeError) => updateError || closeError ? reject(updateError || closeError) : resolve());
+      });
+    });
+  });
+
+  const expired = await request("/api/payments/" + firstPayment.id + "/mock-outcome", {
+    method: "POST", token: attendees[0].token, body: { outcome: "PENDING" },
+  });
+  assert.equal(expired.payload.payment.status, "EXPIRED");
+  const duplicateExpiry = await request("/api/payments/" + firstPayment.id + "/mock-outcome", {
+    method: "POST", token: attendees[0].token, body: { outcome: "PENDING" },
+  });
+  assert.equal(duplicateExpiry.payload.payment.status, "EXPIRED");
+  const secondPayment = await queryTestDatabase(
+    'SELECT "id", "status" FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [waiters[1].payload.registration.id, "WAITLIST_OFFER"]
+  );
+  assert.equal(secondPayment.status, "PENDING");
+
+  const failedSecond = await request("/api/payments/" + secondPayment.id + "/mock-outcome", {
+    method: "POST", token: attendees[1].token, body: { outcome: "FAILURE" },
+  });
+  assert.equal(failedSecond.payload.registration.status, "WAITLISTED");
+  const thirdMine = await request("/api/registrations/mine", { token: attendees[2].token });
+  assert.equal(thirdMine.payload.registrations[0].status, "PENDING_PAYMENT");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [waiters[2].payload.registration.id, "WAITLIST_OFFER"]
+  ).then((row) => row.count), 1);
+  const firstQueuePosition = await queryTestDatabase(
+    'SELECT "waitlistPositionAt" FROM "registrations" WHERE "id" = ?',
+    [waiters[0].payload.registration.id]
+  );
+  const secondQueuePosition = await queryTestDatabase(
+    'SELECT "waitlistPositionAt" FROM "registrations" WHERE "id" = ?',
+    [waiters[1].payload.registration.id]
+  );
+  assert.ok(new Date(firstQueuePosition.waitlistPositionAt) < new Date(secondQueuePosition.waitlistPositionAt));
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+});
+test("pending mock payment remains pending and duplicate success confirms only once", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "5.25" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  const pending = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "PENDING" },
+  });
+  assert.equal(pending.payload.payment.status, "PENDING");
+  assert.equal(pending.payload.registration.status, "PENDING_PAYMENT");
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+
+  const success = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  const duplicate = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(success.payload.registration.status, "CONFIRMED");
+  assert.equal(duplicate.payload.registration.status, "CONFIRMED");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "notifications" WHERE "registrationId" = ? AND "type" = ?',
+    [checkout.payload.registration.id, "REGISTRATION_CONFIRMED"]
+  ).then((row) => row.count), 1);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+});
+
+test("mock refund failure and simulated success reuse one full-refund record and key", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "19.99" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  await request("/api/registrations/" + checkout.payload.registration.id + "/cancel", {
+    method: "POST", token: attendee.token,
+  });
+  const refundIdempotency = await queryTestDatabase(
+    'SELECT "idempotencyKey", "amountPaise", "status" FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  );
+  assert.deepEqual(refundIdempotency, { idempotencyKey: "refund:" + checkout.payload.payment.id, amountPaise: 1999, status: "PENDING" });
+
+  const failed = await request("/api/payments/" + checkout.payload.payment.id + "/mock-refund-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "FAILURE" },
+  });
+  assert.equal(failed.payload.refund.status, "FAILED");
+  const simulated = await request("/api/payments/" + checkout.payload.payment.id + "/mock-refund-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(simulated.payload.refund.status, "SIMULATED");
+  assert.match(simulated.payload.message, /no real refund occurred/i);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.count), 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT "idempotencyKey" FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.idempotencyKey), refundIdempotency.idempotencyKey);
+});
+
+test("paid attendee cancellation uses the 24-hour default when refundWindowHours is null", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const start = Date.now() + 6 * 60 * 60 * 1000;
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({
+      capacity: 1, ticketPrice: "2.00", refundWindowHours: null,
+      startDateTime: new Date(start).toISOString(),
+      endDateTime: new Date(start + 60 * 60 * 1000).toISOString(),
+    }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+  });
+  const cancellation = await request("/api/registrations/" + checkout.payload.registration.id + "/cancel", {
+    method: "POST", token: attendee.token,
+  });
+  assert.equal(cancellation.response.status, 400);
+  assert.equal(cancellation.payload.error.code, "CANCELLATION_CUTOFF_PASSED");
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.count), 0);
+});
+
+test("event creation rejects fractional-paise ticket prices and negative refund windows", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const fractional = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ ticketPrice: "12.345" }),
+  });
+  assert.equal(fractional.response.status, 400);
+  assert.equal(fractional.payload.error.code, "INVALID_TICKET_PRICE");
+
+  const negativeWindow = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ refundWindowHours: -1 }),
+  });
+  assert.equal(negativeWindow.response.status, 400);
+  assert.equal(negativeWindow.payload.error.code, "INVALID_REFUND_WINDOW");
+
+  const existingEvent = await request("/api/events", {
+    method: "POST", token: organizer.token, body: validEvent(),
+  });
+  const invalidUpdate = await request("/api/events/" + existingEvent.payload.event.id, {
+    method: "PUT", token: organizer.token, body: { refundWindowHours: -1 },
+  });
+  assert.equal(invalidUpdate.response.status, 400);
+  assert.equal(invalidUpdate.payload.error.code, "INVALID_REFUND_WINDOW");
+});
+
+test("concurrent paid last-seat checkouts reserve exactly one pending seat", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendees = [];
+  for (let index = 0; index < 5; index += 1) attendees.push(await createAccount("ATTENDEE"));
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "1.01" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const outcomes = await Promise.all(attendees.map((attendee) =>
+    request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token })
+  ));
+  assert.ok(outcomes.every((item) => item.response.status === 201));
+  assert.equal(outcomes.filter((item) => item.payload.registration.status === "PENDING_PAYMENT").length, 1);
+  assert.equal(outcomes.filter((item) => item.payload.registration.status === "WAITLISTED").length, 4);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" p JOIN "registrations" r ON r."id" = p."registrationId" WHERE r."eventId" = ?',
+    [eventId]
+  ).then((row) => row.count), 1);
+});
+test("late-success refund blocks another FIFO offer until the mock refund resolves", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const owner = await createAccount("ATTENDEE");
+  const firstWaiter = await createAccount("ATTENDEE");
+  const secondWaiter = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "7.00" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const ownerCheckout = await request("/api/registrations/events/" + eventId, { method: "POST", token: owner.token });
+  await request("/api/payments/" + ownerCheckout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: owner.token, body: { outcome: "SUCCESS" },
+  });
+  const first = await request("/api/registrations/events/" + eventId, { method: "POST", token: firstWaiter.token });
+  const second = await request("/api/registrations/events/" + eventId, { method: "POST", token: secondWaiter.token });
+  await request("/api/registrations/" + ownerCheckout.payload.registration.id + "/cancel", {
+    method: "POST", token: owner.token,
+  });
+  const firstOffer = await queryTestDatabase(
+    'SELECT "id" FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [first.payload.registration.id, "WAITLIST_OFFER"]
+  );
+  await new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, (error) => {
+      if (error) return reject(error);
+      database.run('UPDATE "payments" SET "expiresAt" = datetime("now", "-1 minute") WHERE "id" = ?', [firstOffer.id], (updateError) => {
+        database.close((closeError) => updateError || closeError ? reject(updateError || closeError) : resolve());
+      });
+    });
+  });
+  const late = await request("/api/payments/" + firstOffer.id + "/mock-outcome", {
+    method: "POST", token: firstWaiter.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(late.payload.payment.status, "LATE_SUCCEEDED");
+  assert.equal(late.payload.registration.status, "WAITLISTED");
+  assert.equal(late.payload.refund.status, "PENDING");
+
+  const secondMine = await request("/api/registrations/mine", { token: secondWaiter.token });
+  assert.equal(secondMine.payload.registrations[0].status, "PENDING_PAYMENT");
+  const secondOffer = await queryTestDatabase(
+    'SELECT "id" FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [second.payload.registration.id, "WAITLIST_OFFER"]
+  );
+  await request("/api/payments/" + secondOffer.id + "/mock-outcome", {
+    method: "POST", token: secondWaiter.token, body: { outcome: "FAILURE" },
+  });
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 0);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [first.payload.registration.id, "WAITLIST_OFFER"]
+  ).then((row) => row.count), 1);
+
+  const refundResolution = await request("/api/payments/" + firstOffer.id + "/mock-refund-outcome", {
+    method: "POST", token: firstWaiter.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(refundResolution.payload.refund.status, "SIMULATED");
+  const firstAfter = await request("/api/registrations/mine", { token: firstWaiter.token });
+  assert.equal(firstAfter.payload.registrations[0].status, "PENDING_PAYMENT");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
+    [first.payload.registration.id, "WAITLIST_OFFER"]
+  ).then((row) => row.count), 2);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+});
+test("concurrent last-seat paid checkout requests reserve once", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendees = [await createAccount("ATTENDEE"), await createAccount("ATTENDEE"), await createAccount("ATTENDEE")];
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "1.01" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const results = await Promise.all(attendees.map((attendee) =>
+    request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token })
+  ));
+  assert.equal(results.filter((item) => item.payload.registration.status === "PENDING_PAYMENT").length, 1);
+  assert.equal(results.filter((item) => item.payload.registration.status === "WAITLISTED").length, 2);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" p JOIN "registrations" r ON r."id" = p."registrationId" WHERE r."eventId" = ?',
+    [eventId]
+  ).then((row) => row.count), 1);
+});
+
+test("concurrent expiry and late mock success create one refund and no confirmed registration", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "9.90" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  await new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, (error) => {
+      if (error) return reject(error);
+      database.run('UPDATE "payments" SET "expiresAt" = datetime("now", "-1 minute") WHERE "id" = ?', [checkout.payload.payment.id], (updateError) => {
+        database.close((closeError) => updateError || closeError ? reject(updateError || closeError) : resolve());
+      });
+    });
+  });
+  const outcomes = await Promise.all([
+    request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+      method: "POST", token: attendee.token, body: { outcome: "SUCCESS" },
+    }),
+    request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+      method: "POST", token: attendee.token, body: { outcome: "PENDING" },
+    }),
+  ]);
+  assert.ok(outcomes.every((item) => item.response.status === 200));
+  assert.equal(await queryTestDatabase(
+    'SELECT "status" FROM "payments" WHERE "id" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.status), "LATE_SUCCEEDED");
+  assert.equal(await queryTestDatabase(
+    'SELECT "status" FROM "registrations" WHERE "id" = ?',
+    [checkout.payload.registration.id]
+  ).then((row) => row.status), "PAYMENT_REQUIRED");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.count), 1);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 0);
+});
+
+test("unrelated attendee cannot simulate another user's payment outcome", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const owner = await createAccount("ATTENDEE");
+  const other = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "3.50" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: owner.token });
+  const forbidden = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: other.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(forbidden.response.status, 403);
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
+  assert.equal(await queryTestDatabase(
+    'SELECT "status" FROM "payments" WHERE "id" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.status), "PENDING");
+});
+
+test("organizer cancellation expires pending checkout and releases its seat without refund", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const event = await request("/api/events", {
+    method: "POST", token: organizer.token,
+    body: validEvent({ capacity: 1, ticketPrice: "3.50" }),
+  });
+  const eventId = event.payload.event.id;
+  await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  const checkout = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  const cancel = await request("/api/events/" + eventId + "/cancel", { method: "POST", token: organizer.token });
+  assert.equal(cancel.response.status, 200, JSON.stringify(cancel.payload));
+  assert.equal(await queryTestDatabase(
+    'SELECT "status" FROM "payments" WHERE "id" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.status), "EXPIRED");
+  assert.equal(await queryTestDatabase(
+    'SELECT "status" FROM "registrations" WHERE "id" = ?',
+    [checkout.payload.registration.id]
+  ).then((row) => row.status), "CANCELLED");
+  assert.equal(await queryTestDatabase(
+    'SELECT "seatsTaken" FROM "events" WHERE "id" = ?',
+    [eventId]
+  ).then((row) => row.seatsTaken), 0);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "refunds" WHERE "paymentId" = ?',
+    [checkout.payload.payment.id]
+  ).then((row) => row.count), 0);
 });
