@@ -28,7 +28,7 @@ The backend suite in `backend/test/auth-api.test.js` and `backend/test/event-api
 
 | Area | Current scenarios covered |
 | --- | --- |
-| Authentication / sessions | Registration, duplicate email rejection, bcrypt password hashing, email verification gate, successful/invalid login, JWT validation and absolute expiry, current-user access, role checks, persisted idle sessions, idle-deadline extension and rejection of expired/removed sessions. |
+| Authentication / sessions | Registration, duplicate email rejection, bcrypt password hashing, email verification gate, successful/invalid login, JWT validation and absolute expiry, current-user access, role checks, persisted idle sessions, idle-deadline extension and rejection of expired/removed sessions. `TC-SEC-04` verifies the inactivity timeout (`SESSION_IDLE_TIMEOUT_SECONDS`, default 1800 seconds) and its upper bound at JWT expiry. |
 | Event lifecycle | Draft creation, list/manage own events, editing, publishing, cancelling and public visibility. |
 | Registration, capacity and check-in | Free-event registration, duplicate prevention, capacity reservation, FIFO waitlist promotion, attendee cancellation/cutoff, one-use ticket-token check-in and eligibility-gated feedback API. The concurrency suite includes six simultaneous attempts for the last seat; it is not a 500-attempt load test. |
 | Authorization and ownership | Anonymous/attendee restrictions, server-side role checks, prevention of one organizer modifying another organizer's event, ADMIN-specific event permissions. |
