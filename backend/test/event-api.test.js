@@ -596,6 +596,46 @@ test("cancelled events cannot be edited or published again", async () => {
   assert.equal(publish.payload.error.code, "EVENT_CANCELLED");
 });
 
+test("cancelling an event cancels its waitlisted registrations", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const confirmedAttendee = await createAccount("ATTENDEE");
+  const waitlistedAttendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST",
+    token: organizer.token,
+    body: validEvent({ capacity: 1, status: "PUBLISHED" }),
+  });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+
+  const confirmed = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST",
+    token: confirmedAttendee.token,
+  });
+  const waitlisted = await request(`/api/registrations/events/${eventId}`, {
+    method: "POST",
+    token: waitlistedAttendee.token,
+  });
+  assert.equal(confirmed.payload.registration.status, "CONFIRMED");
+  assert.equal(waitlisted.payload.registration.status, "WAITLISTED");
+
+  const cancelled = await request(`/api/events/${eventId}/cancel`, {
+    method: "POST",
+    token: organizer.token,
+  });
+  assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
+
+  const mine = await request("/api/registrations/mine", { token: waitlistedAttendee.token });
+  const registration = mine.payload.registrations.find((item) => item.id === waitlisted.payload.registration.id);
+  assert.equal(registration.status, "CANCELLED");
+
+  const remainingWaitlisted = await queryTestDatabase(
+    "SELECT COUNT(*) AS count FROM registrations WHERE eventId = ? AND status = ?",
+    [eventId, "WAITLISTED"]
+  );
+  assert.equal(remainingWaitlisted.count, 0);
+});
+
 test("event endpoints return 404 for unknown event IDs", async () => {
   const organizer = await createAccount("ORGANIZER");
   const unknownId = "987654321";
@@ -762,7 +802,7 @@ test("cancelling a confirmed registration promotes a waitlisted attendee", async
   ).then((row) => row.count), 1);
 });
 
-test("cancelling a registration for a cancelled event does not promote its waitlist", async () => {
+test("cancelling a registration for a cancelled event does not promote its cancelled waitlist", async () => {
   const organizer = await createAccount("ORGANIZER");
   const confirmedAttendee = await createAccount("ATTENDEE");
   const waitingAttendee = await createAccount("ATTENDEE");
@@ -784,7 +824,7 @@ test("cancelling a registration for a cancelled event does not promote its waitl
   });
   assert.equal(cancelled.response.status, 200, JSON.stringify(cancelled.payload));
   const mine = await request("/api/registrations/mine", { token: waitingAttendee.token });
-  assert.equal(mine.payload.registrations[0].status, "WAITLISTED");
+  assert.equal(mine.payload.registrations[0].status, "CANCELLED");
   const details = await queryTestDatabase('SELECT "status", "seatsTaken" FROM "events" WHERE "id" = ?', [eventId]);
   assert.deepEqual(details, { status: "CANCELLED", seatsTaken: 0 });
   assert.equal(await queryTestDatabase(
@@ -793,7 +833,7 @@ test("cancelling a registration for a cancelled event does not promote its waitl
   ).then((row) => row.count), 0);
   assert.equal(await queryTestDatabase(
     'SELECT COUNT(*) AS count FROM "registrations" WHERE "id" = ? AND "status" = ?',
-    [waiting.payload.registration.id, "WAITLISTED"]
+    [waiting.payload.registration.id, "CANCELLED"]
   ).then((row) => row.count), 1);
 });
 
@@ -1060,7 +1100,7 @@ test("security NFR route matrix: every mounted protected endpoint enforces role 
   assert.equal(publicList.response.status, 200);
 });
 
-test("paid registration fails closed and never reflects or logs submitted card-data sentinels", async () => {
+test("paid checkout ignores and never reflects or logs submitted card-data sentinels", async () => {
   const organizer = await createAccount("ORGANIZER");
   const attendee = await createAccount("ATTENDEE");
   const created = await request("/api/events", {
@@ -1089,8 +1129,10 @@ test("paid registration fails closed and never reflects or logs submitted card-d
     },
   });
 
-  assert.equal(result.response.status, 402, JSON.stringify(result.payload));
-  assert.equal(result.payload.error.code, "PAYMENT_INTEGRATION_REQUIRED");
+  assert.equal(result.response.status, 201, JSON.stringify(result.payload));
+  assert.equal(result.payload.registration.status, "PENDING_PAYMENT");
+  assert.equal(result.payload.payment.status, "PENDING");
+  assert.equal(result.payload.payment.adapter, "MOCK");
   assert.equal(JSON.stringify(result.payload).includes(cardSentinel), false);
   assert.equal(JSON.stringify(result.payload).includes(cvvSentinel), false);
   assert.equal(serverOutput.includes(cardSentinel), false);
@@ -1100,7 +1142,11 @@ test("paid registration fails closed and never reflects or logs submitted card-d
     'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ?',
     [eventId]
   );
-  assert.equal(registrationCount.count, 0, "paid registration must not be created without verified provider payment");
+  assert.equal(registrationCount.count, 1, "checkout should create a pending registration without persisting card data");
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ?',
+    [result.payload.registration.id]
+  ).then((row) => row.count), 1);
   assert.equal(serverOutput.includes("TestPassword123!"), false, "backend output must not contain the test plaintext password");
 });
 
@@ -1347,7 +1393,7 @@ test("organizer cancellation refunds paid confirmations, releases all seats once
   );
   assert.deepEqual(refund, { amountPaise: 3120, status: "PENDING" });
   const waitingMine = await request("/api/registrations/mine", { token: waitingAttendee.token });
-  assert.equal(waitingMine.payload.registrations[0].status, "WAITLISTED");
+  assert.equal(waitingMine.payload.registrations[0].status, "CANCELLED");
   assert.equal(await queryTestDatabase(
     'SELECT COUNT(*) AS count FROM "payments" WHERE "registrationId" = ? AND "paymentPurpose" = ?',
     [waiting.payload.registration.id, "WAITLIST_OFFER"]

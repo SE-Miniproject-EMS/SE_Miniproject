@@ -556,7 +556,7 @@ async function cancelEvent(req, res, next) {
       if (event.status === "CANCELLED") throw new ApiError(409, "ALREADY_CANCELLED", "Event is already cancelled");
 
       const activeRegistrations = await Registration.findAll({
-        where: { eventId: event.id, status: { [Op.in]: ["CONFIRMED", "PENDING_PAYMENT", "PAYMENT_REQUIRED"] } },
+        where: { eventId: event.id, status: { [Op.in]: ["CONFIRMED", "WAITLISTED", "PENDING_PAYMENT", "PAYMENT_REQUIRED"] } },
         transaction,
       });
       for (const registration of activeRegistrations) {
