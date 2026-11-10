@@ -1,6 +1,6 @@
 # Testing approach and results
 
-**Current documentation review:** 7 November 2026. Historical run counts retain their original run dates and must not be added together. Read this alongside `API_Integration_Test_Report.md`, `issue-12-regression-report.md`, and `IMPLEMENTATION_BASELINE.md`.
+**Current documentation review:** 10 November 2026. Historical run counts retain their original run dates and must not be added together. Read this alongside `API_Integration_Test_Report.md`, `issue-12-regression-report.md`, and `IMPLEMENTATION_BASELINE.md`.
 
 ## Repeatable local commands
 
@@ -44,7 +44,7 @@ GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, sy
 | --- | --- | --- |
 | `docs/issue-12-regression-report.md` | 20 backend integration tests passed, 0 failures; `npm run build` completed successfully. | This is the regression report recorded in the repository snapshot. It covers API/backend flows, not a complete browser journey. |
 | `docs/API_Integration_Test_Report.md` | Historical GitHub Actions run `40363629586` reported 18 tests passed and both backend validation and frontend build jobs successful. | This report is from an earlier commit. Keep it as historical evidence, not a conflicting current count. |
-| Current `main` CI (7 Nov 2026) | Run [#41889529354](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/41889529354): **28 backend tests passed, 0 failed**; backend syntax validation and frontend build passed. | This run validates the current merged main baseline through registration and idle-session changes. It does not run browser automation or production load tests. |
+| Current `main` verification (10 Nov 2026) | [GitHub Actions run #42750228467](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42750228467) passed backend validation and frontend build. Local `npm test`: **31 passed, 0 failed**; `npm run build`: passed. | This baseline includes the security verification updates. CI does not run browser automation or production load tests. |
 | Manual browser smoke test | Pending in the existing regression/test report. | A teammate still needs to rehearse registration/login, event creation/edit/publish/cancel, search/filtering, role/ownership behavior and record observed results/screenshots. Do not mark browser E2E tests as automated or passed. |
 | Local event search/listing benchmark reported on 29 Oct 2026 | 1,000/1,000 successful requests; 100 concurrent workers; p95 178.211 ms; maximum 259.926 ms; 100% completed under two seconds. | This is a local synthetic-data benchmark, not a production guarantee. It measures only event search/listing, not registration. The current registration suite functionally tests capacity and six simultaneous last-seat attempts; the SRS 500-attempt concurrency target and paid-record retention remain **NOT VERIFIED**. |
 

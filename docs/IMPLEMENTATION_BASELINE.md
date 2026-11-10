@@ -1,6 +1,6 @@
 # Implemented functionality baseline
 
-**Snapshot updated:** 7 November 2026 (main through registration and idle-session changes)
+**Snapshot updated:** 10 November 2026 (main through security verification updates)
 **Purpose:** Distinguish delivered behavior from the intended full-product requirements in the SRS. This status reflects the source files in this repository snapshot; it is not a release certification.
 
 ## Delivered in the current code baseline

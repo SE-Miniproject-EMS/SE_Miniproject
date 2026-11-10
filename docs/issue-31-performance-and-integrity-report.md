@@ -1,18 +1,21 @@
 # Issue #31: Performance, Concurrency, and Data-Integrity NFR Verification
 
-## Status and scope
+**SRS traceability:** NFR-PERF-01, NFR-PERF-02 and data-integrity/safety requirement in SRS §6.2  
+**Reviewed baseline:** uploaded repository snapshot dated 8 November 2026  
+**Important:** results from a local SQLite benchmark are not evidence of production or multi-instance scalability.
 
-This report records the repeatable benchmark procedure and the current repository limitations for SRS requirements NFR-PERF-01, NFR-PERF-02, and the data-integrity/safety requirement in SRS §6.2.
+## 1. Verification summary
 
-- **NFR-PERF-01 (event search/listing):** measured in one local synthetic-data run using the public `GET /api/events` endpoint. The result is specific to that machine and workload, not a production service-level guarantee.
-- **NFR-PERF-02 (500 concurrent registration attempts):** **not verified**. The free-event registration route/model and transactional capacity gate now exist, but no 500-attempt registration load test is recorded.
-- **Capacity and record integrity:** the API integration suite covers capacity reservation, FIFO waitlist promotion/cancellation, and six simultaneous attempts for the last available seat. This is functional concurrency evidence only; it does not establish the 500-attempt SRS target. Paid-registration record retention cannot be verified because no real payment provider or paid-registration persistence is present on this `main` baseline.
+| Requirement | Verification status | Evidence / limitation |
+|---|---|---|
+| NFR-PERF-01 — event search/listing under 2 seconds at 100 concurrent users | **Met for the recorded local run** | 1,000 requests / 100 workers; 1,000 successes; p95 178.211 ms; max 259.926 ms; 100% under 2 seconds. Raw JSON and CSV are retained in `docs/issue-31-results/`. |
+| NFR-PERF-02 — at least 500 concurrent registration attempts | **Harness added; run required on the latest snapshot** | Registration now exists. `backend/scripts/benchmark-registration-concurrency.js` submits 500 simultaneous authenticated requests to one isolated event and records all responses. Do not mark this target met until the script passes on the current branch and its raw artifacts are committed. |
+| Capacity/data integrity — no overbooking or lost confirmed registrations | **Covered by 6-way API regression test; 500-attempt evidence pending** | `event-api.test.js` already checks simultaneous requests for the last seat. The new 500-attempt harness checks exact registration count, confirmed count, waitlist count and `seatsTaken` consistency after load. |
+| Paid confirmed-registration integrity | **Not verified / blocked by provider dependency** | The API deliberately rejects paid-event registration with `PAYMENT_INTEGRATION_REQUIRED` until a payment provider and verified callback flow exist. The free-registration load test does not verify paid payment persistence. |
 
-Do not mark the full issue as passed based on the event search benchmark alone.
+## 2. Event search/listing benchmark
 
-## Repeatable local procedure
-
-The harness is `backend/scripts/benchmark-event-search.js`. It uses the project's actual Express server and Sequelize event model, creates a disposable SQLite database in the OS temporary directory, seeds future published synthetic events, and removes the temporary database at the end. It does not touch `backend/dev.db` or an explicitly configured application database. It uses Node's built-in `fetch`; no new load-testing dependency is needed.
+### Repeatable command
 
 From the repository root:
 
@@ -22,48 +25,78 @@ npm ci
 npm run benchmark:events -- --dataset-size 1000 --concurrency 100 --requests-per-user 10 --output-dir ../docs/issue-31-results
 ```
 
-The command creates 1,000 synthetic future published events and makes 1,000 measured requests using 100 concurrent workers (10 requests per worker). Requests are distributed in round-robin order across:
+The harness seeds a disposable SQLite database with 1,000 synthetic future published events, starts the real Express API, and drives `GET /api/events` using 100 concurrent workers and 1,000 measured requests. It mixes listing, text search, category filtering and location filtering. It records per-request latency, status, failures and summary percentiles in JSON and CSV. It does not touch `backend/dev.db`.
 
-1. Unfiltered event listing (`page=1&limit=50`)
-2. Text search (`search=Benchmark` by default)
-3. Category filtering (`category=Technology`)
-4. Location filtering (`location=Hall`)
+### Recorded result (29 October 2026)
 
-Four unmeasured warm-up requests are sent first, one per scenario. A request's latency includes waiting for the HTTP response and reading/parsing its JSON body. Each measured response must have HTTP 200 and the expected `{ events, pagination }` response shape. The per-request timeout defaults to 10 seconds.
+Environment: Darwin 27.0.0, Node v22.19.0, local SQLite, 100 concurrent workers, 1,000 synthetic published events.
 
-The dataset size, concurrency, requests per worker, timeout, search term, and output directory are configurable. Use `npm run benchmark:events -- --help` to see the options. Change only one workload dimension per comparative run and record each run's output separately.
+| Workload | Dataset | Workers | Requests | p50 | p95 | p99 | Max | Failures | Under 2 s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Listing + search/filter mix | 1,000 | 100 | 1,000 | 144.518 ms | 178.211 ms | 226.416 ms | 259.926 ms | 0 | 100.00% |
 
-## Measurement environment and interpretation
+**Interpretation:** NFR-PERF-01 was met for this recorded local workload. This is not a production SLA and does not demonstrate multi-instance scaling.
 
-The generated JSON records the run timestamp, OS, architecture, Node version, CPU model/count, total system memory, SQLite database file size, synthetic event count, warm-up count, measured request count, scenario paths, duration, raw request latencies, HTTP statuses, errors, and summary percentiles (min/mean/p50/p95/p99/max). The CSV contains one row per measured request for further analysis. The script exits with a non-zero status if a request fails or the strict 2-second target is not met; it still writes the JSON and CSV first so that a failed run remains diagnosable.
+Raw evidence:
+- `docs/issue-31-results/issue-31-benchmark-2026-10-29T15-08-41-265Z.json`
+- `docs/issue-31-results/issue-31-benchmark-2026-10-29T15-08-41-265Z.csv`
 
-The strict 2-second pass flag is conservative: every measured request must succeed and finish in **less than 2,000 ms**. The report also provides p50/p95/p99 and the proportion under 2 seconds, so outliers are visible rather than hidden by an average. A local run measures the development stack on the recorded machine; it is not evidence of production or multi-instance performance. SQLite is a single-file development database and should not be treated as a substitute for the intended shared production database.
+## 3. Registration concurrency and capacity benchmark
 
-The default output directory (`backend/benchmark-results`) is ignored by Git. The command above explicitly saves artifacts to `docs/issue-31-results`; inspect them before including them in the PR. Do not commit results from a failed or interrupted run without marking them accordingly.
+The latest repository snapshot now includes registration, waitlisting and transactional capacity reservation. The earlier report's statement that registration did not exist is stale and has been superseded by this section.
 
-## Results
+### Run the 500-attempt benchmark
 
-One local isolated SQLite benchmark was completed on Darwin 27.0.0 using Node v22.19.0, 100 concurrent workers and 1,000 measured requests against 1,000 synthetic published events. Result: 1,000/1,000 requests succeeded; p95 latency was 178.211 ms, maximum latency was 259.926 ms, and 100.00% completed under two seconds. This result applies only to this local search/listing workload. It does not exercise registration. The current API integration suite covers six simultaneous attempts for the last seat, but the 500-attempt registration load target remains **NOT VERIFIED**. The generated JSON and CSV files are retained in docs/issue-31-results.
+```bash
+cd backend
+npm ci
+npm run benchmark:registrations
+```
 
-| Workload | Dataset | Concurrent workers | Requests | p50 | p95 | p99 | Max | Failures | Under 2 s | Disposition |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| Listing + search/filter mix | 1,000 synthetic published events | 100 | 1,000 | 144.518 ms | 178.211 ms | 226.416 ms | 259.926 ms | 0 | 100.00% | MET for this local run; registration integrity not tested |
+The script:
+1. Creates a unique temporary SQLite database and never reads or modifies the configured development database.
+2. Seeds one published free event, one organizer and 500 synthetic attendee identities.
+3. Creates 500 valid short-lived JWT sessions without measuring account creation or password hashing.
+4. Sends 500 registration POST requests concurrently to the real `/api/registrations/events/:eventId` endpoint.
+5. Verifies every request response, the final number of registration records, confirmed count, waitlisted count and event `seatsTaken`.
+6. Writes timestamped raw JSON and CSV artifacts under `docs/issue-31-results/`.
 
-Use the generated JSON as the raw evidence and replace the pending values with the measured values. If you change the dataset size or request count, update this table accordingly.
+Default event capacity is 100. A correct run should produce exactly 100 `CONFIRMED`, 400 `WAITLISTED`, 500 total registration records and `seatsTaken=100`, with 500 successful HTTP 201 responses. The script exits non-zero if any request fails or the final integrity invariants do not match. Capacity can be changed for additional experiments using `REGISTRATION_BENCHMARK_CAPACITY`, but the attempt count is intentionally fixed at 500 for this issue.
 
-## Not-yet-verified data-integrity checks and required follow-up
+The test is repeatable, but its outcome must be captured from the user's actual machine. Do not write expected values into the results table as if they were measured.
 
-The current code has a free-event registration model/route, duplicate-registration constraint, SQLite IMMEDIATE transaction, conditional capacity update and FIFO waitlist behavior. The API suite verifies basic functional cases, including six simultaneous requests contending for the last seat. These tests do not replace a controlled 500-attempt stress run.
+### Results to fill after execution
 
-Before claiming NFR-PERF-02 or the full SRS §6.2 concurrency/data-integrity target:
-- Run 500 concurrent attempts from unique attendees against an isolated, capacity-limited event/database.
-- Record the environment, application/database versions, workload generation method, success/rejection/error counts, elapsed time and latency distribution.
-- Inspect the final confirmed count and ensure it never exceeds capacity; verify no duplicate or lost confirmed registration records.
-- Exercise retries, timeouts and concurrent cancellation/waitlist promotion separately.
-- Preserve raw results and the exact command/script used; do not send load traffic to shared or production data.
+| Run date / environment | Attempts | Capacity | Confirmed | Waitlisted | HTTP failures | p95 latency | Integrity result | Raw artifact |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| Pending run on latest snapshot | 500 | 100 | — | — | — | — | NOT YET VERIFIED | Add generated JSON/CSV here |
 
-Paid-registration retention remains not assessable until a provider-backed paid-registration flow is implemented and verified. The local search benchmark is not evidence for registration integrity, high availability or horizontal scaling.
- 
-## Failures and follow-up defects
+## 4. Existing API regression coverage
 
-This report preserves the historical local search/listing benchmark and records the remaining registration-load and data-integrity gap. It does not claim the 500-attempt target was met. Record any observed slow scenario, HTTP error, timeout, or payload failure here and create a separate defect issue if needed.
+The backend API suite includes a simultaneous six-attendee attempt against a one-seat event. It asserts:
+- all six requests are accepted into either confirmed or waitlisted state;
+- exactly one registration is confirmed and five are waitlisted;
+- `seatsTaken` remains one;
+- persisted confirmed and waitlisted counts match the response states.
+
+This is a useful concurrency regression test, but it is not a substitute for the 500-attempt benchmark.
+
+## 5. Environment, interpretation and limitations
+
+- Both benchmark harnesses use disposable SQLite files and a single local API process.
+- The search benchmark's result is tied to the machine, Node version, SQLite dataset and workload recorded in its JSON artifact.
+- The registration benchmark uses pre-seeded identities and valid sessions. It measures registration contention, not sign-up/login throughput.
+- A successful 500-request local run demonstrates the tested local implementation's capacity behavior under that workload. It does not prove a horizontally scaled production deployment can sustain the same rate.
+- Payment-provider callbacks, paid registration, refunds and preservation of verified paid records remain outside the scope of the free-registration benchmark.
+- For a production-grade scale claim, repeat the test against the intended shared database and multiple API instances, while collecting throughput, p50/p95/p99 latency, error rate, database lock/connection metrics and queue depth.
+
+## 6. Follow-up defects
+
+If the benchmark fails, preserve its JSON/CSV and report:
+- exact failure response/status and attempt number;
+- database error or timeout, if present;
+- final confirmed/waitlisted/total counts and `seatsTaken`;
+- Node version, OS, CPU and memory;
+- whether the failure is reproducible on a second isolated run.
+
+Create a defect issue for any overbooking, duplicate, missing record or unhandled request failure. Do not suppress failures or describe an interrupted run as passing.
