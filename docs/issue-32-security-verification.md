@@ -1,6 +1,6 @@
 # Issue #32 — Security NFR verification
 
-**Verification baseline:** current `main` merged through the registration and idle-session changes (November 2026).  
+**Verification baseline:** current `main` merged through the registration and idle-session changes (November 2026).
 **Scope:** NFR-SEC-01 through NFR-SEC-04 from SRS §6.3.2. This report distinguishes implemented controls from controls that cannot be certified in the current prototype.
 
 ## Security requirement evidence

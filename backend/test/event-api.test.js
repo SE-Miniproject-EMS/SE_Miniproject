@@ -142,6 +142,33 @@ async function insertSession(token) {
   });
 }
 
+
+async function createAdminAccount() {
+  const email = `admin-${process.pid}-${accountCounter++}@example.com`;
+  const id = await new Promise((resolve, reject) => {
+    const database = new sqlite3.Database(databaseFile, (openError) => {
+      if (openError) return reject(openError);
+      database.run(
+        `INSERT INTO users
+          (name, email, passwordHash, role, isVerified, failedAttempts, lockUntil, createdAt, updatedAt)
+         VALUES (?, ?, ?, 'ADMIN', 1, 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        ["Test Administrator", email, "$2a$10$security-matrix-test-only-not-a-login-hash"],
+        function (insertError) {
+          database.close((closeError) => {
+            if (insertError) reject(insertError);
+            else if (closeError) reject(closeError);
+            else resolve(this.lastID);
+          });
+        }
+      );
+    });
+  });
+  const user = { id, email, role: "ADMIN" };
+  const token = signAccessToken(user);
+  await insertSession(token);
+  return { user, token };
+}
+
 async function request(route, { method = "GET", token, body } = {}) {
   const headers = {};
   if (body !== undefined) headers["content-type"] = "application/json";
@@ -889,13 +916,158 @@ test("registration rejects unauthenticated, malformed, organizer, and unavailabl
   assert.equal(missingEvent.payload.error.code, "EVENT_UNAVAILABLE");
 });
 
-test("paid-event registration is rejected until a payment provider is configured", async () => {
+
+test("security NFR route matrix: every mounted protected endpoint enforces role authorization", async () => {
+  const attendee = await createAccount("ATTENDEE");
+  const organizer = await createAccount("ORGANIZER");
+  const admin = await createAdminAccount();
+  assert.equal(serverOutput.includes("TestPassword123!"), false, "backend output must not contain the test plaintext password");
+  const roles = {
+    ATTENDEE: attendee.token,
+    ORGANIZER: organizer.token,
+    ADMIN: admin.token,
+  };
+
+  const routeMatrix = [
+    {
+      name: "current user",
+      method: "GET",
+      path: "/api/auth/me",
+      expected: { ATTENDEE: 200, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
+      name: "authenticated ping",
+      method: "GET",
+      path: "/api/example/ping",
+      expected: { ATTENDEE: 200, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
+      name: "organizer-only example",
+      method: "GET",
+      path: "/api/example/organizer-only",
+      expected: { ATTENDEE: 403, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
+      name: "admin-only example",
+      method: "GET",
+      path: "/api/example/admin-only",
+      expected: { ATTENDEE: 403, ORGANIZER: 403, ADMIN: 200 },
+    },
+    {
+      name: "manage events",
+      method: "GET",
+      path: "/api/events/manage/mine",
+      expected: { ATTENDEE: 403, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
+      name: "create event",
+      method: "POST",
+      path: "/api/events",
+      body: validEvent(),
+      expected: { ATTENDEE: 403, ORGANIZER: 201, ADMIN: 201 },
+    },
+    {
+      name: "update event",
+      method: "PUT",
+      path: "/api/events/987654321",
+      body: { title: "RBAC matrix update" },
+      expected: { ATTENDEE: 403, ORGANIZER: 404, ADMIN: 404 },
+    },
+    {
+      name: "publish event",
+      method: "POST",
+      path: "/api/events/987654321/publish",
+      expected: { ATTENDEE: 403, ORGANIZER: 404, ADMIN: 404 },
+    },
+    {
+      name: "cancel event",
+      method: "POST",
+      path: "/api/events/987654321/cancel",
+      expected: { ATTENDEE: 403, ORGANIZER: 404, ADMIN: 404 },
+    },
+    {
+      name: "list own registrations",
+      method: "GET",
+      path: "/api/registrations/mine",
+      expected: { ATTENDEE: 200, ORGANIZER: 403, ADMIN: 200 },
+    },
+    {
+      name: "register for event",
+      method: "POST",
+      path: "/api/registrations/events/987654321",
+      expected: { ATTENDEE: 404, ORGANIZER: 403, ADMIN: 403 },
+    },
+    {
+      name: "cancel own registration",
+      method: "POST",
+      path: "/api/registrations/987654321/cancel",
+      expected: { ATTENDEE: 404, ORGANIZER: 403, ADMIN: 403 },
+    },
+    {
+      name: "check in ticket",
+      method: "POST",
+      path: "/api/registrations/check-in",
+      body: { eventId: 987654321, ticketToken: "invalid-ticket-token-1234567890" },
+      expected: { ATTENDEE: 403, ORGANIZER: 404, ADMIN: 404 },
+    },
+    {
+      name: "submit event feedback",
+      method: "POST",
+      path: "/api/feedback/events/987654321",
+      body: { rating: 5 },
+      expected: { ATTENDEE: 404, ORGANIZER: 403, ADMIN: 403 },
+    },
+    {
+      name: "view event feedback",
+      method: "GET",
+      path: "/api/feedback/events/987654321",
+      expected: { ATTENDEE: 403, ORGANIZER: 404, ADMIN: 404 },
+    },
+    {
+      name: "run reminder job",
+      method: "POST",
+      path: "/api/notifications/jobs/reminders",
+      expected: { ATTENDEE: 403, ORGANIZER: 403, ADMIN: 200 },
+    },
+  ];
+
+  for (const route of routeMatrix) {
+    const anonymous = await request(route.path, {
+      method: route.method,
+      body: route.body,
+    });
+    assert.equal(
+      anonymous.response.status,
+      401,
+      `${route.name}: anonymous request should be rejected; got ${anonymous.response.status}`
+    );
+
+    for (const role of Object.keys(roles)) {
+      const result = await request(route.path, {
+        method: route.method,
+        token: roles[role],
+        body: route.body,
+      });
+      assert.equal(
+        result.response.status,
+        route.expected[role],
+        `${route.name}: ${role} expected HTTP ${route.expected[role]}, got ${result.response.status}; ${JSON.stringify(result.payload)}`
+      );
+    }
+  }
+
+  // Public discovery routes must remain accessible without a bearer token.
+  const publicList = await request("/api/events");
+  assert.equal(publicList.response.status, 200);
+});
+
+test("paid registration fails closed and never reflects or logs submitted card-data sentinels", async () => {
   const organizer = await createAccount("ORGANIZER");
   const attendee = await createAccount("ATTENDEE");
   const created = await request("/api/events", {
     method: "POST",
     token: organizer.token,
-    body: validEvent({ ticketPrice: 25 }),
+    body: validEvent({ ticketPrice: 499 }),
   });
   assert.equal(created.response.status, 201, JSON.stringify(created.payload));
   const eventId = created.payload.event.id;
@@ -905,19 +1077,30 @@ test("paid-event registration is rejected until a payment provider is configured
   });
   assert.equal(published.response.status, 200, JSON.stringify(published.payload));
 
-  const panFixture = "test-pan-must-never-be-accepted-or-logged";
-  const cvvFixture = "test-cvv-must-never-be-accepted-or-logged";
-  const registration = await request(`/api/registrations/events/${eventId}`, {
+  const cardSentinel = "ISSUE32_CARD_DATA_SENTINEL_4111111111111111";
+  const cvvSentinel = "ISSUE32_CVV_SENTINEL_987";
+  const result = await request(`/api/registrations/events/${eventId}`, {
     method: "POST",
     token: attendee.token,
-    body: { cardNumber: panFixture, cvv: cvvFixture },
+    body: {
+      cardNumber: cardSentinel,
+      cvv: cvvSentinel,
+      expiry: "12/30",
+      paymentToken: "untrusted-client-supplied-token",
+    },
   });
-  assert.equal(registration.response.status, 402);
-  assert.equal(registration.payload.error.code, "PAYMENT_INTEGRATION_REQUIRED");
-  assert.equal(serverOutput.includes(panFixture), false);
-  assert.equal(serverOutput.includes(cvvFixture), false);
 
-  const mine = await request("/api/registrations/mine", { token: attendee.token });
-  assert.equal(mine.response.status, 200, JSON.stringify(mine.payload));
-  assert.deepEqual(mine.payload.registrations, []);
+  assert.equal(result.response.status, 402, JSON.stringify(result.payload));
+  assert.equal(result.payload.error.code, "PAYMENT_INTEGRATION_REQUIRED");
+  assert.equal(JSON.stringify(result.payload).includes(cardSentinel), false);
+  assert.equal(JSON.stringify(result.payload).includes(cvvSentinel), false);
+  assert.equal(serverOutput.includes(cardSentinel), false);
+  assert.equal(serverOutput.includes(cvvSentinel), false);
+
+  const registrationCount = await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "registrations" WHERE "eventId" = ?',
+    [eventId]
+  );
+  assert.equal(registrationCount.count, 0, "paid registration must not be created without verified provider payment");
+  assert.equal(serverOutput.includes("TestPassword123!"), false, "backend output must not contain the test plaintext password");
 });
