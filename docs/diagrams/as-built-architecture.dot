@@ -1,28 +1,41 @@
 digraph asbuilt {
-  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.65", fontname="Arial", fontsize=18, labelloc=t, label="EMS — AS-BUILT ARCHITECTURE (29 OCT 2026 BASELINE)"];
+  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.65", fontname="Arial", fontsize=18, labelloc=t, label="EMS — AS-BUILT ARCHITECTURE (10 NOV 2026 MAIN BASELINE)"];
   node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, color="#375a7f", penwidth=1.2, margin="0.15,0.1"];
   edge [fontname="Arial", fontsize=9, color="#536273", arrowsize=0.75];
 
   browser [label="Browser UI\nReact 18 + Vite\nPages · AuthContext · Axios client", fillcolor="#e9f2ff"];
   express [label="Express API\nJSON · CORS · routes · error handling", fillcolor="#f0f4fb"];
-  {rank=same; auth; events; middleware;}
+
+  {rank=same; auth; events; registration; feedback; notifications; middleware;}
   auth [label="Auth routes + controller\nregister · verify · login · current user", fillcolor="#e4f5e9"];
-  events [label="Event routes + controller\ncreate · list/search · detail · edit · publish · cancel", fillcolor="#e4f5e9"];
-  middleware [label="Shared middleware\nJWT authentication · role/ownership checks", fillcolor="#fff2d8"];
-  models [label="Sequelize models\nUser · Event\nController-to-model coupling", fillcolor="#f0f4fb"];
+  events [label="Event routes + controller\ncreate · list/search · view · edit · publish · cancel", fillcolor="#e4f5e9"];
+  registration [label="Registration routes + controller\nfree booking · capacity transaction · FIFO waitlist\ncancellation · one-use ticket token · check-in", fillcolor="#e4f5e9"];
+  feedback [label="Feedback routes + controller\neligibility · submit · organizer/admin view", fillcolor="#e4f5e9"];
+  notifications [label="Notification service\nDB queue · deduplication · console test delivery\n(no external email/SMS provider)", fillcolor="#fff2d8"];
+  middleware [label="Shared middleware\nJWT authentication · DB-backed idle session\nrole · ownership checks", fillcolor="#fff2d8"];
+
+  models [label="Sequelize models\nUser · Session · Event · Registration\nNotification · Feedback\ncontrollers retain direct model coupling", fillcolor="#f0f4fb"];
   sqlite [shape=cylinder, label="SQLite file\nDATABASE_FILE (default ./dev.db)\nLOCAL DEVELOPMENT / TESTS", fillcolor="#f4eaff", color="#74509c"];
   ci [label="GitHub Actions CI\nsyntax · backend tests · frontend build\n(not runtime infrastructure)", fillcolor="#f5f5f5", color="#6b7280"];
-  missing [label="Not present in reviewed baseline\nregistration · payment · ticket/check-in\nnotifications · feedback · reporting", fillcolor="#fff7dc", color="#aa8b31"];
+  missing [label="Not present on reviewed main\nreal payment provider / refunds · QR image & camera UI\nadmin/organizer dashboards · CSV exports\nproduction PostgreSQL / multi-instance deployment", fillcolor="#fff7dc", color="#aa8b31"];
 
   browser -> express [label="HTTP / JSON"];
   express -> auth [label="/api/auth"];
   express -> events [label="/api/events"];
+  express -> registration [label="/api/registrations"];
+  express -> feedback [label="/api/feedback"];
+  express -> notifications [label="/api/notifications"];
   express -> middleware [label="protected routes"];
-  auth -> middleware [dir=both, label="JWT / role checks", constraint=false];
-  events -> middleware [dir=both, label="JWT / ownership checks", constraint=false];
+  auth -> middleware [dir=both, label="JWT + session", constraint=false];
+  events -> middleware [dir=both, label="role + ownership", constraint=false];
+  registration -> middleware [dir=both, label="attendee / organizer / admin", constraint=false];
+  feedback -> middleware [dir=both, label="eligibility + ownership", constraint=false];
   auth -> models;
   events -> models;
+  registration -> models [label="IMMEDIATE transaction\nconditional capacity update"];
+  feedback -> models;
+  notifications -> models;
   models -> sqlite [label="Sequelize persistence"];
   ci -> express [style=dashed, arrowhead=none, label="validates code"];
-  missing -> express [style=dashed, arrowhead=none, label="future backlog only"];
+  missing -> express [style=dashed, arrowhead=none, label="unimplemented / future scope"];
 }

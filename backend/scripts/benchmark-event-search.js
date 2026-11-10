@@ -116,8 +116,9 @@ function printHelp() {
     `  --search-term TEXT     Search term used by the text-filter scenario (default: Benchmark)\n` +
     `  --output-dir PATH      Directory for raw JSON/CSV output (default: benchmark-results)\n` +
     `  --help                 Show this help\n\n` +
-    `The harness uses a disposable SQLite database and a local child server. It does not test\n` +
-    `registration concurrency or capacity integrity because those API modules are not present.\n\n`);
+    `The harness uses a disposable SQLite database and a local child server. It measures event\n` +
+    `search/listing only. Run npm run benchmark:registrations for the separate 500-attempt\n` +
+    `registration capacity/integrity workload.\n\n`);
 }
 
 function getFreePort() {

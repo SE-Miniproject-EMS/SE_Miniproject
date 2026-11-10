@@ -1,8 +1,12 @@
-const { Op } = require("sequelize");
+const { Op, Transaction } = require("sequelize");
+const sequelize = require("../config/db");
 const Event = require("../models/Event");
+const Registration = require("../models/Registration");
+const Payment = require("../models/Payment");
 const User = require("../models/User");
 const { ApiError } = require("../middleware/errorHandler");
-const { queueEventNotice } = require("../services/notificationService");
+const { enqueue, queueEventNotice } = require("../services/notificationService");
+const { createRefund } = require("../services/registrationPaymentService");
 
 function validateEventData(data, { publishing = false } = {}) {
   const {
@@ -68,6 +72,10 @@ function validateEventData(data, { publishing = false } = {}) {
       "INVALID_TICKET_PRICE",
       "Ticket price cannot be negative"
     );
+  }
+
+  if (ticketPrice !== undefined && !/^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/.test(String(ticketPrice).trim())) {
+    throw new ApiError(400, "INVALID_TICKET_PRICE", "Ticket price must use whole paise (up to two decimal places)");
   }
 
   if (
@@ -541,36 +549,46 @@ async function publishEvent(req, res, next) {
 
 async function cancelEvent(req, res, next) {
   try {
-    const event = await Event.findByPk(req.params.id);
+    const result = await sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
+      const event = await Event.findByPk(req.params.id, { transaction });
+      if (!event) throw new ApiError(404, "NOT_FOUND", "Event not found");
+      ensureCanModify(event, req.user);
+      if (event.status === "CANCELLED") throw new ApiError(409, "ALREADY_CANCELLED", "Event is already cancelled");
 
-    if (!event) {
-      throw new ApiError(404, "NOT_FOUND", "Event not found");
-    }
-
-    ensureCanModify(event, req.user);
-
-    if (event.status === "CANCELLED") {
-      throw new ApiError(
-        409,
-        "ALREADY_CANCELLED",
-        "Event is already cancelled"
-      );
-    }
-
-    event.status = "CANCELLED";
-    await event.save();
-    await queueEventNotice(event, "EVENT_CANCELLED");
-
-    res.json({
-      message:
-        "Event cancelled successfully. Attendees have been queued for cancellation notification.",
-      event,
+      const activeRegistrations = await Registration.findAll({
+        where: { eventId: event.id, status: { [Op.in]: ["CONFIRMED", "WAITLISTED", "PENDING_PAYMENT", "PAYMENT_REQUIRED"] } },
+        transaction,
+      });
+      for (const registration of activeRegistrations) {
+        if (registration.status === "CONFIRMED") {
+          const payment = await Payment.findOne({
+            where: { registrationId: registration.id, status: "SUCCEEDED" },
+            order: [["createdAt", "DESC"], ["id", "DESC"]], transaction,
+          });
+          if (payment) await createRefund(payment, transaction);
+          await enqueue({
+            recipientId: registration.attendeeId, eventId: event.id, registrationId: registration.id,
+            type: "EVENT_CANCELLED", dedupeKey: "event-cancelled:" + event.id + ":" + registration.id,
+            payload: { title: event.title, startDateTime: event.startDateTime, venue: event.venue, mockRefund: Boolean(payment) },
+            transaction,
+          });
+        }
+        if (registration.status === "PENDING_PAYMENT") {
+          await Payment.update({ status: "EXPIRED" }, {
+            where: { registrationId: registration.id, status: "PENDING" }, transaction,
+          });
+        }
+        await registration.update({ status: "CANCELLED", ticketTokenHash: null }, { transaction });
+      }
+      await event.update({ status: "CANCELLED", seatsTaken: 0 }, { transaction });
+      return event;
     });
-  } catch (err) {
-    next(err);
-  }
+    res.json({
+      message: "Event cancelled; confirmed paid registrations have full mock refunds pending. No real refunds occurred.",
+      event: result,
+    });
+  } catch (err) { next(err); }
 }
-
 module.exports = {
   createEvent,
   listPublicEvents,

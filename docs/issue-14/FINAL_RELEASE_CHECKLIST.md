@@ -1,4 +1,4 @@
-﻿# Issue #14 ΓÇö Final Release Verification and Submission Checklist
+# Issue #14 - Final Release Verification and Submission Checklist
 
 ## Release information
 
@@ -39,10 +39,8 @@ Detailed machine-readable results: [e2e-results.json](e2e-results.json).
 
 ## Demonstration videos
 
-- [x] [Application demonstration video](application-demo.webm) ΓÇö organizer event lifecycle and public event experience.
-- [x] [Technical verification video](technical-verification.webm) ΓÇö health endpoint, verification-gated login, role restrictions, and mobile layout.
-
-Both clips are repository files and are viewable from this checklist after it is merged.
+- [x] [Application demonstration video](application-demo.webm) - organizer event lifecycle and public event experience.
+- [x] [Technical verification video](technical-verification.webm) - health endpoint, verification-gated login, role restrictions, and mobile layout.
 
 ## Known limitations and release risks
 
@@ -60,10 +58,10 @@ These audit findings are documented as outstanding limitations; the E2E workflow
 - [x] Core event-management and authorization workflows verified in a real browser.
 - [x] Application and technical demonstration videos recorded and linked above.
 - [x] Release limitations documented.
-- [x] Changes reviewed against current `main` and submitted for review in the linked PR.
-- [x] Release evidence merged to `main`.
-- [x] Issue #14 closed after all acceptance criteria were satisfied.
+- [x] Pull request #45 opened for review.
+- [ ] Release evidence merged to `main`.
+- [ ] Issue #14 closed after the PR is merged.
 
 ## Release decision
 
-**Status: Complete.** The required setup verification, automated checks, end-to-end workflows, and linked demonstration evidence are complete. Remaining dependency audit findings are listed above for follow-up.
+**Status: Awaiting PR review and merge.** Verification and demo materials are ready in [PR #45](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/45). Remaining dependency audit findings are listed above for follow-up.

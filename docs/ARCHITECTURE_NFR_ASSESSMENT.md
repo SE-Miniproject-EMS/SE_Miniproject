@@ -2,25 +2,27 @@
 
 **Issue:** [#35 — Verify maintainability and scalability architecture NFRs](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/35)  
 **SRS traceability:** NFR-MAINT-01, NFR-SCAL-01  
-**Cross-document NFR matrix:** [`docs/NFR_TRACEABILITY.md`](NFR_TRACEABILITY.md)
-**Review baseline:** repository snapshot `476204cb491f9aa542dd1dc5510bf560d12ceb89`, dated 29 October 2026  
+**Review baseline:** `main` at `8d961443b8cdadda89be4030bf581d4a7a191f67` (10 November 2026).
 **Scope:** architecture inspection and recommendations. This document does not claim that the future architecture has been implemented or load-tested.
 
 ## 1. Executive summary
 
-The current Event Management System is a small, layered full-stack application:
+The current Event Management System is a layered full-stack prototype:
 
-- React/Vite is the browser presentation layer.
-- Express routes expose HTTP endpoints and controllers implement request handling and application behavior.
-- Sequelize models provide persistence access.
-- SQLite is the local development database.
-- JWT authentication and role/ownership middleware protect relevant endpoints.
+- React/Vite provides the browser interface.
+- Express routes and middleware expose the API and enforce authentication/role checks.
+- Controllers coordinate application behavior and use Sequelize models.
+- SQLite is the local development and CI-test database.
+- The backend includes User, Event, Session, Registration, Notification and Feedback persistence.
+- Free-event registration, capacity reservation, FIFO waitlisting, attendee cancellation, one-use ticket tokens, check-in and feedback API flows are present.
+- Notification records are queued in the database; the development adapter writes test-delivery output to the backend console. No production email/SMS provider is configured.
+- No real payment gateway, payment/refund persistence, production deployment or multi-instance runtime is included in this baseline.
 
-This is a reasonable starting point for a course prototype and is simpler to operate than a distributed system. However, the backend currently has **route/controller-to-model coupling**: the inspected implementation does not establish a distinct service/use-case layer between controllers and Sequelize models. As the system gains registration, capacity management, payment, ticketing, notifications and feedback, this will make business rules harder to reuse and test independently.
+This is a reasonable starting point for a course prototype. The main maintainability gap remains **controller-to-model coupling**. The registration controller contains transaction coordination and business rules directly, while the notification service provides only a partial service boundary. A consistent application-service/repository layer is not established across domains, so business rules are harder to test independently of HTTP and SQLite.
 
-The current SQLite file is suitable for local development and isolated tests. It is **not a shared transactional database for multiple horizontally scaled application instances**. Running multiple API processes with separate local SQLite files would create divergent state; sharing one SQLite file across networked containers is not a safe scaling strategy.
+SQLite remains suitable for local development and isolated tests, but it is **not evidence of a shared transactional database for horizontally scaled application instances**. Separate local database files would diverge; this repository does not currently contain a PostgreSQL deployment or multi-instance configuration.
 
-**Conclusion:** NFR-MAINT-01 is partially satisfied by the existing separation of frontend, routes/controllers and models, but needs stronger business-logic boundaries. NFR-SCAL-01 is not demonstrated by the current deployment architecture. The recommended next step is a modular monolith with explicit services/repositories and a shared PostgreSQL database, deployed as stateless API replicas. A queue/worker should be added for asynchronous work when registration, notifications and reminders are implemented. Microservices are not recommended at this project's current scale.
+**Conclusion:** NFR-MAINT-01 is partially satisfied: frontend/API, routes, controllers, models and middleware have useful boundaries, but a consistent domain service boundary is still missing. NFR-SCAL-01 is not demonstrated: there is no shared production database or multi-instance deployment. The recommended direction remains a modular monolith with explicit application services/repositories and a shared PostgreSQL database. Microservices are not recommended at this project's current scale.
 
 ## 2. As-built architecture (reviewed baseline)
 
@@ -29,24 +31,28 @@ The current SQLite file is suitable for local development and isolated tests. It
 | Layer / component | Current responsibility | Observed boundary |
 |---|---|---|
 | Browser UI | React 18/Vite pages, authentication context and Axios API client | Separate frontend application communicating over HTTP/JSON |
-| HTTP/API | Express application, JSON parsing, CORS, health/auth/event/example route mounting and error handling | Routes define endpoint and middleware composition |
-| Authentication | Auth routes/controllers; password hashing, verification token and login behavior | Controller owns much of the request and authentication workflow |
-| Event management | Event routes/controllers; create, list/search, detail, edit, publish and cancel behavior | Controller handles request validation/behavior and uses Sequelize models |
-| Authorization | JWT authentication and role/ownership middleware | Reusable middleware boundary exists |
-| Persistence | Sequelize `User` and `Event` models | Model layer exists, but controllers access models directly in the reviewed implementation |
-| Database | SQLite file selected through `DATABASE_FILE` (default `./dev.db`) | Local, file-based persistence |
-| CI | GitHub Actions syntax checks, backend tests and frontend build | Build/test automation; not a runtime scaling component |
+| HTTP/API | Express application, JSON parsing, CORS, health/auth/event/registration/feedback/notification/example routes and error handling | Routes define endpoint and middleware composition |
+| Authentication | Auth routes/controller, bcrypt password hashing, email-verification token, JWT issuance and current-user route | Controller owns login flow; server-side idle-session tracking is persisted in the Session model |
+| Event management | Event routes/controller; create, list/search, detail, edit, publish and cancel | Controller validates and coordinates Event model operations |
+| Registration/check-in | Registration routes/controller; free registration, capacity transaction, FIFO waitlist, cancellation, one-use ticket tokens and check-in | Registration controller coordinates multi-record SQLite transactions directly |
+| Notifications | Notification model and service; enqueue/deduplicate notices and console test-delivery adapter | Queue record creation has a service boundary; no external email/SMS provider is configured |
+| Feedback | Feedback routes/controller/model for checked-in attendee submissions and restricted organizer/admin views | Separate domain endpoints/model; no full attendee feedback prompt UI |
+| Authorization | JWT authentication plus role/ownership middleware used by protected routes | Reusable middleware boundary; a full endpoint-by-endpoint permission matrix remains unverified |
+| Persistence | Sequelize models for User, Session, Event, Registration, Notification and Feedback | Controllers access Sequelize models directly in several domains; no consistent repository layer |
+| Database | SQLite file selected through `DATABASE_FILE` (default `./dev.db`) | Local, file-based persistence; not a shared multi-instance database |
+| CI | GitHub Actions syntax checks, backend tests and frontend build | Build/test automation; not runtime scalability evidence |
 
-The current model relationship is `User 1 → many Events` through `Event.organizerId`. The reviewed baseline does not contain registration, payment, ticket, notification or feedback persistence modules.
+Current model relationships include User-to-Event ownership, Event-to-Registration, and Registration-to-Event. Payment/Refund models and a real gateway integration are not present on this reviewed `main` baseline. QR token check-in exists, but QR image generation/camera scanning UI does not.
 
 ### 2.2 Request/data flow
 
-1. The browser sends an HTTP request to the Express API.
-2. Express routes select the endpoint and attach authentication/role middleware where required.
-3. The controller validates request data and performs the endpoint's application behavior.
-4. The controller reads/writes through Sequelize models.
-5. Sequelize persists to the configured SQLite database file.
-6. The controller returns an HTTP/JSON response to the browser.
+1. The browser sends an HTTP/JSON request to the Express API.
+2. Express routes compose authentication and role middleware for protected endpoints.
+3. The controller validates input and coordinates the use case; registration operations use an explicit SQLite IMMEDIATE transaction.
+4. Controllers read/write Sequelize models. Registration capacity uses a conditional update and the attendee/event pair has a uniqueness constraint.
+5. Sequelize persists to the configured SQLite file. Authenticated sessions are represented by rows in the Session table and their idle deadlines are advanced by authentication middleware.
+6. Registration/event changes can enqueue deduplicated Notification rows within the relevant transaction; the current development adapter logs test-delivery output rather than sending real email/SMS.
+7. The controller returns an HTTP/JSON response to the browser.
 
 The diagram source is `docs/diagrams/as-built-architecture.dot`.
 
@@ -64,10 +70,10 @@ The diagram source is `docs/diagrams/as-built-architecture.dot`.
 
 **Maintainability risks**
 
-- Adding registration and capacity logic directly to event controllers would mix HTTP concerns, capacity rules, transaction handling and persistence.
+- Registration is already implemented in a separate controller, but it coordinates capacity, waitlist and cancellation transactions directly against Sequelize models. Moving these invariants into a focused application service would improve isolated testing and reduce controller coupling.
 - Repeating authorization and event-state rules across endpoints can lead to inconsistent access checks.
 - Direct model access makes it harder to replace SQLite, introduce transaction boundaries or test business rules without a database.
-- Notifications and reminders should not be sent synchronously inside event/registration request handlers; external delivery failures should not undo a committed registration.
+- Notification records are queued through a service, but delivery is currently console-only. A production adapter and durable worker/retry policy are still required; external delivery must not undo a committed registration.
 - As new domains are added, a single large controller or generic utility module would create hidden coupling between unrelated features.
 
 ## 3. Recommended maintainable architecture
@@ -149,7 +155,7 @@ The reviewed application uses a local SQLite database file. This is acceptable f
 
 If two backend instances each use their own local `dev.db`, each instance sees a different set of users/events/registrations. A load balancer could send consecutive requests to different databases, producing inconsistent results. A shared SQLite file on a network filesystem is not the recommended solution for concurrent multi-instance transactional workloads.
 
-The current benchmark evidence for event search/listing is a local single-environment observation only. It does not prove production throughput, 500 concurrent registration integrity, high availability or horizontal scaling. Registration itself was absent from the reviewed baseline and therefore could not be load-tested.
+The current event-search benchmark is a local single-environment observation only. It does not prove production throughput, high availability or horizontal scaling. The registration implementation uses SQLite IMMEDIATE transactions, a conditional capacity update and a uniqueness constraint; the integration suite covers six simultaneous last-seat attempts. The SRS target of 500 concurrent registration attempts has **not** been run, and no paid-registration persistence or 500-attempt integrity result is available.
 
 ### 4.2 Recommended target deployment
 
@@ -170,7 +176,7 @@ Use stateless backend replicas behind a load balancer/reverse proxy, all connect
 
 ### 4.3 Registration integrity under concurrency
 
-When registration is implemented, capacity must be protected by the database, not by an in-memory counter in one API process.
+Registration is now implemented for free events. The current controller starts an SQLite IMMEDIATE transaction and uses a conditional update of `Event.seatsTaken` as the capacity gate; the (eventId, attendeeId) unique index prevents duplicate registrations. Tests cover FIFO promotion, cancellation cutoff and six simultaneous requests for the last seat. This is functional verification for a small local concurrency case, **not** evidence that the SRS target of 500 simultaneous registration attempts is met. Any shared/multi-instance deployment must protect capacity in one shared database, not with process-local state.
 
 Recommended approach:
 
@@ -188,8 +194,8 @@ Do not decrement an event capacity counter and create a registration in separate
 
 ### 4.4 Session, files and process state
 
-- JWT authentication can support stateless API replicas if all replicas validate tokens using the same securely managed signing/verification key and consistent issuer/audience/expiry configuration.
-- Do not store authoritative sessions, rate-limit counters, locks or job state only in process memory if those features must work across replicas. Use a shared store or a token-based design appropriate to the requirement.
+- JWTs include an identifier and the current application also persists idle-session deadlines in the Session table. This is not purely stateless authentication; all API replicas must consult the same authoritative session store/database for session validity and idle-time updates.
+- Do not store authoritative sessions, rate-limit counters, locks or job state only in process memory if those features must work across replicas. Use the shared database or another shared store appropriate to the requirement.
 - Do not store user uploads, generated tickets or durable exports only on a container's local filesystem. Use object storage or another shared durable store if/when those files are introduced.
 - Ensure each replica has the same application version/configuration and uses graceful shutdown/readiness checks.
 
@@ -231,8 +237,8 @@ Record the environment (instance type/count, Node version, DB version/size, netw
 
 | NFR | Current conclusion | Evidence needed to claim fully satisfied |
 |---|---|---|
-| NFR-MAINT-01 — modular separation of API, business logic and data layers | **Partially satisfied.** Frontend/API and routes/controllers/models are separated, but a consistent application-service boundary is not established and controllers are coupled to Sequelize models. | Domain service/repository boundaries, focused service tests, and updated as-built diagram showing implemented—not merely planned—layers. |
-| NFR-SCAL-01 — horizontal backend scaling for registration spikes | **Not satisfied / not demonstrated in current baseline.** The app uses local SQLite and no multi-instance deployment or registration concurrency test is present. | Shared PostgreSQL, stateless API replicas behind a load balancer, concurrency-safe registration transaction, and repeatable multi-instance load-test evidence. |
+| NFR-MAINT-01 — modular separation of API, business logic and data layers | **Partially satisfied.** Frontend/API, routes, domain controllers, middleware and models are separated. However, registration transaction/business rules are coordinated directly in the controller and there is no consistent application-service/repository layer across domains. | Extract focused use-case/service boundaries where useful; add service-level tests and keep the as-built diagram limited to implemented components. |
+| NFR-SCAL-01 — horizontal backend scaling for registration spikes | **Not demonstrated.** The current implementation uses a local SQLite file, and there is no shared production database, multi-instance deployment or 500-attempt registration load test. The six-request last-seat integration test verifies only a small functional concurrency case. | Shared PostgreSQL, stateless API replicas behind a load balancer, shared session state, a concurrency-safe registration transaction, and repeatable 500-attempt plus multi-instance load-test evidence. |
 
 ## 8. Scope and implementation boundary
 
