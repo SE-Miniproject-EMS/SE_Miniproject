@@ -1,6 +1,6 @@
 # Testing approach and results
 
-**Current documentation review:** 10 November 2026. Historical run counts retain their original run dates and must not be added together. Read this alongside `API_Integration_Test_Report.md`, `issue-12-regression-report.md`, and `IMPLEMENTATION_BASELINE.md`.
+**Current documentation review:** 12 November 2026. Historical run counts retain their original run dates and must not be added together. This document distinguishes merged CI evidence from unrun load, browser and deployment verification. Read this alongside `API_Integration_Test_Report.md`, `issue-12-regression-report.md`, and `IMPLEMENTATION_BASELINE.md`.
 
 ## Repeatable local commands
 
@@ -30,8 +30,8 @@ The backend suite in `backend/test/auth-api.test.js` and `backend/test/event-api
 | --- | --- |
 | Authentication / sessions | Registration, duplicate email rejection, bcrypt password hashing, email verification gate, successful/invalid login, JWT validation and absolute expiry, current-user access, role checks, persisted idle sessions, idle-deadline extension and rejection of expired/removed sessions. `TC-SEC-04` verifies the inactivity timeout (`SESSION_IDLE_TIMEOUT_SECONDS`, default 1800 seconds) and its upper bound at JWT expiry. |
 | Event lifecycle | Draft creation, list/manage own events, editing, publishing, cancelling and public visibility. |
-| Registration, capacity and check-in | Free-event registration, duplicate prevention, capacity reservation, FIFO waitlist promotion, attendee cancellation/cutoff, one-use ticket-token check-in and eligibility-gated feedback API. The concurrency suite includes six simultaneous attempts for the last seat; it is not a 500-attempt load test. |
-| Authorization and ownership | Anonymous/attendee restrictions, server-side role checks, prevention of one organizer modifying another organizer's event, ADMIN-specific event permissions. |
+| Registration, capacity and check-in | Free-event registration, mock paid checkout/refund outcomes, duplicate prevention, capacity reservation, FIFO waitlist promotion, attendee cancellation/cutoff, event cancellation/waitlist cleanup, one-use ticket-token check-in and eligibility-gated feedback API. Six simultaneous last-seat attempts are functional coverage, not a 500-attempt load test. |
+| Authorization and ownership | PR #55 adds a route-family permission matrix for anonymous, ATTENDEE, ORGANIZER and ADMIN requests across mounted protected routes. Separate tests cover event/registration/check-in/feedback ownership. Extend the matrix whenever routes are added. |
 | Validation | Missing/invalid fields, date ordering and formats, capacity, ticket price, title/category/venue limits, invalid update persistence, invalid publish data, cancelled event restrictions. |
 | Discovery | Search, category, venue/location, date filters, pagination values, order and response metadata. |
 | Frontend | Vite production build to detect compile/build errors. |
@@ -44,17 +44,17 @@ GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, sy
 | --- | --- | --- |
 | `docs/issue-12-regression-report.md` | 20 backend integration tests passed, 0 failures; `npm run build` completed successfully. | This is the regression report recorded in the repository snapshot. It covers API/backend flows, not a complete browser journey. |
 | `docs/API_Integration_Test_Report.md` | Historical GitHub Actions run `40363629586` reported 18 tests passed and both backend validation and frontend build jobs successful. | This report is from an earlier commit. Keep it as historical evidence, not a conflicting current count. |
-| Current `main` verification (10 Nov 2026) | [GitHub Actions run #42750228467](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42750228467) passed backend validation and frontend build. Local `npm test`: **31 passed, 0 failed**; `npm run build`: passed. | This baseline includes the security verification updates. CI does not run browser automation or production load tests. |
-| Manual browser smoke test | Pending in the existing regression/test report. | A teammate still needs to rehearse registration/login, event creation/edit/publish/cancel, search/filtering, role/ownership behavior and record observed results/screenshots. Do not mark browser E2E tests as automated or passed. |
-| Local event search/listing benchmark reported on 29 Oct 2026 | 1,000/1,000 successful requests; 100 concurrent workers; p95 178.211 ms; maximum 259.926 ms; 100% completed under two seconds. | This is a local synthetic-data benchmark, not a production guarantee. It measures only event search/listing, not registration. The current registration suite functionally tests capacity and six simultaneous last-seat attempts; the SRS 500-attempt concurrency target and paid-record retention remain **NOT VERIFIED**. |
+| Merged PR #48 (10 Nov 2026) | [GitHub Actions run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) passed backend validation/tests and frontend build; its PR report records **55 backend tests passed, 0 failed**. | This includes the mock payment/refund flow and the Session/waitlist integration fixes. It does not validate a real payment gateway or PCI compliance. |
+| Additional merged CI checks | PR #54 CI run #42491097163 and PR #55 CI run #42491216438 completed successfully. PR #56 is documentation-only and records `git diff --check` passing; its body states backend/frontend suites were not run. | These CI runs validate tests/builds on their respective PR heads. CI does not run the 500-registration benchmark, browser E2E or deployed uptime observation. |
+| Local event search/listing benchmark (8 Nov 2026) | 1,000/1,000 successful requests; 100 concurrent workers; p95 194.802 ms; p99 251.892 ms; maximum 301.311 ms; all requests completed under two seconds. | Local synthetic SQLite benchmark on Darwin/Apple M4, not a production guarantee. It measures event search/listing only. It is not evidence for registration concurrency. |
 
 ## Known coverage gaps / blocked tests
 
 - No automated browser E2E suite is present in this repository snapshot.
 - The existing demo record notes that login-lockout behavior, rejection of unverified login, and some pagination cases had coverage gaps at the time it was written; the current auth test file includes an unverified-login test, so review the individual test files before treating that older note as current for every gap.
-- No 500-concurrent registration load test is present. Basic transactional free-event capacity, FIFO promotion and cancellation cutoff have API integration coverage; paid-registration retention remains untestable until a real payment provider flow exists.
-- A real payment gateway/refund flow and external email/SMS notification delivery are not implemented. QR token issuance/check-in and feedback APIs have functional test coverage, but QR image/camera scanning UI, full attendee feedback prompt UI, and organizer/admin dashboards with CSV reporting remain incomplete.
-- The benchmark does not establish production capacity, availability, horizontal scalability or 99% uptime.
+- PR #54 adds `npm run benchmark:registrations`, which seeds a disposable SQLite database and sends 500 simultaneous authenticated free-event registration attempts. **No registration-specific run result JSON/CSV is committed yet**, so NFR-PERF-02 remains NOT VERIFIED. Run from `backend/` with `npm run benchmark:registrations`, review the report's 500 responses, unique persisted record count, confirmed/waitlisted counts and `seatsTaken`, then commit the generated files under `docs/issue-31-results/`.
+- PR #48 supplies a mock payment/refund simulator only; no real gateway, signed callback, provider-confirmed refund or PCI verification exists. External email/SMS notification delivery remains unconfigured. Token check-in and feedback APIs have test coverage, but QR image/camera scanning UI, complete feedback prompt/display UI, and organizer/admin dashboards with CSV reporting remain incomplete.
+- The registration harness is still unrun, and the event-search benchmark does not establish production capacity, multi-instance scalability, availability or 99% uptime. PR #56's usability and availability assessments both record their measurements as not run/not verified.
 
 ## Suggested manual smoke test before demonstration
 
@@ -63,5 +63,5 @@ GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, sy
 3. Publish it; verify it appears in public discovery and the details page.
 4. Exercise search, category, venue/location and date filters; record the observed results.
 5. Edit and cancel the event; verify the canceled event is no longer in public discovery.
-6. Use a second Organizer and an Attendee account to confirm that UI/API restrictions agree with server-side permissions.
+6. Use anonymous, Attendee, Organizer and Admin test accounts to verify role gates and object ownership using the PR #55 route matrix. Also complete a manual browser journey and record screenshots/results; automated API tests are not browser E2E evidence.
 7. Record pass/fail, environment, date and evidence in the issue or regression report. Do not describe six-request functional concurrency testing as proof of the 500-attempt SRS target, or treat console notification output as external email/SMS delivery.
