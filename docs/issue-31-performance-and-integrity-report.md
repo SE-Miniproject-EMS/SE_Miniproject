@@ -8,7 +8,7 @@
 
 | Requirement | Verification status | Evidence / limitation |
 |---|---|---|
-| NFR-PERF-01 — event search/listing under 2 seconds at 100 concurrent users | **Met for the recorded local run** | 1,000 requests / 100 workers; 1,000 successes; p95 178.211 ms; max 259.926 ms; 100% under 2 seconds. Raw JSON and CSV are retained in `docs/issue-31-results/`. |
+| NFR-PERF-01 — event search/listing under 2 seconds at 100 concurrent users | **Met for the two recorded local runs** | Both the 29 Oct and 8 Nov local runs recorded 1,000/1,000 successful requests at 100 workers, with every request under 2 seconds. The latest 8 Nov run had p95 194.802 ms and max 301.311 ms. Raw JSON/CSV for each run are retained in `docs/issue-31-results/`. |
 | NFR-PERF-02 — at least 500 concurrent registration attempts | **Harness added; run required on the latest snapshot** | Registration now exists. `backend/scripts/benchmark-registration-concurrency.js` submits 500 simultaneous authenticated requests to one isolated event and records all responses. Do not mark this target met until the script passes on the current branch and its raw artifacts are committed. |
 | Capacity/data integrity — no overbooking or lost confirmed registrations | **Covered by 6-way API regression test; 500-attempt evidence pending** | `event-api.test.js` already checks simultaneous requests for the last seat. The new 500-attempt harness checks exact registration count, confirmed count, waitlist count and `seatsTaken` consistency after load. |
 | Paid confirmed-registration integrity | **Not verified / blocked by provider dependency** | The API deliberately rejects paid-event registration with `PAYMENT_INTEGRATION_REQUIRED` until a payment provider and verified callback flow exist. The free-registration load test does not verify paid payment persistence. |
@@ -40,6 +40,20 @@ Environment: Darwin 27.0.0, Node v22.19.0, local SQLite, 100 concurrent workers,
 Raw evidence:
 - `docs/issue-31-results/issue-31-benchmark-2026-10-29T15-08-41-265Z.json`
 - `docs/issue-31-results/issue-31-benchmark-2026-10-29T15-08-41-265Z.csv`
+
+### Subsequent event-search run (8 November 2026)
+
+A second local run is also committed. It used Darwin 27.0.0, Apple M4 (10 logical CPUs), Node v22.19.0 and a disposable SQLite database with 1,000 synthetic events, 100 concurrent workers and 1,000 requests across listing, text search, category and location filters.
+
+| Workload | Dataset | Workers | Requests | p50 | p95 | p99 | Max | Failures | Under 2 s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Listing + search/filter mix | 1,000 | 100 | 1,000 | 151.466 ms | 194.802 ms | 251.892 ms | 301.311 ms | 0 | 100.00% |
+
+**Interpretation:** this second local run also met the under-two-second target for its measured workload. It is independent of the 29 October run; do not combine percentiles or describe either run as a production guarantee.
+
+Raw evidence:
+- `docs/issue-31-results/issue-31-benchmark-2026-11-08T14-40-29-541Z.json`
+- `docs/issue-31-results/issue-31-benchmark-2026-11-08T14-40-29-541Z.csv`
 
 ## 3. Registration concurrency and capacity benchmark
 
