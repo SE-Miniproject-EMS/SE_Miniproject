@@ -1,6 +1,6 @@
 # Security controls and verification evidence
 
-**Reviewed baseline:** main through PR #56 (11 November 2026).  
+**Reviewed baseline:** main through PR #60 (18 November 2026).  
 **Purpose:** provide a code-linked security control register for an assessor. This is not a penetration-test report, production security certification or PCI assessment.
 
 ## Implemented controls
@@ -16,6 +16,8 @@
 | Card-data handling in mock flow | `backend/src/services/mockPaymentAdapter.js`, payment/registration controllers | PR #48; `event-api.test.js` | Submitted card-data sentinels are ignored and not returned/logged; payment outcome is simulated only |
 | Error handling | `backend/src/middleware/errorHandler.js` | API tests and log assertions | Generic external errors and explicit secret redaction rules are present; retain regression tests when logging changes |
 | Environment configuration | `backend/.env.example`, `.gitignore` | setup/CI review | Example secrets are placeholders; real secrets must remain outside Git |
+| Notification provider boundary | `backend/src/services/notificationService.js` | PR #58; provider adapter tests | Resend API key and sender address are read from environment variables; provider calls use HTTPS and a notification dedupe key as an idempotency key. Console adapter is development-only. Do not commit provider credentials. |
+| Report authorization / CSV safety | `backend/src/routes/reportRoutes.js`, `frontend/src/components/EventReports.jsx` | PR #59; `backend/test/event-api.test.js` | Report routes require Organizer/Admin; Organizer queries are scoped to owned events, Admin can view platform scope; CSV cells neutralize spreadsheet formulas and quote/escape values. Keep route scope tests current. |
 
 ## RBAC evidence
 
@@ -31,10 +33,18 @@ When a new protected route is added:
 
 PR #48 introduces a mock-only checkout/refund simulator. It is not a third-party gateway. No real card/UPI processor, hosted checkout, signed provider callback, or provider-confirmed refund is configured. The mock tests prove selected code paths ignore card-data sentinels and label refund outcomes as simulated; they do **not** prove PCI compliance. Do not enter real card data or claim that PCI requirements have been satisfied.
 
+## Notification delivery boundary
+
+PR #58 adds a Resend adapter using `RESEND_API_KEY` and `NOTIFICATION_FROM_EMAIL`, plus notification worker claims, retries and idempotency. The credentials are deployment secrets and must not be committed. The console adapter remains a non-production test adapter. SMS is not configured. A merged adapter and passing adapter tests do not prove that a production sender/domain has been verified or that real emails were delivered; check provider configuration and delivery logs before making that claim.
+
+## Reporting access boundary
+
+PR #59 adds Organizer/Admin reporting routes. `GET /api/reports` and CSV endpoints require server-side authentication and role authorization; Organizer reports are constrained to the Organizer's own event scope, while Admin receives platform-wide reports. CSV exports escape quoted fields and neutralize spreadsheet-formula prefixes. Keep these checks in the route integration tests as routes evolve.
+
 ## Remaining security/operational work
 
 - Choose and integrate a payment provider sandbox, verify signed callbacks/idempotency and provider-confirmed refunds before enabling real paid transactions.
-- Configure external notification provider credentials before claiming delivery.
+- Configure Resend credentials and sender address in deployment secrets before claiming real event email delivery; no SMS adapter is configured.
 - Review production TLS, deployment secrets, database access, logging, monitoring, backup and recovery controls in the target deployment.
 - Keep route-level and object-level authorization tests aligned with every new endpoint.
 - Do not commit real `.env` files, credentials, test-account passwords, tokens or real attendee data.
@@ -48,4 +58,4 @@ npm test
 npm run test:coverage
 ```
 
-The latest recorded integrated-code CI run is [#42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410): 55 backend tests passed, 0 failed; backend syntax validation and frontend build succeeded.
+The historical integrated-code CI run [#42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) recorded 55 backend tests passed, 0 failed. PR #58 added notification-provider tests; PR #59 added report authorization/CSV tests. The refreshed evidence branch adds a new coverage-enabled run, which will be linked after CI completes.
