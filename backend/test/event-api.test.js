@@ -783,6 +783,21 @@ test("cancelling a confirmed registration promotes a waitlisted attendee", async
     [waiting.payload.registration.id, "WAITLIST_PROMOTED"]
   );
   assert.deepEqual(promotionNotice, { type: "WAITLIST_PROMOTED", status: "PENDING" });
+  const promotionOutbox = await queryTestDatabase(
+    'SELECT "recipientId", "dedupeKey", "attempts", "payload" FROM "notifications" WHERE "registrationId" = ? AND "type" = ?',
+    [waiting.payload.registration.id, "WAITLIST_PROMOTED"]
+  );
+  assert.equal(promotionOutbox.recipientId, waitingAttendee.user.id);
+  assert.equal(promotionOutbox.dedupeKey, `waitlist-promoted:${waiting.payload.registration.id}`);
+  assert.equal(promotionOutbox.attempts, 0);
+  const promotionPayload = JSON.parse(promotionOutbox.payload);
+  assert.equal(promotionPayload.eventTitle, created.payload.event.title);
+  assert.equal(typeof promotionPayload.ticketToken, "string");
+  assert.ok(promotionPayload.ticketToken.length >= 20);
+  assert.equal(await queryTestDatabase(
+    'SELECT COUNT(*) AS count FROM "notifications" WHERE "registrationId" = ? AND "type" = ?',
+    [waiting.payload.registration.id, "WAITLIST_PROMOTED"]
+  ).then((row) => row.count), 1);
   const laterMine = await request("/api/registrations/mine", { token: laterWaitingAttendee.token });
   assert.equal(laterMine.payload.registrations[0].status, "WAITLISTED");
 
