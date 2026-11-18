@@ -1,6 +1,6 @@
 # GitHub issue and pull-request activity log
 
-**Snapshot:** `main` at `27c92de869ae3aa151f4d886217159c2edb2f9f7` (18 November 2026, after PRs #58–#60)  
+**Snapshot:** `main` at `e8b556c545653f229d115021f58a0f3f49f95327` (18 November 2026, after PRs #58–#60)  
 **Purpose:** Provide a repository-local index of the issues and PRs relevant to the assessment at the snapshot. Each row links to the original issue or PR so an assessor can inspect the original description, assignees, branch, commits, review thread, changed files, CI and merge record.
 
 ## Backlog issue register
@@ -21,7 +21,7 @@
 | [#14](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/14) | Final demo and release | dshivasaivarun-lgtm, ChiragBasanth | Closed | PR #41 checklist; PR #45 videos and E2E results |
 | [#22](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/22) | Functional requirements traceability | minestevealex-ux | Closed | PR #43 |
 | [#23](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/23) | NFR traceability/documentation | dshivasaivarun-lgtm (issue assignee) | Open | PR #46 remains open; branch has updated NFR/FR/testing docs but is behind main and still needs sync/review |
-| [#25](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/25) | Registration, capacity, waitlist and cancellation | GGO4411 | Open | PR #47 free-event flow; PR #48 mock paid flow. Real user-facing waitlist notification delivery remains unconfigured |
+| [#25](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/25) | Registration, capacity, waitlist and cancellation | GGO4411 | Open | PR #47 free-event flow; PR #48 mock paid flow; PR #58 notification email adapter. Real Resend delivery requires deployment credentials/sender; SMS is not configured |
 | [#26](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/26) | Payment processing and refunds | GGO4411, minestevealex-ux | Open | PR #48 provides mock checkout/refund only; real gateway, signed callbacks and provider-confirmed refunds remain unimplemented |
 | [#27](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/27) | Registration/event notifications | minestevealex-ux | Closed | PR #58 adds Resend email delivery adapter, notification dispatcher, atomic claims, idempotency and bounded retries. Real delivery still requires Resend API key/sender configuration; SMS is not configured. |
 | [#28](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/28) | QR tickets and check-in | dshivasaivarun-lgtm, minestevealex-ux | Closed | PR #42 provides one-use token/check-in API; QR image and camera/scanner UI are still limitations |
@@ -76,7 +76,7 @@
 | [#58](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/58) | minestevealex-ux | `feat/issue-27-email-notifications` | #27 | Resend email adapter, development console adapter, notification dispatcher, atomic claims/idempotency/retries and provider tests | Merged 18 Nov 2026 |
 | [#59](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/59) | dshivasaivarun-lgtm | `feat/issue-29-organizer-admin-reports` | #29 | Organizer/admin report aggregates, dashboard UI, filtered registration/attendance CSV exports and regression tests | Merged 18 Nov 2026 |
 | [#60](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/60) | dshivasaivarun-lgtm | `docs/team-contributions-readme` | Documentation | README simplification and updates to SRS/SAD/Test Plan contribution details and team contributions guide | Merged 18 Nov 2026 |
-| [#61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) | GGO4411 | `docs/assessor-evidence-pack-refresh` | #9, #27, #31, #32, #35 | Refreshed assessor evidence pack based on current main; reminder-job injection/refactor and direct tests; graceful shutdown; backend coverage reporting | Open; current-main refresh, awaiting independent review and PR CI |
+| [#61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) | GGO4411 | `docs/assessor-evidence-final` | #9, #27, #31, #32, #35 | Current-main assessor evidence pack; c8 coverage CI; graceful shutdown; testable reminder and notification-dispatch jobs; direct unit tests | Open, mergeable; CI run #44370034661 passed 73 backend tests, syntax check and frontend build; 93.56% line / 76.62% branch / 94.25% function coverage; Alex review requested and pending |
 
 ## Review → fix → re-push record
 
@@ -113,4 +113,4 @@ Push another commit to the same PR branch after review feedback; do not create a
 
 ### PR #61 — refreshed from the current main branch
 
-The original PR #57 branch diverged after main received notification and reporting deliveries in PRs #58–#60. PR #61 is recreated from the current main SHA so those merged features remain intact. It carries the evidence index, individual contribution matrix, sprint backlog/burn-up, operations/security and testing documents, coverage-reporting CI, and the reminder-job testable runner. PR #61 has not been merged and must receive independent review before merge.
+The original PR #57 branch diverged after main received notification and reporting deliveries in PRs #58–#60. PR #61 is recreated from the current main SHA so those merged features remain intact. It carries the evidence index, individual contribution matrix, sprint backlog/burn-up, operations/security and testing documents, coverage-reporting CI, graceful shutdown, and testable reminder/notification-dispatch workers. Its current head passed run #44370034661 with 73 tests and the frontend build; coverage artifact #114 records 93.56% lines, 76.62% branches and 94.25% functions. Alex is the requested reviewer; no independent review has yet been submitted, so PR #61 is not merged.

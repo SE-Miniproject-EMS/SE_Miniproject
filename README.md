@@ -6,7 +6,7 @@ A BTech Software Engineering mini-project for organizing and attending events. O
 
 - **Dharoor Shiva Sai Varun** — Full-stack development for registration, mock payments, and reporting, plus end-to-end testing and demos.
 - **Chirag Basanth Bellavi** — Event management features, GitHub Actions, and session expiry.
-- **Gandhar Sameer Gokhale** — Backend validation, API integration testing, and requirements verification.
+- **Gandhar Sameer Gokhale** — Backend validation, API integration and security testing, reminder/notification-dispatch worker tests, and requirements verification.
 - **Harshith J (Alex)** — Notifications, QR check-in, and feedback, plus API testing and documentation.
 
 

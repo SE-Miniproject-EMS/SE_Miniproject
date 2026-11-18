@@ -43,6 +43,7 @@ The website is reproducibly runnable locally using the README commands. The repo
 
 - [Testing and results](TESTING_AND_RESULTS.md) — historical CI runs and current known gaps.
 - [Detailed PR #48 backend test report](test-reports/2026-11-10-PR48-backend-test-report.md) — all 55 recorded test names and their grouped areas.
+- [PR #61 current-main validation report](test-reports/2026-11-18-PR61-current-main-validation.md) — 73 backend tests, build checks, current coverage totals and worker-file results.
 - [Testing and coverage guide](TESTING_AND_COVERAGE.md) — test-file inventory and exact commands for line/branch/function coverage.
 - [API integration test report](API_Integration_Test_Report.md)
 - [Regression/E2E report](issue-12-regression-report.md)
@@ -66,6 +67,8 @@ The website is reproducibly runnable locally using the README commands. The repo
 Historical integrated application result: [PR #48 run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) reported 55 passed, 0 failed. Counts differ because they are from different commits; do not add them together.
 
 **Current frontend test status:** a separate automated frontend component/unit-test script is not present in `frontend/package.json`; CI runs `npm run build`. Browser evidence is separate and limited to the flows recorded in the E2E JSON/video.
+
+The current Word source documents are already tracked under `docs/`: [SRS](Event_Management_System_SRS.docx), [SAD](Event_Management_System_SAD.docx), and [Software Test Plan](Event_Management_System_Test_Plan.docx). The latest uploaded SRS/Test Plan copies were not used to overwrite these tracked documents because their SRS version context is older than the current traceability baseline.
 
 ## 5. Performance, security and operational controls
 

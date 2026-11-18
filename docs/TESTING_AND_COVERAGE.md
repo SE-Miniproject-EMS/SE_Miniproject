@@ -1,28 +1,47 @@
 # Test, unit-test and coverage reporting
 
-**Current evidence:** coverage-enabled PR #57 run [#44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569), 18 November 2026.  
-**Result:** 60 backend tests passed, 0 failed; backend syntax validation and frontend production build passed. The run uploaded the latest coverage artifact.  
-**Scope note:** these are Node.js test-runner results. Most API scenarios are HTTP integration/regression tests, not isolated unit tests.
+**Current evidence:** current-main PR #61 run [#44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661), 18 November 2026.  
+**Result:** **73 backend tests passed, 0 failed**; backend syntax validation and frontend production build passed.  
+**Coverage artifact:** [backend-test-coverage-114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318).
 
 ## What is tested
 
 | Test file | Test type | Main coverage |
 |---|---|---|
-| `backend/test/auth-api.test.js` | HTTP integration | Account registration, duplicate emails, bcrypt hashing, verification gate, login, session expiry, authentication and role restrictions |
-| `backend/test/event-api.test.js` | HTTP integration/regression | Event lifecycle, validation, search/filters, ownership, registrations, capacity, waitlist, cancellation, check-in, feedback, payment mock behavior and RBAC route matrix |
-| `backend/test/jwt.test.js` | Unit | JWT configuration, issuance and absolute expiry rules |
+| `backend/test/auth-api.test.js` | HTTP integration | Registration, duplicate emails, bcrypt, verification gate, login, sessions, authentication and role restrictions |
+| `backend/test/event-api.test.js` | HTTP integration/regression | Event lifecycle, validation, search, ownership, registration, capacity, waitlist, check-in, feedback, mock payment/refunds and RBAC |
+| `backend/test/jwt.test.js` | Unit | JWT configuration, issuance and absolute expiry |
 | `backend/test/payment-rules.test.js` | Unit/rule | Paise conversion, validation and refund-cutoff rules |
-| `backend/test/issue26-migration.test.js` | Database migration integration | Existing registration preservation and idempotent waitlist-position backfill |
-| `backend/test/send-reminders.test.js` | Unit with injected dependencies | 23–25 hour selection window, confirmed attendee filtering, enqueue/dedupe handling, no-event path, failure cleanup and dependency wiring |
+| `backend/test/issue26-migration.test.js` | Migration integration | Existing registration preservation and idempotent FIFO-position backfill |
+| `backend/test/send-reminders.test.js` | Unit with injected dependencies | 23–25 hour reminder selection, confirmed registrations, deduplication outcome, empty event set, failure cleanup and notification-schema setup |
+| `backend/test/dispatch-notifications.test.js` | Unit with injected dependencies | Notification schema setup, bounded batch dispatch, failed-delivery exit status, startup failure and database cleanup |
+| `backend/test/notification-provider.test.js` | Unit/provider-adapter | Notification email templates, HTML escaping, Resend request headers/idempotency, provider failures and missing credentials |
 
-## Test commands
+Most API scenarios are HTTP integration/regression tests. Worker and adapter tests use injected dependencies/fetch stubs; no live provider credentials are used in CI.
 
-From the repository root:
+## Reproducible commands
+
+Backend tests:
 
 ```bash
 cd backend
 npm ci
 npm test
+```
+
+Coverage:
+
+```bash
+cd backend
+npm ci
+npm run test:coverage
+```
+
+Notification dispatch CLI:
+
+```bash
+cd backend
+npm run dispatch:notifications
 ```
 
 Frontend production build:
@@ -33,57 +52,44 @@ npm ci
 npm run build
 ```
 
-The backend integration tests start a local Express child process and use disposable temporary SQLite files. They do not intentionally use the normal `backend/dev.db`. Do not point load or integration tests at production or shared user data.
+The backend integration tests use disposable temporary SQLite files rather than the normal `backend/dev.db`. Do not point tests at production or shared user data.
 
 ## Line, branch and function coverage
 
-The repository CI now runs:
+The coverage command uses pinned `c8@12.0.0` and includes all backend `src/**/*.js` files, including untested source files as zero-coverage entries. It generates:
+- `backend/coverage/index.html` — per-file HTML report.
+- `backend/coverage/lcov.info` — LCOV line/branch records.
+- `backend/coverage/coverage-summary.json` — machine-readable summary.
+- Text line/branch/function/statement summary in the Actions log.
 
-```bash
-cd backend
-npm run test:coverage
-```
+CI uploads `backend/coverage/` as `backend-test-coverage-<run number>` with 90-day retention.
 
-That script uses the pinned `c8@12.0.0` V8 coverage reporter with `--all` and `src/**/*.js` inclusion. It covers child backend processes launched by the integration tests and includes source files not reached by tests as zero-coverage entries.
+### Latest measured current-main result
 
-It generates:
-- **Text summary:** line, branch, function and statement coverage in the GitHub Actions job log.
-- **HTML report:** `backend/coverage/index.html`, with per-file details.
-- **LCOV report:** `backend/coverage/lcov.info`, including line and branch records.
-- **JSON summary:** `backend/coverage/coverage-summary.json`.
+[Actions run #44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661) reports:
+- Backend tests: **73 passed, 0 failed**.
+- Line/statement coverage: **93.56%**.
+- Branch coverage: **76.62%**.
+- Function coverage: **94.25%**.
+- [Download the HTML/LCOV/JSON artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318).
 
-The CI job uploads the complete `backend/coverage/` folder as the Actions artifact named `backend-test-coverage-<run number>`. Open the relevant Actions run, select *Artifacts*, and download that report. The same run shows the Node test pass/fail summary in the backend job log.
+Selected worker coverage:
+- `sendReminders.js`: **95.83% lines, 81.81% branches, 100% functions**.
+- `dispatchNotifications.js`: **92.30% lines, 81.81% branches, 66.66% functions**.
 
-### Coverage status
+The remaining uncovered worker paths are the CLI entry-point blocks (reminder job lines 91–94; notification dispatcher lines 47–50). The notification controller still needs direct HTTP route tests for Admin-only reminder/dispatch paths. Other selected remaining branch gaps are in `notificationService.js`, `reportRoutes.js`, `errorHandler.js`, and payment expiry/refund logic. No arbitrary coverage threshold is enforced.
 
-**Latest measured result — 18 November 2026:** run [#44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569) reports **94.06% line/statement coverage, 78.04% branch coverage and 97.18% function coverage** across backend `src/**/*.js`. The downloadable [backend-test-coverage-99 artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569/artifacts/14403085905) contains the HTML/LCOV/JSON files. The run recorded 60 passed backend tests, 0 failures. See the [detailed coverage baseline and follow-up](test-reports/2026-11-18-coverage-baseline.md).
-
-The reminder job `src/jobs/sendReminders.js` is now **95.34% covered by lines, 81.81% by branches and 100% by functions**. Its scheduling, filtering, dedupe-result and failure-cleanup paths have direct tests; the standalone CLI entry-point guard is the remaining uncovered path. Notification service/controller and error-handler branches still need more tests. No minimum line/branch threshold is enforced yet; agree a justified threshold after reviewing measured results rather than adding an arbitrary CI gate.
+Coverage is a repository-wide backend metric, not an individual contributor score. The previous PR #57 run had a different source tree before the recent notification and reporting merges, so its percentages are historical and not directly comparable.
 
 ## Frontend testing status
 
-The frontend currently defines `dev`, `build` and `preview` scripts; it does not define a separate automated component/unit-test script. CI verifies that the React/Vite production build succeeds. Browser-level evidence is held separately in:
-- `docs/issue-14/e2e-results.json`
-- `docs/issue-14/application-demo.webm`
-- `docs/issue-14/technical-verification.webm`
+The frontend has a Vite production build check but no dedicated automated React component/unit-test runner. The existing browser recordings in `docs/issue-14/` cover the recorded event lifecycle, verification/login, attendee authorization and 390px viewport checks. They are not a complete browser automation suite for every newer notification/reporting/payment flow.
 
-The recorded browser test covers the organizer event lifecycle, verification/login, attendee authorization and a 390px layout check. It is not a full automated browser suite for every registration/payment/notification feature.
+## Separate performance, security and deployment evidence
 
-## Historical CI evidence
-
-| PR / run | Backend result | Frontend result | Interpretation |
-|---|---|---|---|
-| PR #21 / [run #40363629586](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/40363629586) | 18 passed, 0 failed | Build passed | Sprint 2 API integration baseline |
-| PR #47 / [run #41889324919](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/41889324919) | 28 passed, 0 failed | Build passed | Registration/free-event and waitlist changes |
-| PR #52 / [run #42396147609](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42396147609) | 30 passed, 0 failed | Build passed | Security regressions and NFR evidence |
-| PR #55 / [run #42491216438](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42491216438) | 30 passed, 0 failed | Build passed | RBAC route matrix test |
-| PR #48 / [run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) | **55 passed, 0 failed** | **Build passed** | Later integrated code baseline including mock payment/refund and security route-matrix test |
-
-Run counts are historical results from different commits and must not be added together. PR #56 was documentation-only; its PR description records `git diff --check` passing and says backend/frontend suites were not run on that PR.
-
-## Performance and security verification are separate
-
-- Event search benchmark results are in `docs/issue-31-results/`; these do not measure registration concurrency.
-- PR #54 adds the 500-registration harness, but no registration-specific 500-attempt result JSON/CSV is currently committed. Issue #31 remains open.
-- The security evidence and limitations are recorded in `docs/issue-32-security-nfr-verification.md` and `docs/SECURITY_CONTROLS.md`.
-- A passing test suite/build is not production deployment, PCI certification, 99% uptime evidence or proof of horizontal scalability.
+- The event-search benchmark results live in `docs/issue-31-results/`; they do not measure registration concurrency.
+- PR #54 supplies a 500-registration harness, but no 500-attempt registration result JSON/CSV is committed. Issue #31 remains open.
+- PR #48 is a mock payment/refund prototype; no provider-backed payment, signed callback, real refund or PCI certification is evidenced.
+- PR #58 adds a Resend notification adapter; external delivery depends on private deployment configuration and provider-side delivery evidence. SMS is not configured.
+- PR #59 adds Organizer/Admin report aggregates, a dashboard component and registration/attendance CSV exports with role scoping.
+- Passing tests and build do not prove production deployment, 99% uptime, production TLS configuration or horizontal scalability.
