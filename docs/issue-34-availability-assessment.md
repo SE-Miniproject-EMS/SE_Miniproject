@@ -6,7 +6,7 @@
 
 ## Current health signal and limits
 
-The backend defines `GET /api/health` in `backend/src/server.js` and returns `{"status":"ok"}` from the Express process. The handler does not check Sequelize/database readiness or exercise event registration. A successful response is therefore only a basic process/liveness observation; it is not sufficient by itself to establish that registration is available to users.
+The backend exposes two distinct signals in `backend/src/server.js`. `GET /api/health` is a liveness endpoint that confirms the Express process responds. `GET /api/health/ready` calls `sequelize.authenticate()` and returns HTTP 200 with `{"status":"ready","checks":{"database":"ok"}}` only when the configured database connection succeeds; it returns HTTP 503 with a sanitized database-unavailable result otherwise. The integration suite verifies both signals against its disposable SQLite test database. Readiness still does not exercise an end-to-end registration transaction, payment flow, or email delivery.
 
 The reviewed local architecture uses one backend process and a local SQLite database. The repository does not provide an independently hosted uptime monitor, a production deployment environment, or a collected time series for active registration windows. Local development and a one-time health request cannot establish the 99% target.
 
@@ -28,7 +28,7 @@ These are unresolved decisions, not assumptions. Do not choose a measurement win
 | Item | Current finding |
 |---|---|
 | Environment | Local development only; no deployed target was supplied. |
-| Health probe | `GET /api/health` returns a static process response; it does not verify database or registration readiness. |
+| Liveness probe | `GET /api/health` confirms that the Express process responds. |\n| Readiness probe | `GET /api/health/ready` verifies Sequelize can authenticate to the configured database; covered by an integration test. It does not exercise a registration write or external provider. |
 | Monitoring history | None supplied or recorded for an active registration window. |
 | Availability calculation | Not possible until the measurement contract is approved and representative observations exist. |
 | Recovery evidence | No deployment-level failover, restore-time, backup-restore, or incident-recovery exercise is recorded in this assessment. A single local process and SQLite file provide no demonstrated high availability. |
@@ -38,5 +38,5 @@ For a later approved deployment exercise, retain probe timestamps and results, d
 
 ## Follow-up and verification status
 
-- Team approval of the measurement contract and access to a representative deployed environment are required before a meaningful availability measurement.
+- Team approval of the measurement contract and access to a representative deployed environment are required before a meaningful availability measurement. Configure the external monitor to use `/api/health/ready` for database-aware readiness and retain `/api/health` for process liveness.
 - **Status:** blocked on deployment and team decisions; NFR-REL-01 remains **not verified**. This assessment documents the present limitation and is not evidence of 99% availability.
