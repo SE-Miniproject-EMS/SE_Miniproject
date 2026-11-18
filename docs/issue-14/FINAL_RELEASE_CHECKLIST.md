@@ -65,3 +65,26 @@ These audit findings are documented as outstanding limitations; the E2E workflow
 ## Release decision
 
 **Status: Awaiting PR review and merge.** Verification and demo materials are ready in [PR #45](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/45). Remaining dependency audit findings are listed above for follow-up.
+
+
+---
+
+## Assessor evidence update — 18 November 2026
+
+The checklist above is the original Issue #14 verification record from 30 October 2026. Its 20-test result, baseline SHA and “awaiting PR review” release note are historical and are not the latest repository state.
+
+Current integrated evidence:
+- [PR #48 CI run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410): **55 backend tests passed, 0 failed**; backend syntax validation and frontend production build passed.
+- Later merged changes added mock checkout/refunds, session-model startup integration, event-cancellation cleanup for waitlisted records and broader security/RBAC tests.
+- The recorded browser E2E artifacts still refer to the earlier event-management/verification/authorization/mobile flow; they are not a full browser automation report for every new feature.
+- A real payment gateway, external email/SMS delivery, QR-camera scanner UI, full feedback prompt UI, dashboards/CSV, production deployment, uptime measurement and the measured 500-registration workload remain limitations.
+
+Current source-of-truth links:
+- [Implementation Baseline](../IMPLEMENTATION_BASELINE.md)
+- [Testing and Results](../TESTING_AND_RESULTS.md)
+- [Testing and Coverage](../TESTING_AND_COVERAGE.md)
+- [Operations Runbook](../OPERATIONS_RUNBOOK.md)
+- [Security Controls](../SECURITY_CONTROLS.md)
+- [Issue/PR and review log](../project-management/GITHUB_ISSUE_PR_LOG.md)
+
+The 18 November assessor-evidence branch adds a coverage command and a CI artifact upload. **Line/branch/function percentages are pending the first successful workflow run on that branch** and must be read from that run's coverage artifact, not inferred from test counts.
