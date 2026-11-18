@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="t d">
+<title id="t">Sprint 1 and Sprint 2 burn-up reconstruction</title>
+<desc id="d">Two closure-based burn-up charts. Sprint 1 planned scope is 26 points, with 5 complete at start, 24 by October 23, and 26 by October 26. Sprint 2 planned scope is 21 points, with 10 complete by October 28, 18 by October 29 and 21 by October 30.</desc>
+<rect width="1200" height="600" fill="#ffffff"/>
+<text x="600" y="38" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="700" fill="#18212f">EMS Sprint Burn-up (GitHub closure-date reconstruction)</text>
+<g font-family="Arial,sans-serif" fill="#18212f">
+<text x="300" y="82" text-anchor="middle" font-size="20" font-weight="700">Sprint 1 · 19–23 Oct (late close through 26 Oct)</text>
+<text x="900" y="82" text-anchor="middle" font-size="20" font-weight="700">Sprint 2 · 26–30 Oct</text>
+</g>
+<!-- Sprint 1 grid -->
+<g stroke="#d9e0e8" stroke-width="1" fill="none">
+<path d="M70 150H550 M70 230H550 M70 310H550 M70 390H550"/>
+<path d="M670 150H1150 M670 230H1150 M670 310H1150 M670 390H1150"/>
+</g>
+<g font-family="Arial,sans-serif" font-size="13" fill="#596579">
+<text x="58" y="395" text-anchor="end">0</text><text x="58" y="315" text-anchor="end">10</text><text x="58" y="235" text-anchor="end">20</text><text x="58" y="155" text-anchor="end">30</text>
+<text x="658" y="395" text-anchor="end">0</text><text x="658" y="315" text-anchor="end">8</text><text x="658" y="235" text-anchor="end">16</text><text x="658" y="155" text-anchor="end">24</text>
+</g>
+<g stroke="#27364b" stroke-width="2" fill="none"><path d="M70 140V390H550"/><path d="M670 140V390H1150"/></g>
+<!-- Sprint1 scope 26; y scale 0..30 -->
+<path d="M85 182H535" stroke="#d97706" stroke-width="3" stroke-dasharray="9 6" fill="none"/>
+<path d="M85 350 L149 350 L213 350 L277 350 L341 198 L405 198 L469 198 L535 182" stroke="#1769aa" stroke-width="4" fill="none"/>
+<g fill="#1769aa"><circle cx="85" cy="350" r="5"/><circle cx="149" cy="350" r="5"/><circle cx="213" cy="350" r="5"/><circle cx="277" cy="350" r="5"/><circle cx="341" cy="198" r="5"/><circle cx="405" cy="198" r="5"/><circle cx="469" cy="198" r="5"/><circle cx="535" cy="182" r="5"/></g>
+<g font-family="Arial,sans-serif" font-size="12" fill="#596579" text-anchor="middle">
+<text x="85" y="415">19</text><text x="149" y="415">20</text><text x="213" y="415">21</text><text x="277" y="415">22</text><text x="341" y="415">23</text><text x="405" y="415">24</text><text x="469" y="415">25</text><text x="535" y="415">26 Oct</text>
+<text x="85" y="432">Oct</text><text x="149" y="432">Oct</text><text x="213" y="432">Oct</text><text x="277" y="432">Oct</text><text x="341" y="432">Oct</text><text x="405" y="432">Oct</text><text x="469" y="432">Oct</text>
+</g>
+<!-- Sprint2 scope 21; y scale 0..24 -->
+<path d="M685 180H1135" stroke="#d97706" stroke-width="3" stroke-dasharray="9 6" fill="none"/>
+<path d="M685 390 L797 390 L910 285 L1022 180 L1135 180" stroke="#1769aa" stroke-width="4" fill="none"/>
+<g fill="#1769aa"><circle cx="685" cy="390" r="5"/><circle cx="797" cy="390" r="5"/><circle cx="910" cy="285" r="5"/><circle cx="1022" cy="180" r="5"/><circle cx="1135" cy="180" r="5"/></g>
+<g font-family="Arial,sans-serif" font-size="12" fill="#596579" text-anchor="middle">
+<text x="685" y="415">26 Oct</text><text x="797" y="415">27 Oct</text><text x="910" y="415">28 Oct</text><text x="1022" y="415">29 Oct</text><text x="1135" y="415">30 Oct</text>
+</g>
+<g font-family="Arial,sans-serif" font-size="14" fill="#18212f">
+<text x="85" y="465">Points complete: 5 → 24 by sprint end → 26 by 26 Oct</text>
+<text x="685" y="465">Points complete: 0 → 10 → 18 → 21 by sprint end</text>
+</g>
+<g font-family="Arial,sans-serif" font-size="14" fill="#18212f">
+<path d="M360 510h45" stroke="#d97706" stroke-width="3" stroke-dasharray="9 6"/><text x="415" y="515">Planned scope</text>
+<path d="M560 510h45" stroke="#1769aa" stroke-width="4"/><text x="615" y="515">Completed points</text>
+</g>
+<text x="600" y="565" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#68778b">Source: GitHub issue estimates and closed_at dates. See sprint-backlog-and-burnup.md for caveats.</text>
+</svg>
