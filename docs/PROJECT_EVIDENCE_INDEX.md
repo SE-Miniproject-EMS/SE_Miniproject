@@ -38,6 +38,7 @@ The website is reproducibly runnable locally using the README commands. The repo
 ## 4. Testing and coverage
 
 - [Testing and results](TESTING_AND_RESULTS.md) — historical CI runs and current known gaps.
+- [Detailed PR #48 backend test report](test-reports/2026-11-10-PR48-backend-test-report.md) — all 55 recorded test names and their grouped areas.
 - [Testing and coverage guide](TESTING_AND_COVERAGE.md) — test-file inventory and exact commands for line/branch/function coverage.
 - [API integration test report](API_Integration_Test_Report.md)
 - [Regression/E2E report](issue-12-regression-report.md)
