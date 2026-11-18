@@ -42,6 +42,7 @@ app.use("/api/registrations", registrationRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/reports", require("./routes/reportRoutes"));
 app.use("/api/example", exampleProtectedRoutes);
 
 app.use(notFoundHandler);

@@ -849,3 +849,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .registration-history-card h3 { margin: 0 0 0.5rem; }
 .registration-history-card p { margin: 0.35rem 0; }
 @media (max-width: 640px) { .registration-history-card { flex-direction: column; } .payment-demo-actions { width: 100%; } }
+
+.event-reports { margin-bottom: 24px; }
+.event-reports form, .report-downloads { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.event-reports label { display: grid; gap: 4px; }
+.report-table { max-width: 100%; overflow-x: auto; margin-bottom: 16px; }
+.report-table table { width: 100%; border-collapse: collapse; }
+.report-table th, .report-table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
