@@ -23,4 +23,12 @@ async function runReminders(req, res, next) {
     res.json({ queued, delivery, note: "Reminder job ran. Configure a production email/SMS provider before claiming real delivery." });
   } catch (err) { next(err); }
 }
-module.exports = { runReminders };
+
+async function dispatchNotifications(req, res, next) {
+  try {
+    if (req.user.role !== "ADMIN") throw new ApiError(403, "FORBIDDEN", "Only an admin may dispatch notifications");
+    const delivery = await dispatchPending(Number(process.env.NOTIFICATION_BATCH_SIZE || 50));
+    res.json({ processed: delivery.length, delivery });
+  } catch (err) { next(err); }
+}
+module.exports = { runReminders, dispatchNotifications };
