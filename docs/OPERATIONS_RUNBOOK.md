@@ -50,7 +50,7 @@ Open the Vite address shown in the terminal (normally `http://localhost:5173`). 
 4. Use an Organizer account to create a draft event, edit it, publish it and manage it.
 5. Use an Attendee account to browse an event and exercise available registration actions.
 
-The email-verification link is printed to the backend terminal (development behavior). Event notifications now support a Resend adapter via private environment configuration; without provider credentials, use the non-production console adapter and treat its output as a test delivery, not an email.
+The email-verification link is printed to the backend terminal (development behavior). Event notifications support a Resend adapter via private environment configuration; set `NOTIFICATION_ADAPTER=resend`, `RESEND_API_KEY`, and `NOTIFICATION_FROM_EMAIL` in the private backend `.env`. Without provider credentials, use the non-production console adapter and treat its output as a test delivery, not an email. Admins can trigger queued delivery through the admin-only `POST /api/notifications/jobs/dispatch` endpoint; the CLI worker is available as `npm run dispatch:notifications` from `backend/`.
 
 ## Demonstration features and accurate limitations
 
