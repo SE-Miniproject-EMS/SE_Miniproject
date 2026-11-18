@@ -34,7 +34,25 @@ const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
 
+// Liveness: confirms the Express process is running without depending on storage.
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// Readiness: verifies the database connection used by registration and event APIs.
+app.get("/api/health/ready", async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    return res.status(200).json({
+      status: "ready",
+      checks: { database: "ok" },
+    });
+  } catch (error) {
+    // Do not expose connection strings, credentials, or raw database errors.
+    return res.status(503).json({
+      status: "not_ready",
+      checks: { database: "unavailable" },
+    });
+  }
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);

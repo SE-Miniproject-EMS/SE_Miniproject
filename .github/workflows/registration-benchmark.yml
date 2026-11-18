@@ -1,0 +1,49 @@
+name: Registration Concurrency Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      capacity:
+        description: Event capacity for the 500 concurrent attempts
+        required: true
+        default: "100"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  registration-benchmark:
+    name: Run 500-attempt registration integrity benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run isolated 500-attempt benchmark
+        working-directory: backend
+        env:
+          REGISTRATION_BENCHMARK_CAPACITY: ${{ inputs.capacity }}
+        run: npm run benchmark:registrations
+
+      - name: Upload raw benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: registration-benchmark-${{ github.run_number }}
+          path: docs/issue-31-results/issue-31-registration-*
+          if-no-files-found: warn
+          retention-days: 90

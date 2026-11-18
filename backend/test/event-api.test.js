@@ -240,6 +240,19 @@ function validEvent(overrides = {}) {
   };
 }
 
+test("readiness endpoint confirms the database is reachable", async () => {
+  const liveness = await request("/api/health");
+  assert.equal(liveness.response.status, 200);
+  assert.equal(liveness.payload.status, "ok");
+
+  const readiness = await request("/api/health/ready");
+  assert.equal(readiness.response.status, 200, JSON.stringify(readiness.payload));
+  assert.deepEqual(readiness.payload, {
+    status: "ready",
+    checks: { database: "ok" },
+  });
+});
+
 test("event API requires authentication and organizer/admin authorization", async () => {
   const unauthenticated = await request("/api/events", {
     method: "POST",

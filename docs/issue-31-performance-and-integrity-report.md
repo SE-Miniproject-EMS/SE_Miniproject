@@ -61,6 +61,9 @@ The latest repository snapshot now includes registration, waitlisting and transa
 
 ### Run the 500-attempt benchmark
 
+The repository also provides a manual GitHub Actions workflow named **Registration Concurrency Benchmark**. Open **Actions → Registration Concurrency Benchmark → Run workflow**, choose a capacity from 1 to 499 (default 100), and run it against the selected branch. The workflow installs the backend dependencies, executes the same isolated benchmark, and uploads the generated JSON/CSV files as a run artifact for 90 days. Download the artifact and attach/commit the raw evidence to this report before marking NFR-PERF-02 as met. A green workflow run alone is not the result: inspect the JSON `passed` flag, all 500 responses, confirmed/waitlisted totals, and seat-count invariants.
+
+
 ```bash
 cd backend
 npm ci
