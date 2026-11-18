@@ -1,7 +1,7 @@
 # GitHub issue and pull-request activity log
 
-**Snapshot:** `main` at `7f9792c37df7d646e327eb2e2cdfffaf3f1d7682` (11 November 2026)  
-**Purpose:** Provide a repository-local index of the 56 GitHub issue/PR objects visible in the project at the snapshot. Each row links to the original issue or PR so an assessor can inspect the original description, assignees, branch, commits, review thread, changed files, CI and merge record.
+**Snapshot:** `main` at `27c92de869ae3aa151f4d886217159c2edb2f9f7` (18 November 2026, after PRs #58–#60)  
+**Purpose:** Provide a repository-local index of the issues and PRs relevant to the assessment at the snapshot. Each row links to the original issue or PR so an assessor can inspect the original description, assignees, branch, commits, review thread, changed files, CI and merge record.
 
 ## Backlog issue register
 
@@ -23,9 +23,9 @@
 | [#23](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/23) | NFR traceability/documentation | dshivasaivarun-lgtm (issue assignee) | Open | PR #46 remains open; branch has updated NFR/FR/testing docs but is behind main and still needs sync/review |
 | [#25](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/25) | Registration, capacity, waitlist and cancellation | GGO4411 | Open | PR #47 free-event flow; PR #48 mock paid flow. Real user-facing waitlist notification delivery remains unconfigured |
 | [#26](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/26) | Payment processing and refunds | GGO4411, minestevealex-ux | Open | PR #48 provides mock checkout/refund only; real gateway, signed callbacks and provider-confirmed refunds remain unimplemented |
-| [#27](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/27) | Registration/event notifications | minestevealex-ux | Open | PR #42 provides notification queue/service and reminder job; external email/SMS provider delivery is not configured |
+| [#27](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/27) | Registration/event notifications | minestevealex-ux | Closed | PR #58 adds Resend email delivery adapter, notification dispatcher, atomic claims, idempotency and bounded retries. Real delivery still requires Resend API key/sender configuration; SMS is not configured. |
 | [#28](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/28) | QR tickets and check-in | dshivasaivarun-lgtm, minestevealex-ux | Closed | PR #42 provides one-use token/check-in API; QR image and camera/scanner UI are still limitations |
-| [#29](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/29) | Organizer/admin dashboards and CSV reports | ChiragBasanth | Open | No dashboard or CSV reporting PR is present in the current main snapshot |
+| [#29](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/29) | Organizer/admin dashboards and CSV reports | ChiragBasanth | Closed | PR #59 adds organizer/admin report aggregates, dashboard UI, scoped registration/attendance CSV exports and backend tests. |
 | [#30](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/30) | Feedback and ratings | minestevealex-ux | Closed | PR #42 provides feedback model/API and eligibility rules; complete attendee feedback prompt UI remains incomplete |
 | [#31](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/31) | Performance, concurrency and data integrity NFRs | GGO4411, minestevealex-ux | Open | PR #39 search benchmark; PR #54 adds a 500-attempt registration harness, but the registration load has not been run/recorded |
 | [#32](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/32) | Security NFRs | minestevealex-ux, ChiragBasanth (issue assignees; GGO4411 owner) | Open | PR #52 password/card-data regression checks; PR #55 route-matrix RBAC test. Provider-backed PCI flow remains blocked |
@@ -70,7 +70,13 @@
 | [#54](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/54) | minestevealex-ux | `test/issue-31-registration-concurrency-nfr` | #31 | 500-registration benchmark harness and benchmark artifacts | Merged; harness is not yet an executed 500-attempt result |
 | [#55](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/55) | minestevealex-ux | `test/issue-32-security-rbac-nfr` | #32 | Route-family RBAC matrix integration test and security report | Merged |
 | [#56](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/56) | dshivasaivarun-lgtm | `codex/issues-33-34-verification` | #33, #34 | Usability study procedure and availability measurement assessment | Merged; neither target is measured/passed |
-| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | GGO4411 | `docs/assessor-evidence-pack` | Assessor/repository evidence and reminder-job test improvement | Contributor/issue/PR ledger, sprint backlog/burn-up, operations/security runbooks, reminder-job refactor and unit tests, test reports and CI coverage artifact | Open; latest run #44248457569 passed 60 tests and build; 94.06% line / 78.04% branch / 97.18% function coverage; Alex review requested |
+| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | GGO4411 | `docs/assessor-evidence-pack` | Original assessor evidence pack and reminder-job test improvement | Contributor/issue/PR ledger, sprint backlog/burn-up, runbooks, reminder-job refactor/tests and coverage evidence | Open but stale: branch was 19 commits behind main and GitHub marked it dirty; no independent review was submitted. Superseded by refreshed PR #61. |
+
+
+| [#58](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/58) | minestevealex-ux | `feat/issue-27-email-notifications` | #27 | Resend email adapter, development console adapter, notification dispatcher, atomic claims/idempotency/retries and provider tests | Merged 18 Nov 2026 |
+| [#59](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/59) | dshivasaivarun-lgtm | `feat/issue-29-organizer-admin-reports` | #29 | Organizer/admin report aggregates, dashboard UI, filtered registration/attendance CSV exports and regression tests | Merged 18 Nov 2026 |
+| [#60](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/60) | dshivasaivarun-lgtm | `docs/team-contributions-readme` | Documentation | README simplification and updates to SRS/SAD/Test Plan contribution details and team contributions guide | Merged 18 Nov 2026 |
+| [#61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) | GGO4411 | `docs/assessor-evidence-pack-refresh` | #9, #27, #31, #32, #35 | Refreshed assessor evidence pack based on current main; reminder-job injection/refactor and direct tests; graceful shutdown; backend coverage reporting | Open; current-main refresh, awaiting independent review and PR CI |
 
 ## Review → fix → re-push record
 
@@ -103,3 +109,8 @@ When work is pushed, add/update the issue or PR description with:
 6. Final merge commit SHA and issue closure date.
 
 Push another commit to the same PR branch after review feedback; do not create a duplicate PR for the same change. Close the linked issue only when acceptance criteria and evidence are recorded.
+
+
+### PR #61 — refreshed from the current main branch
+
+The original PR #57 branch diverged after main received notification and reporting deliveries in PRs #58–#60. PR #61 is recreated from the current main SHA so those merged features remain intact. It carries the evidence index, individual contribution matrix, sprint backlog/burn-up, operations/security and testing documents, coverage-reporting CI, and the reminder-job testable runner. PR #61 has not been merged and must receive independent review before merge.
