@@ -8,3 +8,8 @@ A BTech Software Engineering mini-project for organizing and attending events. O
 - **Chirag Basanth Bellavi** — Event management features, GitHub Actions, and session expiry.
 - **Gandhar Sameer Gokhale** — Backend validation, API integration testing, and requirements verification.
 - **Harshith J (Alex)** — Notifications, QR check-in, and feedback, plus API testing and documentation.
+
+
+## Project evidence
+
+For the software-engineering assessment, start with the [Assessor Evidence Index](docs/PROJECT_EVIDENCE_INDEX.md). The [GGO4411 individual work evidence](docs/project-management/GGO4411_INDIVIDUAL_WORK_EVIDENCE.md) maps personal assignments to authored pull requests, code review, tests and CI evidence.
