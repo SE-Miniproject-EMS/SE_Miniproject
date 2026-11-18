@@ -118,7 +118,8 @@ test("PostgreSQL supports sessions, capacity, FIFO, reporting and mock payment r
     assert.equal(paidReport.data.totals.simulatedRevenuePaise, 1000);
     assert.equal(paidReport.data.totals.revenuePaise, 0);
     const cancels = await Promise.all([1, 2].map(() => request("/events/" + paidEvent + "/cancel", "POST", organizer)));
-    assert.ok(cancels.every((r) => r.status === 200));
+    assert.equal(cancels.filter((r) => r.status === 200).length, 1);
+    assert.equal(cancels.filter((r) => r.status === 409 && r.data.error.code === "ALREADY_CANCELLED").length, 1);
     assert.equal(Number((await db.query("SELECT COUNT(*) AS count FROM refunds")).rows[0].count), 1);
     await db.query('UPDATE sessions SET "idleExpiresAt"=0 WHERE id=$1', [buyer.jti]);
     assert.equal((await request("/auth/me", "GET", buyer.token)).status, 401);

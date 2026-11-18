@@ -550,7 +550,7 @@ async function publishEvent(req, res, next) {
 
 async function cancelEvent(req, res, next) {
   try {
-    const result = await writeTransaction( async (transaction) => {
+    const result = await writeTransaction(async (transaction) => {
       const event = await Event.findByPk(req.params.id, { transaction });
       if (!event) throw new ApiError(404, "NOT_FOUND", "Event not found");
       ensureCanModify(event, req.user);
