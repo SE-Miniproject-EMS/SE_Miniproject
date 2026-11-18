@@ -4,7 +4,7 @@ A full-stack event management prototype built with React, Express, Sequelize, an
 
 ## Project progress
 
-**Progress updated: 26 October 2026.** Sprint 1 implementation is merged. Sprint 2 backlog work remains open and is assigned across the four teammates.
+**Progress updated: 18 November 2026.** The two course-defined sprints (19–23 October and 26–30 October 2026) are complete and their original backlog issues are closed. Additional product/NFR issues remain in the post-sprint backlog. See the assessor evidence index for contributor, PR/review, testing, coverage, operations, security and sprint records.
 
 ### Sprint 1 — delivered
 
@@ -19,19 +19,11 @@ Merged pull requests delivered the event module and CI ([#1](https://github.com/
 - Public upcoming event discovery with search, category, venue/location, and date filters, plus pagination.
 - GitHub Actions CI for backend API tests and the frontend production build.
 
-### Sprint 2 — current backlog
+### Sprint 2 — completed (26–30 October 2026)
 
-All items below are open in the project backlog. Assignments and estimates reflect the current issues.
+The assigned Sprint 2 items are closed: [#9 API integration](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/9), [#11 CI](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/11), [#12 regression/E2E](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/12), [#13 documentation](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/13), and [#14 final demo/release](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/14). Their owners, estimates, close dates and PR evidence are recorded in [Sprint Backlog and Burn-up](docs/project-management/SPRINT_BACKLOG_AND_BURNUP.md).
 
-| Issue | Work | Estimate | Assignee(s) | Status |
-| --- | --- | ---: | --- | --- |
-| [#9](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/9) | API integration testing | 5 points | GGO4411, minestevealex-ux | Open |
-| [#11](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/11) | Set up / finalize GitHub Actions CI | 5 points | ChiragBasanth | Open |
-| [#12](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/12) | Regression and end-to-end testing | 5 points | dshivasaivarun-lgtm | Open |
-| [#13](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/13) | Finalize project documentation | 3 points | minestevealex-ux | Open |
-| [#14](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/14) | Final demonstration and release | 3 points | dshivasaivarun-lgtm, ChiragBasanth | Open |
-
-The CI workflow is already present and the latest checks on PR #19 passed. Issue #11 remains open for the team to complete its acceptance criteria and document the workflow.
+The official course plan defines two sprints and a development-cycle freeze after Sprint 2. Issues #22–#35 are additional product/verification backlog, not an undocumented third sprint.
 
 ## Sprint 1 demo and known deviations
 
@@ -40,9 +32,9 @@ Use [docs/sprint-1-demo-and-deviations.md](docs/sprint-1-demo-and-deviations.md)
 Known limits to disclose:
 - Email verification is enforced, but the development verification link is printed to the backend console. Real email delivery requires a configured provider.
 - Cancellation changes the event status, but registrant notifications and refund processing are not implemented in the current flow.
-- Event registration, payments, waitlists, check-in/QR, feedback, and reporting remain outside the delivered Sprint 1 flow.
-- The repository uses local SQLite for development; production deployment, shared database operations, and load testing remain future work.
-- CI passes the current backend suite and frontend build. Dedicated test assertions for lockout, rejection of unverified login, and pagination remain coverage gaps.
+- Later merged work added free-event registration/waitlisting, mock-paid checkout/refunds, token-based check-in and feedback APIs. External notification delivery, a real payment gateway, QR scanner UI, complete feedback UI, and dashboards/CSV reporting remain limitations.
+- The repository uses local SQLite for development. Production deployment, shared database operations, measured 500-registration load, uptime monitoring and multi-instance scaling are not verified.
+- CI runs backend syntax/tests and the frontend production build. The current test suite includes unverified-login, session expiry and RBAC route-matrix tests. Dedicated browser automation and the 500-registration load result remain gaps.
 
 ## Technology and structure
 
@@ -53,7 +45,7 @@ Known limits to disclose:
 
     backend/   Express API, Sequelize models, authentication and event routes
     frontend/  React + Vite application
-    docs/      SRS, architecture, test plan, Sprint 1 demo/deviation guide
+    docs/      SRS, architecture, test plan, verification reports and assessor evidence
 
 ## Run locally on Windows
 
@@ -112,6 +104,7 @@ The verification link is printed in the backend window; this project does not se
 From backend/:
 
     npm test
+    npm run test:coverage   # line/branch/function reports
 
 From frontend/:
 
@@ -125,11 +118,22 @@ Create a feature branch for each change, open a pull request to main, and reques
 
 ## Registration, QR check-in, notifications, and feedback APIs
 
-The backend now includes the supporting registration/waitlist API plus the feature foundations for issues #27, #28, and #30. See [`docs/feature-issues/notifications-qr-feedback.md`](docs/feature-issues/notifications-qr-feedback.md) for endpoint contracts, reminder-job scheduling, provider configuration, security notes, and current limitations.
+The backend includes registration/waitlisting, token-based check-in, notifications queue/reminder job, feedback APIs, and mock payment/refund workflows. See [API Reference](docs/API_REFERENCE.md), [Implementation Baseline](docs/IMPLEMENTATION_BASELINE.md), [Operations Runbook](docs/OPERATIONS_RUNBOOK.md), and [Security Controls](docs/SECURITY_CONTROLS.md) for behavior and limitations.
 
-## Documentation
+## Assessor evidence pack
 
-- [Functional requirements traceability matrix](docs/FR_TRACEABILITY_MATRIX.md) — requirement status, backlog links, verification approach and implementation gaps.
+Start here: [Project Evidence Index](docs/PROJECT_EVIDENCE_INDEX.md). It links:
+- [Contributor delivery log](docs/project-management/CONTRIBUTOR_DELIVERY_LOG.md) — assigned vs delivered work, by person/workstream.
+- [GitHub issue and PR log](docs/project-management/GITHUB_ISSUE_PR_LOG.md) — linked issues, PR authors, review/fix/re-push evidence.
+- [Sprint backlogs and burn-up](docs/project-management/SPRINT_BACKLOG_AND_BURNUP.md) — Sprint 1/Sprint 2 points, closure dates and chart data.
+- [Testing and coverage](docs/TESTING_AND_COVERAGE.md) — test files, unit/integration tests, line/branch coverage commands and CI artifact.
+- [Operations Runbook](docs/OPERATIONS_RUNBOOK.md) — local working website, startup and demo steps.
+- [Security Controls](docs/SECURITY_CONTROLS.md) — password, JWT/session, RBAC and payment-security evidence.
+
+Other documentation:
+- [Functional requirements traceability matrix](docs/FR_TRACEABILITY_MATRIX.md)
+- [Non-functional requirements traceability](docs/NFR_TRACEABILITY.md)
+- [Testing and results](docs/TESTING_AND_RESULTS.md)
 
 ## Payment workflow demo (Issue #26)
 
