@@ -4,7 +4,7 @@ const { Op } = require("sequelize");
 const { runReminderJob } = require("../src/jobs/sendReminders");
 
 function createLogger() {
-  return { log: [], errors: [], log(message) { this.log.push(message); }, error(...args) { this.errors.push(args); } };
+  return { messages: [], errors: [], log(message) { this.messages.push(message); }, error(...args) { this.errors.push(args); } };
 }
 
 function createDatabaseLifecycle(calls) {
@@ -105,8 +105,8 @@ test("queues reminders for confirmed registrations in the 23–25 hour window", 
       },
     },
   ]);
-  assert.equal(logger.log.length, 1);
-  assert.match(logger.log[0], /"queued": 1/);
+  assert.equal(logger.messages.length, 1);
+  assert.match(logger.messages[0], /"queued": 1/);
   assert.equal(logger.errors.length, 0);
 });
 
@@ -140,7 +140,7 @@ test("dispatches pending notifications when no events fall in the reminder windo
 
   assert.deepEqual(result, { queued: 0, delivery: [] });
   assert.deepEqual(calls, ["authenticate", "sync", "find-events", "dispatch", "close"]);
-  assert.equal(logger.log.length, 1);
+  assert.equal(logger.messages.length, 1);
   assert.equal(logger.errors.length, 0);
 });
 
