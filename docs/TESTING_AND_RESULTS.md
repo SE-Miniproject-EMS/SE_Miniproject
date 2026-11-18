@@ -1,7 +1,7 @@
 # Testing approach and results
 
 **Documentation update:** 18 November 2026  
-**Latest integrated application test evidence:** PR #48 CI run [#42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410), 10 November 2026. Backend **55 passed, 0 failed**; backend syntax validation and frontend build passed.
+**Latest assessor-branch validation:** PR #57 CI run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529), 18 November 2026. Backend **56 passed, 0 failed**; backend syntax validation and frontend build passed. The coverage artifact reports **92.79% lines, 77.81% branches and 95.71% functions**. Historical integrated application result: PR #48 run #42747239410, 55 passed, 0 failed.
 
 ## Automated test inventory
 
@@ -60,6 +60,15 @@ CI uploads the folder as the artifact `backend-test-coverage-<run number>`. Use 
 | #48 / [#42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) | **55 passed, 0 failed** | **Passed** | Later integrated mock payment/refund code with security/RBAC tests |
 
 CI output verifies backend tests and frontend compilation/build. It does not automatically establish browser E2E behavior, a 500-registration load result, production uptime or horizontal scaling.
+
+## Latest coverage result
+
+PR #57 run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529) uploaded [backend-test-coverage-75](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583). Measured backend totals:
+- Lines/statements: 2,075 / 2,236 = **92.79%**
+- Branches: 414 / 532 = **77.81%**
+- Functions: 67 / 70 = **95.71%**
+
+The report includes all backend `src/**/*.js` files. `src/jobs/sendReminders.js` is 0% covered and should receive direct tests. Full per-file breakdown is in [coverage baseline report](test-reports/2026-11-18-coverage-baseline.md). These are backend percentages only; no frontend component-test coverage percentage exists.
 
 ## Manual/browser verification
 
