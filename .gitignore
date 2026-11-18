@@ -24,3 +24,7 @@ npm-debug.log*
 
 # Default output directory for local Issue #31 performance runs
 backend/benchmark-results/
+
+# Backend test coverage output
+backend/coverage/
+backend/.nyc_output/
