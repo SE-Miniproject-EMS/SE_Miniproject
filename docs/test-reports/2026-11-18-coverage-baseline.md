@@ -40,7 +40,7 @@ The test suite exercises the real Express server in a child process. The backend
 ## How to inspect
 
 1. Open the workflow run link above.
-2. Under **Artifacts**, download `backend-test-coverage-75`.
+2. Under **Artifacts**, download `backend-test-coverage-81`.
 3. Open `index.html` for the browsable HTML report.
 4. Use `lcov.info` for LCOV-compatible tooling and `coverage-summary.json` for machine-readable totals.
 
