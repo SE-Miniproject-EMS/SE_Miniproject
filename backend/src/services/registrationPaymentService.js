@@ -1,5 +1,6 @@
+const { writeTransaction } = require("./databaseWrites");
 const crypto = require("node:crypto");
-const { Op, literal, Transaction } = require("sequelize");
+const { Op, literal } = require("sequelize");
 const sequelize = require("../config/db");
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
@@ -159,7 +160,7 @@ async function expirePendingInTransaction(payment, transaction, now = new Date()
 }
 
 async function expirePayment(paymentId, now = new Date()) {
-  return sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
+  return writeTransaction( async (transaction) => {
     const payment = await Payment.findByPk(paymentId, { transaction });
     if (!payment || payment.status !== "PENDING" || new Date(payment.expiresAt).getTime() > now.getTime()) return false;
     return expirePendingInTransaction(payment, transaction, now);
@@ -183,7 +184,7 @@ async function simulatePaymentOutcome(paymentId, attendeeId, outcomeValue, now =
   try { outcome = mockAdapter.paymentOutcome(outcomeValue); }
   catch (error) { throw new ApiError(400, "INVALID_MOCK_OUTCOME", error.message); }
 
-  return sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
+  return writeTransaction( async (transaction) => {
     let payment = await Payment.findByPk(paymentId, { transaction });
     if (!payment) throw new ApiError(404, "PAYMENT_NOT_FOUND", "Payment not found");
     let registration = await Registration.findByPk(payment.registrationId, { transaction });
@@ -285,7 +286,7 @@ async function simulatePaymentOutcome(paymentId, attendeeId, outcomeValue, now =
 
 async function retryCheckout(registrationId, attendeeId, now = new Date()) {
   mockOnly();
-  return sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
+  return writeTransaction( async (transaction) => {
     const registration = await Registration.findByPk(registrationId, { transaction });
     if (!registration) throw new ApiError(404, "REGISTRATION_NOT_FOUND", "Registration not found");
     if (Number(registration.attendeeId) !== Number(attendeeId)) throw new ApiError(403, "FORBIDDEN", "You may only retry your own checkout");
@@ -320,7 +321,7 @@ async function simulateRefundOutcome(paymentId, attendeeId, outcomeValue) {
   try { outcome = mockAdapter.refundOutcome(outcomeValue); }
   catch (error) { throw new ApiError(400, "INVALID_MOCK_OUTCOME", error.message); }
 
-  return sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
+  return writeTransaction( async (transaction) => {
     const payment = await Payment.findByPk(paymentId, {
       include: [{ model: Registration, as: "registration" }],
       transaction,

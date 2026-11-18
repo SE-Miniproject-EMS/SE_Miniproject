@@ -9,7 +9,7 @@ module.exports = async function migrateIssue26(sequelize) {
   }
 
   await sequelize.query(
-    "UPDATE registrations SET waitlistPositionAt = createdAt WHERE status = ? AND waitlistPositionAt IS NULL",
+    'UPDATE registrations SET "waitlistPositionAt" = "createdAt" WHERE status = ? AND "waitlistPositionAt" IS NULL',
     { replacements: ["WAITLISTED"] }
   );
 

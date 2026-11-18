@@ -1,5 +1,5 @@
 const crypto = require("node:crypto");
-const { sqliteTransaction } = require("../services/sqliteWrites");
+const { writeTransaction } = require("../services/databaseWrites");
 const { Op, literal } = require("sequelize");
 const sequelize = require("../config/db");
 const Event = require("../models/Event");
@@ -19,7 +19,7 @@ async function register(req, res, next) {
   try {
     const eventId = Number(req.params.eventId);
     if (!Number.isInteger(eventId) || eventId < 1) throw new ApiError(400, "INVALID_EVENT_ID", "Event ID must be a positive integer");
-    const result = await sqliteTransaction(async (transaction) => {
+    const result = await writeTransaction(async (transaction) => {
       const event = await Event.findByPk(eventId, { transaction });
       if (!event || event.status !== "PUBLISHED") throw new ApiError(404, "EVENT_UNAVAILABLE", "Published event not found");
       if (new Date(event.endDateTime).getTime() <= Date.now()) throw new ApiError(409, "EVENT_ENDED", "Registration is closed because the event has ended");
@@ -77,7 +77,7 @@ async function cancelRegistration(req, res, next) {
   try {
     const regId = Number(req.params.id);
     const now = new Date();
-    const result = await sqliteTransaction(async (transaction) => {
+    const result = await writeTransaction(async (transaction) => {
       const reg = await Registration.findByPk(regId, { transaction });
       if (!reg) throw new ApiError(404, "REGISTRATION_NOT_FOUND", "Registration not found");
       if (Number(reg.attendeeId) !== Number(req.user.id)) throw new ApiError(403, "FORBIDDEN", "You may only cancel your own registration");
