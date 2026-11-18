@@ -47,14 +47,18 @@ The website is reproducibly runnable locally using the README commands. The repo
 - [Application demonstration](issue-14/application-demo.webm)
 - [Technical verification demonstration](issue-14/technical-verification.webm)
 
-### Latest integrated test evidence currently recorded
+### Latest coverage-enabled validation
 
-[PR #48 CI run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) ran on the integrated mock payment/refund changes:
-- Backend: **55 tests passed, 0 failed**.
+[PR #57 CI run #44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529), 18 November 2026:
+- Backend: **56 tests passed, 0 failed**.
 - Backend syntax validation: passed.
 - Frontend production build: passed.
+- Backend line/statement coverage: **92.79%** (2,075 / 2,236).
+- Backend branch coverage: **77.81%** (414 / 532).
+- Backend function coverage: **95.71%** (67 / 70).
+- [Coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583) includes HTML, LCOV and JSON summary. The detailed [coverage baseline report](test-reports/2026-11-18-coverage-baseline.md) identifies the 0%-covered reminder job and further branch gaps.
 
-This is a historical result for that PR commit. The assessor-evidence branch adds a coverage step and Actions artifact upload; the line/branch/function numbers will only be known after that workflow completes. Use the artifact for the exact reviewed commit; do not infer coverage from the number of tests.
+Historical integrated application result: [PR #48 run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) reported 55 passed, 0 failed. Counts differ because they are from different commits; do not add them together.
 
 **Current frontend test status:** a separate automated frontend component/unit-test script is not present in `frontend/package.json`; CI runs `npm run build`. Browser evidence is separate and limited to the flows recorded in the E2E JSON/video.
 
