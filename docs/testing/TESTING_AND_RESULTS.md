@@ -1,6 +1,6 @@
 # Testing approach and results
 
-**Current documentation review:** 12 November 2026. Historical run counts retain their original run dates and must not be added together. This document distinguishes merged CI evidence from unrun load, browser and deployment verification. Read this alongside `API_Integration_Test_Report.md`, `issue-12-regression-report.md`, and `IMPLEMENTATION_BASELINE.md`.
+**Current documentation review:** 18 November 2026. Includes merged PRs #58–#60 and the current-main validation in PR #61. Historical run counts retain their original run dates and must not be added together. This document distinguishes merged CI evidence from unrun load, browser and deployment verification. Read this alongside `API_Integration_Test_Report.md`, `issue-12-regression-report.md`, and `IMPLEMENTATION_BASELINE.md`.
 
 ## Repeatable local commands
 
@@ -24,7 +24,7 @@ The backend test scripts use isolated temporary SQLite files, test real HTTP rou
 
 ## Automated test strategy
 
-The backend suite in `backend/test/auth-api.test.js` and `backend/test/event-api.test.js` verifies the API through HTTP requests rather than importing controllers directly.
+The backend suites in `backend/test/auth-api.test.js` and `backend/test/event-api.test.js` verify APIs through HTTP requests rather than importing controllers directly. Focused worker tests are in `backend/test/send-reminders.test.js` and `backend/test/dispatch-notifications.test.js`.
 
 | Area | Current scenarios covered |
 | --- | --- |
@@ -34,9 +34,11 @@ The backend suite in `backend/test/auth-api.test.js` and `backend/test/event-api
 | Authorization and ownership | PR #55 adds a route-family permission matrix for anonymous, ATTENDEE, ORGANIZER and ADMIN requests across mounted protected routes. Separate tests cover event/registration/check-in/feedback ownership. Extend the matrix whenever routes are added. |
 | Validation | Missing/invalid fields, date ordering and formats, capacity, ticket price, title/category/venue limits, invalid update persistence, invalid publish data, cancelled event restrictions. |
 | Discovery | Search, category, venue/location, date filters, pagination values, order and response metadata. |
-| Frontend | Vite production build to detect compile/build errors. |
+| Notifications | Resend email adapter, development console adapter, notification outbox, admin-only dispatch endpoint/worker, idempotency and retry logic; the provider requires deployment credentials/sender verification. |
+| Reporting | Organizer/Admin report aggregates and dashboard UI; CSV registration/attendance downloads with role scope and formula-safe escaping (PR #59). |
+| Frontend | Vite production build to detect compile/build errors; no separate automated React component-test runner. |
 
-GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, syntax-checks backend source, runs `npm test`, and runs `npm run build` for the frontend. The workflow does not run browser automation or a deployed-system test.
+GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, syntax-checks backend source, runs `npm run test:coverage`, uploads the coverage folder as an artifact, and runs `npm run build` for the frontend. The workflow does not run browser automation or a deployed-system test.
 
 ## Results recorded in this repository
 
@@ -53,7 +55,7 @@ GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, sy
 - No automated browser E2E suite is present in this repository snapshot.
 - The existing demo record notes that login-lockout behavior, rejection of unverified login, and some pagination cases had coverage gaps at the time it was written; the current auth test file includes an unverified-login test, so review the individual test files before treating that older note as current for every gap.
 - PR #54 adds `npm run benchmark:registrations`, which seeds a disposable SQLite database and sends 500 simultaneous authenticated free-event registration attempts. **No registration-specific run result JSON/CSV is committed yet**, so NFR-PERF-02 remains NOT VERIFIED. Run from `backend/` with `npm run benchmark:registrations`, review the report's 500 responses, unique persisted record count, confirmed/waitlisted counts and `seatsTaken`, then commit the generated files under `docs/issue-31-results/`.
-- PR #48 supplies a mock payment/refund simulator only; no real gateway, signed callback, provider-confirmed refund or PCI verification exists. External email/SMS notification delivery remains unconfigured. Token check-in and feedback APIs have test coverage, but QR image/camera scanning UI, complete feedback prompt/display UI, and organizer/admin dashboards with CSV reporting remain incomplete.
+- PR #48 supplies a mock payment/refund simulator only; no real gateway, signed callback, provider-confirmed refund or PCI verification exists. PR #58 adds a Resend email adapter/dispatcher; real delivery requires a configured API key and sender address, and SMS is not configured. Token check-in and feedback APIs have test coverage, but QR image/camera scanning UI and complete feedback prompt/display UI remain incomplete. PR #59 adds Organizer/Admin dashboards and CSV reporting.
 - The registration harness is still unrun, and the event-search benchmark does not establish production capacity, multi-instance scalability, availability or 99% uptime. PR #56's usability and availability assessments both record their measurements as not run/not verified.
 
 ## Suggested manual smoke test before demonstration
@@ -65,3 +67,16 @@ GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, sy
 5. Edit and cancel the event; verify the canceled event is no longer in public discovery.
 6. Use anonymous, Attendee, Organizer and Admin test accounts to verify role gates and object ownership using the PR #55 route matrix. Also complete a manual browser journey and record screenshots/results; automated API tests are not browser E2E evidence.
 7. Record pass/fail, environment, date and evidence in the issue or regression report. Do not describe six-request functional concurrency testing as proof of the 500-attempt SRS target, or treat console notification output as external email/SMS delivery.
+
+
+## Current-main validation — PR #61
+
+[Actions run #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404), commit `dfec487aa5de9cb075c37dd19f061ae771b7002e`:
+- Backend: **73 passed, 0 failed**.
+- Backend syntax validation: passed.
+- Frontend production build: passed.
+- Backend coverage: **93.56% lines/statements, 76.62% branches, 94.25% functions**.
+- [Coverage artifact #114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
+
+PR #61 adds direct tests for the reminder and notification dispatch jobs. These worker tests use injected dependencies rather than a live database or external email provider. They do not claim that actual email delivery or a production scheduled-job deployment was exercised.
+

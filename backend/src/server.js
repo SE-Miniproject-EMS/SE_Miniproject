@@ -34,7 +34,25 @@ const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
 
+// Liveness: confirms the Express process is running without depending on storage.
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// Readiness: verifies the database connection used by registration and event APIs.
+app.get("/api/health/ready", async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    return res.status(200).json({
+      status: "ready",
+      checks: { database: "ok" },
+    });
+  } catch (error) {
+    // Do not expose connection strings, credentials, or raw database errors.
+    return res.status(503).json({
+      status: "not_ready",
+      checks: { database: "unavailable" },
+    });
+  }
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
@@ -49,6 +67,35 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+
+let httpServer = null;
+let paymentExpiryTimer = null;
+let shuttingDown = false;
+
+// Stop accepting requests and close the database cleanly. Besides avoiding
+// abrupt termination, this lets child-process V8 coverage flush during tests.
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`EMS backend received ${signal}; shutting down gracefully.`);
+
+  if (paymentExpiryTimer) clearInterval(paymentExpiryTimer);
+
+  if (httpServer && httpServer.listening) {
+    await new Promise((resolve) => httpServer.close(() => resolve()));
+  }
+
+  await sequelize.close();
+}
+
+for (const signal of ["SIGTERM", "SIGINT"]) {
+  process.on(signal, () => {
+    shutdown(signal).catch((error) => {
+      console.error("Graceful shutdown failed:", error);
+      process.exitCode = 1;
+    });
+  });
+}
 
 // `sync()` auto-creates tables from the models above. This is fine for local
 // dev; once you add more models, consider Sequelize migrations instead of sync().
@@ -70,9 +117,9 @@ sequelize
     await runPaymentExpirySweep();
     const configuredScanInterval = Number(process.env.PAYMENT_EXPIRY_SCAN_INTERVAL_MS || 30000);
     const scanInterval = Number.isInteger(configuredScanInterval) && configuredScanInterval >= 1000 ? configuredScanInterval : 30000;
-    const paymentExpiryTimer = setInterval(runPaymentExpirySweep, scanInterval);
+    paymentExpiryTimer = setInterval(runPaymentExpirySweep, scanInterval);
     paymentExpiryTimer.unref();
-    app.listen(PORT, () => {
+    httpServer = app.listen(PORT, () => {
       console.log(`EMS backend listening on http://localhost:${PORT}`);
     });
   })

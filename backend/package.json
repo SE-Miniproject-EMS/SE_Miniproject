@@ -9,8 +9,10 @@
     "start": "node src/server.js",
     "test": "node --test",
     "reminders": "node src/jobs/sendReminders.js",
+    "dispatch:notifications": "node src/jobs/dispatchNotifications.js",
     "benchmark:events": "node scripts/benchmark-event-search.js",
-    "benchmark:registrations": "node scripts/benchmark-registration-concurrency.js"
+    "benchmark:registrations": "node scripts/benchmark-registration-concurrency.js",
+    "test:coverage": "npx --yes c8@12.0.0 npm test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
