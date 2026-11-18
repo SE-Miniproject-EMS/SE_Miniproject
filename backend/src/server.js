@@ -49,6 +49,38 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+let httpServer;
+let paymentExpiryTimer;
+let shuttingDown = false;
+
+// Gracefully stop the HTTP listener and database when the process is asked
+// to terminate. This prevents forced termination from dropping in-flight work
+// and lets Node flush diagnostics such as V8 coverage before exiting.
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`EMS backend received ${signal}; shutting down gracefully.`);
+
+  if (paymentExpiryTimer) clearInterval(paymentExpiryTimer);
+
+  if (httpServer && httpServer.listening) {
+    await new Promise((resolve) => {
+      httpServer.close(() => resolve());
+    });
+  }
+
+  await sequelize.close();
+}
+
+for (const signal of ["SIGTERM", "SIGINT"]) {
+  process.on(signal, () => {
+    shutdown(signal).catch((error) => {
+      console.error("Graceful shutdown failed:", error);
+      process.exitCode = 1;
+    });
+  });
+}
+
 // `sync()` auto-creates tables from the models above. This is fine for local
 // dev; once you add more models, consider Sequelize migrations instead of sync().
 sequelize
@@ -69,9 +101,9 @@ sequelize
     await runPaymentExpirySweep();
     const configuredScanInterval = Number(process.env.PAYMENT_EXPIRY_SCAN_INTERVAL_MS || 30000);
     const scanInterval = Number.isInteger(configuredScanInterval) && configuredScanInterval >= 1000 ? configuredScanInterval : 30000;
-    const paymentExpiryTimer = setInterval(runPaymentExpirySweep, scanInterval);
+    paymentExpiryTimer = setInterval(runPaymentExpirySweep, scanInterval);
     paymentExpiryTimer.unref();
-    app.listen(PORT, () => {
+    httpServer = app.listen(PORT, () => {
       console.log(`EMS backend listening on http://localhost:${PORT}`);
     });
   })
