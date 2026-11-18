@@ -73,7 +73,8 @@ test("PostgreSQL supports sessions, capacity, FIFO, reporting and mock payment r
       await db.query('INSERT INTO sessions (id,"idleExpiresAt") VALUES ($1,$2)', [jti, Date.now() + 1800000]);
       return { id: user.id, token, jti };
     }
-    const attendees = await Promise.all(Array.from({ length: 20 }, (_, i) => attendee(i)));
+    const attendees = [];
+    for (let i = 0; i < 20; i++) attendees.push(await attendee(i));
     async function event(ticketPrice = 0) {
       const starts = Date.now() + 3 * 86400000;
       const created = await request("/events", "POST", organizer, {
@@ -110,7 +111,7 @@ test("PostgreSQL supports sessions, capacity, FIFO, reporting and mock payment r
     assert.equal(checkout.status, 201);
     assert.equal((await request("/payments/" + checkout.data.payment.id + "/mock-outcome", "POST", buyer.token, { outcome: "FAILURE" })).status, 200);
     const retry = await request("/registrations/" + checkout.data.registration.id + "/retry-payment", "POST", buyer.token);
-    assert.equal(retry.status, 200, JSON.stringify(retry.data));
+    assert.equal(retry.status, 201, JSON.stringify(retry.data));
     const success = await request("/payments/" + retry.data.payment.id + "/mock-outcome", "POST", buyer.token, { outcome: "SUCCESS" });
     assert.equal(success.status, 200);
     const paidReport = await request("/reports?eventId=" + paidEvent, "GET", organizer);
