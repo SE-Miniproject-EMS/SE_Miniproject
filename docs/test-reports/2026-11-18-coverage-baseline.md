@@ -1,8 +1,8 @@
 # Backend Coverage Baseline — 18 November 2026
 
-**Workflow:** [GitHub Actions run #44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529)  
-**Commit:** `bbde4fdff3ffebf00e31f5c5cee1b483bc37b3d8`  
-**Artifact:** [backend-test-coverage-75](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583)  
+**Workflow:** [GitHub Actions run #44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992)  
+**Commit:** `5e6ed8f6042af768f6cf35e14e96192e3dab5e5f`  
+**Artifact:** [backend-test-coverage-81](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992/artifacts/14399547708)  
 **Runtime:** Node.js 24 on GitHub-hosted Ubuntu runner  
 **Test command:** `cd backend && npm run test:coverage`
 
