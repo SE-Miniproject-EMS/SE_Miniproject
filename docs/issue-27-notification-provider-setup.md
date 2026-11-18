@@ -9,7 +9,7 @@
 - Retries failed deliveries up to three attempts with a short exponential delay.
 - Sends a provider idempotency key derived from the existing notification `dedupeKey`, so a retry after an ambiguous network failure does not send the same email twice within Resend's idempotency retention period.
 - Includes confirmed and waitlisted attendees in event-change notices.
-- Adds `npm run notifications:dispatch` and an admin-only `POST /api/notifications/jobs/dispatch` endpoint.
+- Adds `npm run dispatch:notifications` and an admin-only `POST /api/notifications/jobs/dispatch` endpoint.
 - Adds provider/template tests that run without real credentials or network access.
 
 ## Configure real email delivery
@@ -40,7 +40,7 @@ npm run dev
 After a registration, event change, or reminder run, pending outbox entries can be dispatched with:
 
 ```bash
-npm run notifications:dispatch
+npm run dispatch:notifications
 ```
 
 An ADMIN can also call `POST /api/notifications/jobs/dispatch` with a valid bearer token. The existing `POST /api/notifications/jobs/reminders` queues reminders for events starting between 23 and 25 hours from the job's run time, then dispatches the queue.
@@ -51,7 +51,7 @@ Run the reminder job at least daily (for example, every 15 minutes so the 23–2
 
 ```cron
 */15 * * * * cd /absolute/path/SE_Miniproject/backend && npm run reminders >> /var/log/ems-reminders.log 2>&1
-*/2 * * * * cd /absolute/path/SE_Miniproject/backend && npm run notifications:dispatch >> /var/log/ems-notifications.log 2>&1
+*/2 * * * * cd /absolute/path/SE_Miniproject/backend && npm run dispatch:notifications >> /var/log/ems-notifications.log 2>&1
 ```
 
 Only one scheduler should be configured for each reminder cadence. The unique `dedupeKey` prevents repeated reminder creation for the same event/registration.
