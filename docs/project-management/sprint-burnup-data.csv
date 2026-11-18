@@ -1,0 +1,14 @@
+sprint,date,planned_scope_points,cumulative_closed_points,notes
+Sprint 1,2026-10-19,26,5,Issue #3 had closed before the sprint start
+Sprint 1,2026-10-20,26,5,
+Sprint 1,2026-10-21,26,5,
+Sprint 1,2026-10-22,26,5,
+Sprint 1,2026-10-23,26,24,Issues #4 #5 #7 #8 #10 closed by planned sprint end
+Sprint 1,2026-10-24,26,24,
+Sprint 1,2026-10-25,26,24,
+Sprint 1,2026-10-26,26,26,Issue #6 closed after planned sprint end
+Sprint 2,2026-10-26,21,0,Sprint 2 start
+Sprint 2,2026-10-27,21,0,
+Sprint 2,2026-10-28,21,10,Issues #9 and #11 closed
+Sprint 2,2026-10-29,21,18,Issues #12 and #13 closed
+Sprint 2,2026-10-30,21,21,Issue #14 closed; planned sprint scope complete
