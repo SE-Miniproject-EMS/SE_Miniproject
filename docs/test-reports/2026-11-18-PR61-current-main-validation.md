@@ -48,3 +48,6 @@ The remaining uncovered lines are the direct CLI entry-point blocks in the two w
 The worker tests use injected dependencies and do not send real email or require a live Resend account. PR #58 supplies the Resend adapter; actual delivery still requires private credentials and a configured sender. SMS is not configured. Payment remains a mock simulator, and the 500-attempt registration load result, deployed uptime, PCI verification and horizontal scaling remain unverified.
 
 The frontend is production-build checked, but no automated React component/unit-test runner is present.
+
+
+**Review status:** PR #61 is open and mergeable. Alex (`minestevealex-ux`) has been requested as the independent reviewer; no review submission has been recorded yet. The report and changes must not be described as merged into `main` until the reviewer approves and the PR is merged.
