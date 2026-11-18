@@ -69,7 +69,6 @@ test("queues reminders for confirmed registrations in the 23–25 hour window", 
     "sync",
     "find-events",
     "find-registrations",
-    "find-registrations",
     "dispatch",
     "close",
   ]);
