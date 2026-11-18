@@ -1,43 +1,55 @@
 # Issue #32 — Security NFR verification
 
-**Verification baseline:** current `main` merged through the registration and idle-session changes (November 2026).
-**Scope:** NFR-SEC-01 through NFR-SEC-04 from SRS §6.3.2. This report distinguishes implemented controls from controls that cannot be certified in the current prototype.
+**Reviewed baseline:** integrated code through PR #55 (10 November 2026).  
+**Scope:** NFR-SEC-01 through NFR-SEC-04 from SRS §6.3.2. This report is evidence for tested paths, not a production security certification or PCI assessment.
 
-## Security requirement evidence
+## Summary
 
-| Requirement | Verification performed | Current status | Evidence / remaining gap |
-|---|---|---|---|
-| **NFR-SEC-01 — Password storage** | Register a user, inspect the persisted `passwordHash`, verify the bcrypt hash, confirm the public registration response omits credentials, and assert the plaintext fixture does not appear in captured backend output. | **Implemented for the exercised registration path** | `backend/test/auth-api.test.js`. The development email-verification URL is logged, but it does not contain the account password. |
-| **NFR-SEC-02 — Payment data** | Attempt paid-event registration before a provider is configured; verify HTTP 402 `PAYMENT_INTEGRATION_REQUIRED`, no registration record is created, and test card-data sentinels are neither reflected nor logged. | **Not verified / provider blocked** | `backend/test/event-api.test.js`. No production payment provider or PCI-compliant hosted/tokenized flow is configured. The application does not currently persist PAN/CVV fields, but that alone is not evidence of PCI compliance. |
-| **NFR-SEC-03 — Server-side RBAC** | Exercise protected event, registration, check-in and feedback endpoints with representative anonymous, Attendee, Organizer and ownership contexts; inspect route-level middleware and controller ownership predicates. | **Partially verified** | Authentication, role checks and key ownership rules have integration coverage. A complete endpoint-by-endpoint allow/deny matrix for every mounted API route has not been executed. |
-| **NFR-SEC-04 — Inactivity expiry** | Verify the persisted session idle deadline, extension on authenticated activity, rejection at/after the idle deadline, and that activity cannot extend past the JWT absolute expiry. | **Implemented** | Merged PR [#51](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/51). `SESSION_IDLE_TIMEOUT_SECONDS` defaults to 1800 seconds (30 minutes); `JWT_EXPIRES_IN` still caps absolute token lifetime. See `backend/src/models/Session.js`, `backend/src/middleware/auth.js`, and `backend/test/auth-api.test.js`. Users must sign in again after deployment because tokens issued before session tracking have no persisted session row. |
-
-## Endpoint permission review
-
-| Endpoint group | Observed server-side controls | Remaining verification |
+| Requirement | Current status | Evidence / gap |
 |---|---|---|
-| Health, public event listing and public event details | Public; event visibility is constrained by event status/date. | Check public response fields for accidental disclosure as part of the broader API review. |
-| Registration, login and email verification | Public entry points; registration role is constrained to Attendee/Organizer; verification requires a signed token. | Provider delivery is still development-console-only. |
-| Current-user/profile and protected example routes | Bearer JWT authentication; role middleware where required. | Include all routes in a formal permission matrix. |
-| Event management | Organizer/Admin role gates; Organizer event mutations check ownership. | Exercise every mutation route against an unrelated Organizer and Admin. |
-| Attendee registrations | Attendee-only creation/cancellation; list is scoped to the signed-in attendee; cancellation checks ownership. | Include the payment retry and future provider callback routes once a provider exists. |
-| Ticket check-in | Organizer/Admin route; event ownership is checked for Organizer. | Complete an explicit Admin/Organizer/Attendee allow/deny matrix. |
-| Feedback | Submission requires an eligible checked-in attendee; reading is restricted to the event Organizer/Admin. | Continue direct-API authorization testing as routes evolve. |
-| Notifications/reminder job | Reminder-job execution is Admin-only. | Validate every notification route and provider configuration before production. |
+| NFR-SEC-01 — password storage | **Implemented / regression-tested** | bcrypt password hashes; public serializers omit credential fields; test asserts known plaintext password fixture is absent from captured backend output. PR #52. |
+| NFR-SEC-02 — payment/card data | **Blocked / not verified** | PR #48 implements mock checkout/refund only. No real provider sandbox, signed callback, provider-confirmed refund or PCI flow is configured. Test sentinels are ignored/not reflected/logged in the mock path; no PCI claim is made. |
+| NFR-SEC-03 — server-side RBAC | **Verified for currently mounted protected endpoints** | PR #55 adds a direct API route matrix for anonymous, ATTENDEE, ORGANIZER and ADMIN. Separate tests cover event, registration, check-in and feedback ownership. Keep matrix updated as routes evolve. |
+| NFR-SEC-04 — inactivity expiry | **Implemented / regression-tested** | Persisted Session idle deadlines; activity extends deadline but never beyond JWT absolute `exp`. Default `SESSION_IDLE_TIMEOUT_SECONDS=1800`. PR #51. |
 
-## Reproducible checks
+## 1. Password storage and leakage
 
-Run from `backend/`:
+Registration hashes passwords with bcrypt before persistence. Public user responses omit password hashes and credential/session fields. The integration tests verify bcrypt storage and assert the plaintext test password does not occur in captured backend output.
 
+Run:
 ```bash
-npm ci
+cd backend
 npm test
 ```
 
-The test harness uses temporary SQLite databases and HTTP requests against the Express API. GitHub Actions run [#42396062692](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42396062692) completed successfully on this PR head: **30 tests passed, 0 failed**. Backend syntax validation and the frontend production build also passed. The workflow does not run a browser automation suite.
+## 2. Payment data handling
 
-## Explicit limitations
+PR #48 adds a provider-independent mock payment/refund simulator. It creates payment/refund rows for prototype flows and uses explicit simulated outcomes. It is **not** a payment gateway and no money moves.
 
-- NFR-SEC-02 cannot be marked satisfied until a payment provider and its sandbox flow are selected and verified. The present API deliberately refuses paid registration rather than collecting card data.
-- NFR-SEC-03 remains partial until the team records a route-by-route permission matrix, including negative cases.
-- Local SQLite and local CI are not production security certification. Production TLS, deployment secrets, provider configuration, logging/monitoring, and operational controls require deployment-specific review.
+The security tests verify the exercised mock/checkout paths ignore supplied card-data sentinels and do not reflect or log them. No hosted/tokenized provider checkout, provider signing secret, signed webhook validation or provider-confirmed refund is configured. Do not describe this as PCI compliance.
+
+Before enabling real paid registration, the team must select a provider, use its sandbox/hosted flow, verify signed callbacks, handle duplicate/out-of-order callbacks idempotently and review the provider data-flow and logging boundary.
+
+## 3. RBAC route verification
+
+The automated test `security NFR route matrix: every mounted protected endpoint enforces role authorization` checks listed protected routes using anonymous, ATTENDEE, ORGANIZER and ADMIN request contexts. Separate tests cover resource ownership:
+- Organizer can manage their own event but not another Organizer's event.
+- Attendee can cancel only their own registration.
+- Organizer/Admin check-in permissions follow event ownership.
+- Feedback reads are event-scoped.
+
+Add every new protected route to the matrix and include object-ownership checks wherever a route accesses a user/organizer-owned resource. This is current-route regression coverage, not a security certification.
+
+## 4. Session inactivity expiry
+
+Successful login creates a server-side Session row with an idle deadline. Authenticated activity extends the deadline; expired/deleted sessions are rejected. The deadline is capped by the JWT absolute expiry. The default idle timeout is 1800 seconds (30 minutes).
+
+Evidence: merged PR #51, `backend/src/models/Session.js`, `backend/src/middleware/auth.js`, and the auth API regression suite.
+
+## 5. Verification evidence and limits
+
+- [PR #52 security test run](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42396147609): 30 tests passed, 0 failed, plus backend syntax and frontend build.
+- [PR #55 RBAC test run](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42491216438): 30 tests passed, 0 failed, plus frontend build.
+- [PR #48 integrated prototype run](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410): 55 tests passed, 0 failed, plus backend syntax and frontend build.
+
+These are historical test results from different commits, not a current production security sign-off. Local SQLite/CI do not evidence production TLS, secrets management, uptime, deployment hardening or PCI compliance. See [Security Controls](SECURITY_CONTROLS.md) for the code-linked controls checklist.

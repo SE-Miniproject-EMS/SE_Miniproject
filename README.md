@@ -2,6 +2,17 @@
 
 A Software Engineering mini-project for managing events, registrations, notifications, payments, and reporting.
 
+## Team roles
+
+- **Dharoor Shiva Sai Varun** — Full-stack development for registration, mock payments, and reporting, plus end-to-end testing and demos.
+- **Chirag Basanth Bellavi** — Event management features, GitHub Actions, and session expiry.
+- **Gandhar Sameer Gokhale** — Backend validation, API integration and security testing, reminder/notification-dispatch worker tests, and requirements verification.
+- **Harshith J (Alex)** — Notifications, QR check-in, and feedback, plus API testing and documentation.
+
+## Project evidence
+
+Start with the [assessor evidence index](docs/PROJECT_EVIDENCE_INDEX.md) for contribution records, sprint evidence, test reports and project limitations. The [GGO4411 individual work evidence](docs/project-management/GGO4411_INDIVIDUAL_WORK_EVIDENCE.md) maps personal assignments to authored pull requests, code review, tests and CI evidence.
+
 ## Repository layout
 
 ```text
@@ -84,6 +95,7 @@ npm run build
 Run these from `backend/`:
 
 - `npm run reminders` — execute the reminder job.
+- `npm run dispatch:notifications` — dispatch queued notifications.
 - `npm run benchmark:events` — run the event-search benchmark.
 - `npm run benchmark:registrations` — run the registration-concurrency benchmark.
 
@@ -91,7 +103,7 @@ Benchmark outputs are local artefacts unless explicitly added to the repository.
 
 ## Continuous integration
 
-The GitHub Actions workflow in `.github/workflows/ci.yml` installs dependencies, checks backend JavaScript syntax, runs backend tests, and builds the frontend for pushes and pull requests targeting `main`.
+The GitHub Actions workflow in `.github/workflows/ci.yml` installs dependencies, checks backend JavaScript syntax, runs backend tests with coverage reporting, uploads the coverage artifact, and builds the frontend for pushes and pull requests targeting `main`.
 
 ## Contribution workflow
 
