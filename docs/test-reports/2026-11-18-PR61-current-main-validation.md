@@ -4,7 +4,7 @@
 **Repository:** `SE-Miniproject-EMS/SE_Miniproject`  
 **PR:** [#61 — refreshed assessor evidence and reminder coverage](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61)  
 **Validated head:** `dfec487aa5de9cb075c37dd19f061ae771b7002e`  
-**Actions run:** [#44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404)  
+**Initial validation run:** [#44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404)  
 **Coverage artifact:** [backend-test-coverage-116](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533)
 
 ## Execution result
@@ -50,7 +50,10 @@ The worker tests use injected dependencies and do not send real email or require
 The frontend is production-build checked, but no automated React component/unit-test runner is present.
 
 
-**Review status:** PR #61 is open and mergeable. Alex (`minestevealex-ux`) has been requested as the independent reviewer; no review submission has been recorded yet. The report and changes must not be described as merged into `main` until the reviewer approves and the PR is merged.
+**Final status:** PR #61 was merged into `main` on 18 November 2026. The synchronized final head `e4a5c3c2f0cf242a3d7ba6cf151afd108eea8e74` passed [Actions run #44378798728](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44378798728), including backend tests/coverage, syntax validation and frontend build. Merge commit: `e102592b457f92d53d0b348af4b90629363ed26d`. Alex had been requested as independent reviewer, but no review submission was recorded before the user-authorized merge.
 
 
 The final evidence-ledger refresh was committed after this run; it is documentation-only. The source-code test result above remains from the validated current-main application code. GitHub Actions is also run on the current PR head to validate the complete final commit.
+
+
+The final synchronized CI run passed on the final PR head after the documentation-path reconciliation. The changes are now present on `main`.

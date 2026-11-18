@@ -1,6 +1,6 @@
 # GitHub issue and pull-request activity log
 
-**Snapshot:** `main` at `e8b556c545653f229d115021f58a0f3f49f95327` (18 November 2026, after PRs #58–#60)  
+**Snapshot:** `main` at `e102592b457f92d53d0b348af4b90629363ed26d` (18 November 2026, after PRs #58–#61)  
 **Purpose:** Provide a repository-local index of the issues and PRs relevant to the assessment at the snapshot. Each row links to the original issue or PR so an assessor can inspect the original description, assignees, branch, commits, review thread, changed files, CI and merge record.
 
 ## Backlog issue register
@@ -70,13 +70,15 @@
 | [#54](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/54) | minestevealex-ux | `test/issue-31-registration-concurrency-nfr` | #31 | 500-registration benchmark harness and benchmark artifacts | Merged; harness is not yet an executed 500-attempt result |
 | [#55](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/55) | minestevealex-ux | `test/issue-32-security-rbac-nfr` | #32 | Route-family RBAC matrix integration test and security report | Merged |
 | [#56](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/56) | dshivasaivarun-lgtm | `codex/issues-33-34-verification` | #33, #34 | Usability study procedure and availability measurement assessment | Merged; neither target is measured/passed |
-| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | GGO4411 | `docs/assessor-evidence-pack` | Original assessor evidence pack and reminder-job test improvement | Contributor/issue/PR ledger, sprint backlog/burn-up, runbooks, reminder-job refactor/tests and coverage evidence | Open but stale: branch was 19 commits behind main and GitHub marked it dirty; no independent review was submitted. Superseded by refreshed PR #61. |
+| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | GGO4411 | `docs/assessor-evidence-pack` | Original assessor evidence pack and reminder-job test improvement | Contributor/issue/PR ledger, sprint backlog/burn-up, runbooks, reminder-job refactor/tests and coverage evidence | Closed without merge: stale branch was superseded by refreshed PR #61. |
 
 
 | [#58](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/58) | minestevealex-ux | `feat/issue-27-email-notifications` | #27 | Resend email adapter, development console adapter, notification dispatcher, atomic claims/idempotency/retries and provider tests | Merged 18 Nov 2026 |
 | [#59](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/59) | dshivasaivarun-lgtm | `feat/issue-29-organizer-admin-reports` | #29 | Organizer/admin report aggregates, dashboard UI, filtered registration/attendance CSV exports and regression tests | Merged 18 Nov 2026 |
 | [#60](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/60) | dshivasaivarun-lgtm | `docs/team-contributions-readme` | Documentation | README simplification and updates to SRS/SAD/Test Plan contribution details and team contributions guide | Merged 18 Nov 2026 |
-| [#61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) | GGO4411 | `docs/assessor-evidence-final` | #9, #27, #31, #32, #35 | Current-main assessor evidence pack; c8 coverage CI; graceful shutdown; testable reminder and notification-dispatch jobs; direct unit tests | Open, mergeable; CI run #44370948404 passed 73 backend tests, syntax check and frontend build; 93.56% line / 76.62% branch / 94.25% function coverage; Alex review requested and pending |
+| [#61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) | GGO4411 | `docs/assessor-evidence-final` | #9, #27, #31, #32, #35 | Current-main assessor evidence pack; c8 coverage CI; graceful shutdown; testable reminder and notification-dispatch jobs; direct unit tests | Merged 18 Nov 2026 (merge commit `e102592`); synchronized final-head CI run #44378798728 passed backend tests/coverage, syntax check and frontend build. Alex had been requested as reviewer, but no independent review submission was recorded before the user-authorized merge. |
+
+| [#62](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/62) | GGO4411 | `docs/assessor-evidence-pack-refresh` | Duplicate of #61 | Superseded by the more complete synchronized PR #61; closed without merge | Closed — duplicate |
 
 ## Review → fix → re-push record
 
@@ -111,6 +113,6 @@ When work is pushed, add/update the issue or PR description with:
 Push another commit to the same PR branch after review feedback; do not create a duplicate PR for the same change. Close the linked issue only when acceptance criteria and evidence are recorded.
 
 
-### PR #61 — refreshed from the current main branch
+### PR #61 — refreshed and merged against current main
 
-The original PR #57 branch diverged after main received notification and reporting deliveries in PRs #58–#60. PR #61 is recreated from the current main SHA so those merged features remain intact. It carries the evidence index, individual contribution matrix, sprint backlog/burn-up, operations/security and testing documents, coverage-reporting CI, graceful shutdown, and testable reminder/notification-dispatch workers. Its current head passed run #44370948404 with 73 tests and the frontend build; coverage artifact #116 records 93.56% lines, 76.62% branches and 94.25% functions. Alex is the requested reviewer; no independent review has yet been submitted, so PR #61 is not merged.
+The original PR #57 branch diverged after main received notification and reporting deliveries in PRs #58–#60. PR #61 was synchronized with the current main commit, preserving the reorganized documentation layout and setup guides. It carries the evidence index, individual contribution matrix, sprint backlog/burn-up, operations/security and testing documents, coverage-reporting CI, graceful shutdown, and testable reminder/notification-dispatch workers. Final-head run [#44378798728](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44378798728) passed; merge commit is [`e102592`](https://github.com/SE-Miniproject-EMS/SE_Miniproject/commit/e102592b457f92d53d0b348af4b90629363ed26d). Alex had been requested as reviewer, but no independent review submission was recorded before the user-authorized merge.

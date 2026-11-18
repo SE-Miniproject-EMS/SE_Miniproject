@@ -98,4 +98,4 @@ The current Word source documents are already tracked under `docs/`: [SRS](requi
 
 ## 7. Review and merge status of this evidence pack
 
-The current-main evidence refresh is submitted in [PR #61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61). Its exact head passed 73 backend tests, syntax validation and the frontend build in run #44370948404. PR #57 is closed as superseded. PR #61 remains open pending Alex's independent review; it is not yet merged into main.
+The current-main evidence refresh was merged through [PR #61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) on 18 November 2026. After synchronizing with the latest main and repairing documentation links, the final PR head passed backend tests, syntax validation, coverage collection and the frontend build in [Actions run #44378798728](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44378798728). Merge commit: `e102592b457f92d53d0b348af4b90629363ed26d`. PR #57 and duplicate PR #62 were closed without merge.
