@@ -200,3 +200,10 @@ QR image generation/scanner UI, reporting/CSV export, complete feedback UI, and 
 - `backend/src/controllers/authController.js`
 - `backend/src/controllers/eventController.js`
 - `backend/src/middleware/auth.js`
+
+### Reporting (organizer and admin)
+
+- `GET /api/reports` returns event metrics and totals. Organizers see only their own events. Admins also receive the platform-wide user count.
+- `GET /api/reports/registrations.csv` exports all registrations in scope. `GET /api/reports/attendance.csv` exports only checked-in registrations.
+- All three endpoints accept optional `eventId`, `from`, and `to`. Dates are inclusive UTC dates for event start, in `YYYY-MM-DD` format. Empty scopes return zero event totals and header-only CSVs.
+- Capacity used includes active payment reservations. Net revenue counts successful non-mock captures less completed refunds. Simulated totals separately count successful mock captures less simulated refunds. Pending, failed and late captures are excluded from both totals.
