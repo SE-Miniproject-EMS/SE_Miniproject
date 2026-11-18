@@ -27,7 +27,7 @@ The API listens on `http://localhost:5000` by default. Its health endpoint is:
 GET http://localhost:5000/api/health
 ```
 
-The default local database is SQLite (`backend/dev.db`). The backend `.env.example` documents the local settings for `DATABASE_FILE`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `SESSION_IDLE_TIMEOUT_SECONDS`, `EMAIL_VERIFICATION_SECRET`, `PORT`, `CORS_ORIGIN`, `NOTIFICATION_ADAPTER`, and mock payment reservation settings.
+The default local database is SQLite (`backend/dev.db`). The backend `.env.example` documents local settings for `DATABASE_FILE`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `SESSION_IDLE_TIMEOUT_SECONDS`, `EMAIL_VERIFICATION_SECRET`, `PORT`, `CORS_ORIGIN`, and `NOTIFICATION_ADAPTER`. For Resend delivery, configure `NOTIFICATION_ADAPTER=resend`, `RESEND_API_KEY`, and `NOTIFICATION_FROM_EMAIL` in the private backend `.env`; never commit the real values. Mock payment reservation settings remain prototype-only.
 
 ## Start the frontend
 
@@ -50,7 +50,7 @@ Open the Vite address shown in the terminal (normally `http://localhost:5173`). 
 4. Use an Organizer account to create a draft event, edit it, publish it and manage it.
 5. Use an Attendee account to browse an event and exercise available registration actions.
 
-The email-verification link is printed to the backend terminal. No external email provider is configured. Notifications use the console development adapter.
+The email-verification link is printed to the backend terminal (development behavior). Event notifications now support a Resend adapter via private environment configuration; without provider credentials, use the non-production console adapter and treat its output as a test delivery, not an email.
 
 ## Demonstration features and accurate limitations
 
@@ -60,10 +60,10 @@ The email-verification link is printed to the backend terminal. No external emai
 | Authentication/security | Registration, verification gate, login, role restrictions, ownership, inactivity session expiry | Email delivery is development-console-only; production secrets/deployment controls need configuration |
 | Free registration | Capacity reservation, FIFO waitlist, cancellation and one-use ticket token/check-in API | 500 concurrent registration load result is not yet recorded |
 | Paid registration | Provider-independent mock checkout, pending/success/failure/retry and simulated refund outcomes | No gateway is configured, no real money moves, mock refund is not provider-confirmed |
-| Notifications | Queue/service records and reminder job | Console adapter only; no user-facing email/SMS delivery |
+| Notifications | Queue records, 24-hour reminder job, Resend email adapter, admin-only dispatch endpoint/CLI, atomic claims, idempotency and bounded retries | Real delivery requires valid Resend API key and approved sender address; no SMS adapter is configured. Do not claim delivery without checking the provider result. |
 | QR/check-in | One-use ticket token and API check-in behavior | QR image generation/camera scanner UI is not complete |
 | Feedback | Feedback API and eligibility/ownership rules | Full attendee feedback prompt/display UI is incomplete |
-| Dashboards/reporting | Nothing complete to demonstrate | Organizer/admin dashboards and CSV export remain backlog issue #29 |
+| Dashboards/reporting | Organizer/Admin dashboard report metrics; filters by event ID and inclusive UTC event-start dates; registration and attendance CSV download | Admin sees platform-wide totals; Organizers are scoped to their own events. Real provider revenue and simulated mock revenue are reported separately. |
 
 ## Verification before a live demo
 
@@ -98,7 +98,7 @@ Then follow the manual browser cases in `docs/issue-14/FINAL_RELEASE_CHECKLIST.m
 ## Known operational gaps
 
 - No production deployment URL/environment or uptime observation history is recorded.
-- No configured external email/SMS provider.
+- No configured Resend credentials/sender evidence in the repository; production notification dispatch depends on deployment-time configuration. No SMS adapter is configured.
 - No real payment gateway/sandbox/callback integration.
 - No measured 99% uptime evidence.
 - No demonstrated multi-instance/shared-database deployment.
