@@ -31,23 +31,23 @@ For an individual assignment-by-assignment trail, see [GGO4411 — Individual Wo
 
 ## 3. Code and working website
 
-- [Implementation baseline](IMPLEMENTATION_BASELINE.md) — what the current code does and what remains partial/mock/not verified.
-- [API reference](API_REFERENCE.md) — routes, payloads and responses.
+- [Implementation baseline](architecture/IMPLEMENTATION_BASELINE.md) — what the current code does and what remains partial/mock/not verified.
+- [API reference](architecture/API_REFERENCE.md) — routes, payloads and responses.
 - [Operations runbook](OPERATIONS_RUNBOOK.md) — local prerequisites, backend/frontend startup, login/verification, demo operations and known limitations.
 - [Source tree](../) — inspect `backend/src/`, `backend/test/`, `frontend/src/` and `.github/workflows/`.
-- [Architecture and NFR assessment](ARCHITECTURE_NFR_ASSESSMENT.md) plus [as-built architecture source](diagrams/as-built-architecture.dot).
+- [Architecture and NFR assessment](architecture/ARCHITECTURE_NFR_ASSESSMENT.md) plus [as-built architecture source](diagrams/as-built-architecture.dot).
 
-The repository includes the [SRS](Event_Management_System_SRS.docx), [SAD](Event_Management_System_SAD.docx) and [Software Test Plan](Event_Management_System_Test_Plan.docx) Word documents. These files were already tracked in main; the uploaded SRS/Test Plan copies were not used to overwrite the repository versions.
+The repository includes the [SRS](requirements/Event_Management_System_SRS.docx), [SAD](architecture/Event_Management_System_SAD.docx) and [Software Test Plan](testing/Event_Management_System_Test_Plan.docx) Word documents. These files were already tracked in main; the uploaded SRS/Test Plan copies were not used to overwrite the repository versions.
 
 The website is reproducibly runnable locally using the README commands. The repository does **not** evidence a public production URL or production hosting environment. The runbook describes what can be demonstrated and explicitly marks mock-only or incomplete features.
 
 ## 4. Testing and coverage
 
-- [Testing and results](TESTING_AND_RESULTS.md) — historical CI runs and current known gaps.
+- [Testing and results](testing/TESTING_AND_RESULTS.md) — historical CI runs and current known gaps.
 - [Detailed PR #48 backend test report](test-reports/2026-11-10-PR48-backend-test-report.md) — all 55 recorded test names and their grouped areas.
 - [PR #61 current-main validation report](test-reports/2026-11-18-PR61-current-main-validation.md) — 73 backend tests, build checks, current coverage totals and worker-file results.
 - [Testing and coverage guide](TESTING_AND_COVERAGE.md) — test-file inventory and exact commands for line/branch/function coverage.
-- [API integration test report](API_Integration_Test_Report.md)
+- [API integration test report](testing/API_Integration_Test_Report.md)
 - [Regression/E2E report](issue-12-regression-report.md)
 - [Release checklist and browser evidence](issue-14/FINAL_RELEASE_CHECKLIST.md)
 - [Machine-readable E2E result](issue-14/e2e-results.json)
@@ -71,7 +71,7 @@ Historical integrated application result: [PR #48 run #42747239410](https://gith
 
 **Current frontend test status:** a separate automated frontend component/unit-test script is not present in `frontend/package.json`; CI runs `npm run build`. Browser evidence is separate and limited to the flows recorded in the E2E JSON/video.
 
-The current Word source documents are already tracked under `docs/`: [SRS](Event_Management_System_SRS.docx), [SAD](Event_Management_System_SAD.docx), and [Software Test Plan](Event_Management_System_Test_Plan.docx). The latest uploaded SRS/Test Plan copies were not used to overwrite these tracked documents because their SRS version context is older than the current traceability baseline.
+The current Word source documents are already tracked under `docs/`: [SRS](requirements/Event_Management_System_SRS.docx), [SAD](architecture/Event_Management_System_SAD.docx), and [Software Test Plan](testing/Event_Management_System_Test_Plan.docx). The latest uploaded SRS/Test Plan copies were not used to overwrite these tracked documents because their SRS version context is older than the current traceability baseline.
 
 ## 5. Performance, security and operational controls
 
