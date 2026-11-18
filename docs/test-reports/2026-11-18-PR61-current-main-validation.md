@@ -51,3 +51,6 @@ The frontend is production-build checked, but no automated React component/unit-
 
 
 **Review status:** PR #61 is open and mergeable. Alex (`minestevealex-ux`) has been requested as the independent reviewer; no review submission has been recorded yet. The report and changes must not be described as merged into `main` until the reviewer approves and the PR is merged.
+
+
+The final evidence-ledger refresh was committed after this run; it is documentation-only. The source-code test result above remains from the validated current-main application code. GitHub Actions is also run on the current PR head to validate the complete final commit.
