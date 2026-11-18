@@ -34,6 +34,7 @@ test("queues reminders for confirmed registrations in the 23–25 hour window", 
 
   const result = await runReminderJob({
     sequelize: createDatabaseLifecycle(calls),
+    async ensureNotificationSchema() { calls.push("ensure-notification-schema"); },
     Event: {
       async findAll(query) {
         eventQuery = query;
@@ -67,6 +68,7 @@ test("queues reminders for confirmed registrations in the 23–25 hour window", 
   assert.deepEqual(calls, [
     "authenticate",
     "sync",
+    "ensure-notification-schema",
     "find-events",
     "find-registrations",
     "dispatch",
@@ -115,6 +117,7 @@ test("dispatches pending notifications when no events fall in the reminder windo
 
   const result = await runReminderJob({
     sequelize: createDatabaseLifecycle(calls),
+    async ensureNotificationSchema() { calls.push("ensure-notification-schema"); },
     Event: {
       async findAll() {
         calls.push("find-events");
@@ -138,7 +141,7 @@ test("dispatches pending notifications when no events fall in the reminder windo
   });
 
   assert.deepEqual(result, { queued: 0, delivery: [] });
-  assert.deepEqual(calls, ["authenticate", "sync", "find-events", "dispatch", "close"]);
+  assert.deepEqual(calls, ["authenticate", "sync", "ensure-notification-schema", "find-events", "dispatch", "close"]);
   assert.equal(logger.messages.length, 1);
   assert.equal(logger.errors.length, 0);
 });
@@ -168,6 +171,7 @@ test("closes the database and reports an error when startup authentication fails
       Registration: { findAll: async () => assert.fail("registrations must not be queried") },
       enqueue: async () => assert.fail("notifications must not be queued"),
       dispatchPending: async () => assert.fail("dispatch must not run"),
+      ensureNotificationSchema: async () => assert.fail("schema ensure must not run after authentication fails"),
       logger,
     }),
     (error) => error === failure
@@ -188,4 +192,5 @@ test("loads configured Sequelize models and notification operations for the CLI"
   assert.equal(typeof dependencies.Registration.findAll, "function");
   assert.equal(typeof dependencies.enqueue, "function");
   assert.equal(typeof dependencies.dispatchPending, "function");
+  assert.equal(typeof dependencies.ensureNotificationSchema, "function");
 });
