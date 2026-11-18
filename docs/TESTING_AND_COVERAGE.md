@@ -1,7 +1,7 @@
 # Test, unit-test and coverage reporting
 
-**Current code-test evidence:** PR #48 CI run [#42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410), 10 November 2026.  
-**Baseline result:** 55 backend tests passed, 0 failed; backend syntax validation passed; frontend production build passed.  
+**Current evidence:** coverage-enabled PR #57 run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529), 18 November 2026.  
+**Result:** 56 backend tests passed, 0 failed; backend syntax validation and frontend production build passed. The same run uploaded the measured coverage artifact.  
 **Scope note:** these are Node.js test-runner results. Most API scenarios are HTTP integration/regression tests, not isolated unit tests.
 
 ## What is tested
@@ -55,9 +55,9 @@ The CI job uploads the complete `backend/coverage/` folder as the Actions artifa
 
 ### Coverage status
 
-**No numeric coverage percentage is stated in this document yet.** The new command and artifact upload must first complete on the assessor-evidence branch (and then on main after merge). Do not fill in line/branch percentages from estimates or from a different commit. Record the exact workflow run URL and its `coverage-summary.json` values here after the run completes.
+**Measured baseline — 18 November 2026:** run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529) reports 92.79% line coverage, 77.81% branch coverage, 95.71% function coverage and 92.79% statement coverage. This includes 2,075/2,236 lines, 414/532 branches and 67/70 functions across backend `src/**/*.js`. The downloadable [coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583) contains the HTML/LCOV/JSON files. See the [detailed coverage baseline](test-reports/2026-11-18-coverage-baseline.md).
 
-No minimum line/branch threshold is currently enforced. Set thresholds only after reviewing the first measured baseline and agreeing a justified target; do not add an arbitrary threshold that makes CI fail without an agreed project requirement.
+The reminder job `src/jobs/sendReminders.js` has 0% line/branch/function coverage and is the clearest follow-up. Notification service/controller and error-handler branches also need more tests. No minimum line/branch threshold is enforced yet; agree a justified threshold after reviewing this baseline rather than adding an arbitrary CI gate.
 
 ## Frontend testing status
 
