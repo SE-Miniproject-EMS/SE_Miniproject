@@ -10,6 +10,7 @@ const { enqueue, dispatchPending } = require("../services/notificationService");
   try {
     await sequelize.authenticate();
     await sequelize.sync();
+    await require("../services/notificationService").ensureNotificationSchema();
     const now = Date.now();
     const events = await Event.findAll({ where: { status: "PUBLISHED", startDateTime: { [Op.between]: [new Date(now + 23 * 3600000), new Date(now + 25 * 3600000)] } } });
     let queued = 0;
