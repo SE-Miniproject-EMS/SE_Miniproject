@@ -35,7 +35,7 @@ These are the clearest GitHub records to open when checking GGO4411's personal w
 | [#21](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/21) | Sprint 2 API integration testing report | Documentation diff and Actions run showing 18 tests passed |
 | [#52](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/52) | Security regression tests | Test code, CI run with 30 passing backend tests and frontend build |
 | [#53](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/53) | Current architecture and NFR assessment refresh | Documentation diff, baseline and limitation analysis |
-| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | Assessor evidence index, personal/team contribution logs, issue/PR ledger, sprint backlogs/burn-up, runbooks, test reports, and backend coverage CI configuration | Current PR diff, commit history, Actions run and downloadable coverage artifact |
+| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | Assessor evidence index, personal/team contribution logs, issue/PR ledger, sprint backlogs/burn-up, runbooks, test reports, coverage CI configuration, reminder-job refactor and direct unit tests | Current PR diff, six follow-up commits by GGO4411, 60-test Actions run and downloadable coverage artifact |
 
 ## 4. Review and re-push evidence
 
@@ -52,8 +52,9 @@ This is evidence of GGO4411's review and acceptance work; the follow-up implemen
 
 - [PR #21 API integration report](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/21) — Sprint 2 integration-testing deliverable.
 - [PR #52 security tests](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/52) — security regression test code.
-- [PR #57 Actions run](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992) — 56 backend tests passed, backend syntax validation and frontend production build passed.
-- [Coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992/artifacts/14399547708) — backend 92.79% line/statement, 77.81% branch and 95.71% function coverage.
+- [PR #57 Actions run](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569) — 60 backend tests passed, backend syntax validation and frontend production build passed.
+- [Coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569/artifacts/14403085905) — backend 94.06% line/statement, 78.04% branch and 97.18% function coverage.
+- New reminder-job tests in PR #57 cover the 23–25 hour selection window, confirmed attendees, dedupe outcome, empty events, startup failure and dependency wiring.
 
 Coverage in PR #57 is repository-wide backend coverage, not a percentage attributable to one person. The frontend has no separate component/unit-test coverage report in the current project.
 

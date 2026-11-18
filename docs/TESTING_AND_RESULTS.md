@@ -1,7 +1,7 @@
 # Testing approach and results
 
 **Documentation update:** 18 November 2026  
-**Latest assessor-branch validation:** PR #57 CI run [#44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992), 18 November 2026. Backend **56 passed, 0 failed**; backend syntax validation and frontend build passed. The coverage artifact reports **92.79% lines, 77.81% branches and 95.71% functions**. Historical integrated application result: PR #48 run #42747239410, 55 passed, 0 failed.
+**Latest assessor-branch validation:** PR #57 CI run [#44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569), 18 November 2026. Backend **60 passed, 0 failed**; backend syntax validation and frontend build passed. Coverage reports **94.06% lines/statements, 78.04% branches and 97.18% functions**. Historical integrated application result: PR #48 run #42747239410, 55 passed, 0 failed.
 
 ## Automated test inventory
 
@@ -12,6 +12,7 @@
 | `backend/test/jwt.test.js` | Unit | JWT configuration, issuance and absolute expiry |
 | `backend/test/payment-rules.test.js` | Unit/rule | Paise conversion, input and refund-cutoff rules |
 | `backend/test/issue26-migration.test.js` | Migration integration | Existing registration preservation and idempotent FIFO backfill |
+| `backend/test/send-reminders.test.js` | Unit (injected dependencies) | 23–25 hour reminder window, confirmed-attendee targeting, deduplication result, empty event set, failure cleanup and dependency wiring |
 
 The event/auth tests issue HTTP requests to a local Express child process using a temporary SQLite database. They exercise controllers through the actual routes and persistence layer rather than testing controller functions in isolation.
 
@@ -25,7 +26,7 @@ npm ci
 npm test
 ```
 
-Backend coverage (configured in the assessor evidence branch; coverage percentages are pending the first successful Actions run):
+Backend coverage (configured in the assessor evidence branch; latest measured result is linked below):
 
 ```bash
 cd backend
@@ -63,12 +64,13 @@ CI output verifies backend tests and frontend compilation/build. It does not aut
 
 ## Latest coverage result
 
-PR #57 run [#44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992) uploaded [backend-test-coverage-81](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992/artifacts/14399547708). Measured backend totals:
-- Lines/statements: 2,075 / 2,236 = **92.79%**
-- Branches: 414 / 532 = **77.81%**
-- Functions: 67 / 70 = **95.71%**
+PR #57 run [#44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569) uploaded [backend-test-coverage-99](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569/artifacts/14403085905). On commit `21a3acb21a987c0becc0b498ca512dfe79e9da90), the backend suite reported **60 passed, 0 failed** and measured:
+- Lines/statements: **94.06%**
+- Branches: **78.04%**
+- Functions: **97.18%**
+- Reminder job `src/jobs/sendReminders.js`: **95.34% lines, 81.81% branches, 100% functions**.
 
-The report includes all backend `src/**/*.js` files. `src/jobs/sendReminders.js` is 0% covered and should receive direct tests. Full per-file breakdown is in [coverage baseline report](test-reports/2026-11-18-coverage-baseline.md). These are backend percentages only; no frontend component-test coverage percentage exists.
+The reminder job now has direct unit tests in `backend/test/send-reminders.test.js`; the original 0% coverage gap has been addressed. Only the standalone CLI entry-point guard remains uncovered in that file. Full per-file breakdown is in [coverage baseline and follow-up report](test-reports/2026-11-18-coverage-baseline.md). These are backend percentages only; no frontend component-test coverage percentage exists.
 
 ## Manual/browser verification
 

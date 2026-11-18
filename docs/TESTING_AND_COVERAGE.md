@@ -1,7 +1,7 @@
 # Test, unit-test and coverage reporting
 
-**Current evidence:** coverage-enabled PR #57 run [#44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992), 18 November 2026.  
-**Result:** 56 backend tests passed, 0 failed; backend syntax validation and frontend production build passed. The same run uploaded the measured coverage artifact.  
+**Current evidence:** coverage-enabled PR #57 run [#44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569), 18 November 2026.  
+**Result:** 60 backend tests passed, 0 failed; backend syntax validation and frontend production build passed. The run uploaded the latest coverage artifact.  
 **Scope note:** these are Node.js test-runner results. Most API scenarios are HTTP integration/regression tests, not isolated unit tests.
 
 ## What is tested
@@ -13,6 +13,7 @@
 | `backend/test/jwt.test.js` | Unit | JWT configuration, issuance and absolute expiry rules |
 | `backend/test/payment-rules.test.js` | Unit/rule | Paise conversion, validation and refund-cutoff rules |
 | `backend/test/issue26-migration.test.js` | Database migration integration | Existing registration preservation and idempotent waitlist-position backfill |
+| `backend/test/send-reminders.test.js` | Unit with injected dependencies | 23–25 hour selection window, confirmed attendee filtering, enqueue/dedupe handling, no-event path, failure cleanup and dependency wiring |
 
 ## Test commands
 
@@ -55,9 +56,9 @@ The CI job uploads the complete `backend/coverage/` folder as the Actions artifa
 
 ### Coverage status
 
-**Measured baseline — 18 November 2026:** run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529) reports 92.79% line coverage, 77.81% branch coverage, 95.71% function coverage and 92.79% statement coverage. This includes 2,075/2,236 lines, 414/532 branches and 67/70 functions across backend `src/**/*.js`. The downloadable [coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992/artifacts/14399547708) contains the HTML/LCOV/JSON files. See the [detailed coverage baseline](test-reports/2026-11-18-coverage-baseline.md).
+**Latest measured result — 18 November 2026:** run [#44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569) reports **94.06% line/statement coverage, 78.04% branch coverage and 97.18% function coverage** across backend `src/**/*.js`. The downloadable [backend-test-coverage-99 artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569/artifacts/14403085905) contains the HTML/LCOV/JSON files. The run recorded 60 passed backend tests, 0 failures. See the [detailed coverage baseline and follow-up](test-reports/2026-11-18-coverage-baseline.md).
 
-The reminder job `src/jobs/sendReminders.js` has 0% line/branch/function coverage and is the clearest follow-up. Notification service/controller and error-handler branches also need more tests. No minimum line/branch threshold is enforced yet; agree a justified threshold after reviewing this baseline rather than adding an arbitrary CI gate.
+The reminder job `src/jobs/sendReminders.js` is now **95.34% covered by lines, 81.81% by branches and 100% by functions**. Its scheduling, filtering, dedupe-result and failure-cleanup paths have direct tests; the standalone CLI entry-point guard is the remaining uncovered path. Notification service/controller and error-handler branches still need more tests. No minimum line/branch threshold is enforced yet; agree a justified threshold after reviewing measured results rather than adding an arbitrary CI gate.
 
 ## Frontend testing status
 
