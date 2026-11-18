@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
 const { Op } = require("sequelize");
-const { runReminderJob } = require("../src/jobs/sendReminders");
+const { loadDependencies, runReminderJob } = require("../src/jobs/sendReminders");
 
 function createLogger() {
   return { messages: [], errors: [], log(message) { this.messages.push(message); }, error(...args) { this.errors.push(args); } };
@@ -175,4 +175,17 @@ test("closes the database and reports an error when startup authentication fails
 
   assert.deepEqual(calls, ["authenticate", "close"]);
   assert.deepEqual(logger.errors, [["Reminder job failed:", "database unavailable"]]);
+});
+
+
+test("loads configured Sequelize models and notification operations for the CLI", () => {
+  const dependencies = loadDependencies();
+
+  assert.equal(typeof dependencies.sequelize.authenticate, "function");
+  assert.equal(typeof dependencies.sequelize.sync, "function");
+  assert.equal(typeof dependencies.sequelize.close, "function");
+  assert.equal(typeof dependencies.Event.findAll, "function");
+  assert.equal(typeof dependencies.Registration.findAll, "function");
+  assert.equal(typeof dependencies.enqueue, "function");
+  assert.equal(typeof dependencies.dispatchPending, "function");
 });
