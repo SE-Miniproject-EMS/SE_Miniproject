@@ -70,7 +70,7 @@
 | [#54](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/54) | minestevealex-ux | `test/issue-31-registration-concurrency-nfr` | #31 | 500-registration benchmark harness and benchmark artifacts | Merged; harness is not yet an executed 500-attempt result |
 | [#55](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/55) | minestevealex-ux | `test/issue-32-security-rbac-nfr` | #32 | Route-family RBAC matrix integration test and security report | Merged |
 | [#56](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/56) | dshivasaivarun-lgtm | `codex/issues-33-34-verification` | #33, #34 | Usability study procedure and availability measurement assessment | Merged; neither target is measured/passed |
-| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | GGO4411 | `docs/assessor-evidence-pack` | Assessor/repository evidence | Contributor/issue/PR ledger, sprint backlog/burn-up, operations/security runbooks, test/coverage docs and CI coverage artifact workflow | Open; Actions coverage run pending and independent review requested |
+| [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) | GGO4411 | `docs/assessor-evidence-pack` | Assessor/repository evidence | Contributor/issue/PR ledger, sprint backlog/burn-up, operations/security runbooks, test reports and CI coverage artifact | Open; run #44241427529 passed 56 tests and build; 92.79% line / 77.81% branch / 95.71% function coverage; Alex review requested |
 
 ## Review → fix → re-push record
 
