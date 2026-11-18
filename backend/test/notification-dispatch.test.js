@@ -155,10 +155,18 @@ test("event-change notices target confirmed and waitlisted attendees once", asyn
     isVerified: true,
   });
 
+  const cancelledRecipient = await User.create({
+    name: "Cancelled Test Attendee",
+    email: "cancelled-test@example.com",
+    passwordHash: "test-only-not-a-real-password-hash",
+    role: "ATTENDEE",
+    isVerified: true,
+  });
+
   await Registration.bulkCreate([
     { eventId: event.id, attendeeId: recipient.id, status: "CONFIRMED" },
     { eventId: event.id, attendeeId: secondRecipient.id, status: "WAITLISTED" },
-    { eventId: event.id, attendeeId: secondRecipient.id + 1000, status: "CANCELLED" },
+    { eventId: event.id, attendeeId: cancelledRecipient.id, status: "CANCELLED" },
   ]);
 
   const firstQueueCount = await queueEventNotice(event, "EVENT_RESCHEDULED");
