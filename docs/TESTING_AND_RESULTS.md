@@ -1,7 +1,7 @@
 # Testing approach and results
 
 **Documentation update:** 18 November 2026  
-**Latest assessor-branch validation:** PR #57 CI run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529), 18 November 2026. Backend **56 passed, 0 failed**; backend syntax validation and frontend build passed. The coverage artifact reports **92.79% lines, 77.81% branches and 95.71% functions**. Historical integrated application result: PR #48 run #42747239410, 55 passed, 0 failed.
+**Latest assessor-branch validation:** PR #57 CI run [#44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992), 18 November 2026. Backend **56 passed, 0 failed**; backend syntax validation and frontend build passed. The coverage artifact reports **92.79% lines, 77.81% branches and 95.71% functions**. Historical integrated application result: PR #48 run #42747239410, 55 passed, 0 failed.
 
 ## Automated test inventory
 
@@ -63,7 +63,7 @@ CI output verifies backend tests and frontend compilation/build. It does not aut
 
 ## Latest coverage result
 
-PR #57 run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529) uploaded [backend-test-coverage-75](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583). Measured backend totals:
+PR #57 run [#44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992) uploaded [backend-test-coverage-75](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583). Measured backend totals:
 - Lines/statements: 2,075 / 2,236 = **92.79%**
 - Branches: 414 / 532 = **77.81%**
 - Functions: 67 / 70 = **95.71%**
