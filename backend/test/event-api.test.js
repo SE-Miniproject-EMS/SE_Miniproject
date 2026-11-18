@@ -1896,3 +1896,32 @@ test("reports scope metrics and CSV to authorized events", async () => {
     assert.equal(await (await download(admin.token)).text(), csv);
   }
 });
+
+test("concurrent duplicate registrations fail cleanly and subsequent attendees still register", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const nextAttendee = await createAccount("ATTENDEE");
+  const created = await request("/api/events", {
+    method: "POST", token: organizer.token, body: validEvent({ capacity: 2 }),
+  });
+  assert.equal(created.response.status, 201);
+  const eventId = created.payload.event.id;
+  assert.equal((await request("/api/events/" + eventId + "/publish", {
+    method: "POST", token: organizer.token,
+  })).response.status, 200);
+  const results = await Promise.all(Array.from({ length: 12 }, () =>
+    request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token })
+  ));
+  assert.equal(results.filter((r) => r.response.status === 201).length, 1);
+  assert.equal(results.filter((r) => r.response.status === 409).length, 11);
+  const next = await request("/api/registrations/events/" + eventId, {
+    method: "POST", token: nextAttendee.token,
+  });
+  assert.equal(next.response.status, 201, JSON.stringify(next.payload));
+  assert.equal(next.payload.registration.status, "CONFIRMED");
+  assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 2);
+  const count = await queryTestDatabase(
+    "SELECT COUNT(*) AS count FROM registrations WHERE eventId = ?", [eventId]
+  );
+  assert.equal(count.count, 2);
+});

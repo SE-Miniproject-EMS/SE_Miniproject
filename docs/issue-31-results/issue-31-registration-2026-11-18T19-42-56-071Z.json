@@ -1,0 +1,4067 @@
+{
+  "issue": 31,
+  "benchmark": "500 concurrent registration attempts",
+  "startedAt": "2026-11-18T19:42:39.000Z",
+  "completedAt": "2026-11-18T19:42:56.068Z",
+  "environment": {
+    "platform": "win32",
+    "architecture": "x64",
+    "nodeVersion": "v24.11.0",
+    "cpuModel": "AMD Ryzen 7 7435HS                             ",
+    "cpuCount": 16,
+    "totalMemoryBytes": 25439199232,
+    "database": "disposable SQLite file",
+    "applicationInstances": 1
+  },
+  "workload": {
+    "concurrentAttempts": 500,
+    "eventCapacity": 100,
+    "syntheticAttendees": 500,
+    "eventId": 1,
+    "timeoutMs": 120000,
+    "durationMs": 17045.804
+  },
+  "latencyMs": {
+    "min": 5573.114,
+    "mean": 12107.37,
+    "p50": 12321.356,
+    "p95": 15943.684,
+    "p99": 16247.2,
+    "max": 16885.574
+  },
+  "responseSummary": {
+    "successes": 500,
+    "failures": 0,
+    "httpStatuses": {
+      "201": 500
+    },
+    "registrationStatuses": {
+      "CONFIRMED": 100,
+      "WAITLISTED": 400
+    }
+  },
+  "integrity": {
+    "attempts": 500,
+    "uniqueRegistrationRecords": 500,
+    "expectedRegistrationRecords": 500,
+    "confirmedCount": 100,
+    "waitlistedCount": 400,
+    "cancelledCount": 0,
+    "configuredCapacity": 100,
+    "eventSeatsTaken": 100,
+    "confirmedDoesNotExceedCapacity": true,
+    "confirmedCountMatchesSeatsTaken": true,
+    "allAttemptsPersistedExactlyOnce": true,
+    "expectedConfirmedCount": 100,
+    "expectedWaitlistedCount": 400
+  },
+  "passed": true,
+  "limitations": [
+    "One local API process and a disposable SQLite database; this does not prove multi-instance production scalability.",
+    "Only free-event registration is exercised. Payment-provider and paid-registration integrity are not tested.",
+    "Synthetic users are pre-seeded and authenticated; account creation/login throughput is intentionally outside this workload."
+  ],
+  "failures": [],
+  "rawRequests": [
+    {
+      "attempt": 1,
+      "statusCode": 201,
+      "latencyMs": 5573.114,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 2,
+      "statusCode": 201,
+      "latencyMs": 7367.733,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 3,
+      "statusCode": 201,
+      "latencyMs": 7387.472,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 4,
+      "statusCode": 201,
+      "latencyMs": 7406.713,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 5,
+      "statusCode": 201,
+      "latencyMs": 7426.565,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 6,
+      "statusCode": 201,
+      "latencyMs": 7444.202,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 7,
+      "statusCode": 201,
+      "latencyMs": 7465.05,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 8,
+      "statusCode": 201,
+      "latencyMs": 7488.799,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 9,
+      "statusCode": 201,
+      "latencyMs": 7508.762,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 10,
+      "statusCode": 201,
+      "latencyMs": 7527.45,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 11,
+      "statusCode": 201,
+      "latencyMs": 7545.345,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 12,
+      "statusCode": 201,
+      "latencyMs": 7564.088,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 13,
+      "statusCode": 201,
+      "latencyMs": 7581.293,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 14,
+      "statusCode": 201,
+      "latencyMs": 7599.094,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 15,
+      "statusCode": 201,
+      "latencyMs": 7617.215,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 16,
+      "statusCode": 201,
+      "latencyMs": 7635.011,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 17,
+      "statusCode": 201,
+      "latencyMs": 7653.099,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 18,
+      "statusCode": 201,
+      "latencyMs": 7671.48,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 19,
+      "statusCode": 201,
+      "latencyMs": 7688.354,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 20,
+      "statusCode": 201,
+      "latencyMs": 7705.655,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 21,
+      "statusCode": 201,
+      "latencyMs": 7731.988,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 22,
+      "statusCode": 201,
+      "latencyMs": 7751.218,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 23,
+      "statusCode": 201,
+      "latencyMs": 7768.129,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 24,
+      "statusCode": 201,
+      "latencyMs": 7787.9,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 25,
+      "statusCode": 201,
+      "latencyMs": 7805.006,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 26,
+      "statusCode": 201,
+      "latencyMs": 7825.058,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 27,
+      "statusCode": 201,
+      "latencyMs": 7849.44,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 28,
+      "statusCode": 201,
+      "latencyMs": 7868.8,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 29,
+      "statusCode": 201,
+      "latencyMs": 7887.48,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 30,
+      "statusCode": 201,
+      "latencyMs": 7906.213,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 31,
+      "statusCode": 201,
+      "latencyMs": 7925.213,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 32,
+      "statusCode": 201,
+      "latencyMs": 7944.058,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 33,
+      "statusCode": 201,
+      "latencyMs": 7971.68,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 34,
+      "statusCode": 201,
+      "latencyMs": 7991.003,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 35,
+      "statusCode": 201,
+      "latencyMs": 8011.912,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 36,
+      "statusCode": 201,
+      "latencyMs": 8030.236,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 37,
+      "statusCode": 201,
+      "latencyMs": 8050.748,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 38,
+      "statusCode": 201,
+      "latencyMs": 8069.429,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 39,
+      "statusCode": 201,
+      "latencyMs": 8087.589,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 40,
+      "statusCode": 201,
+      "latencyMs": 8105.835,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 41,
+      "statusCode": 201,
+      "latencyMs": 8123.693,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 42,
+      "statusCode": 201,
+      "latencyMs": 8143.122,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 43,
+      "statusCode": 201,
+      "latencyMs": 8162.961,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 44,
+      "statusCode": 201,
+      "latencyMs": 8181.531,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 45,
+      "statusCode": 201,
+      "latencyMs": 8199.849,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 46,
+      "statusCode": 201,
+      "latencyMs": 8218.44,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 47,
+      "statusCode": 201,
+      "latencyMs": 8236.267,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 48,
+      "statusCode": 201,
+      "latencyMs": 8255.726,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 49,
+      "statusCode": 201,
+      "latencyMs": 8284.466,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 50,
+      "statusCode": 201,
+      "latencyMs": 8302.949,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 51,
+      "statusCode": 201,
+      "latencyMs": 8320.844,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 52,
+      "statusCode": 201,
+      "latencyMs": 8339.14,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 53,
+      "statusCode": 201,
+      "latencyMs": 8356.487,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 54,
+      "statusCode": 201,
+      "latencyMs": 8376.759,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 55,
+      "statusCode": 201,
+      "latencyMs": 8394.793,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 56,
+      "statusCode": 201,
+      "latencyMs": 8413.152,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 57,
+      "statusCode": 201,
+      "latencyMs": 8432.012,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 58,
+      "statusCode": 201,
+      "latencyMs": 8450.482,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 59,
+      "statusCode": 201,
+      "latencyMs": 8470.237,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 60,
+      "statusCode": 201,
+      "latencyMs": 8488.524,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 61,
+      "statusCode": 201,
+      "latencyMs": 8507.36,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 62,
+      "statusCode": 201,
+      "latencyMs": 8524.87,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 63,
+      "statusCode": 201,
+      "latencyMs": 8552.734,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 64,
+      "statusCode": 201,
+      "latencyMs": 8566.579,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 65,
+      "statusCode": 201,
+      "latencyMs": 8594.316,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 66,
+      "statusCode": 201,
+      "latencyMs": 8611.611,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 67,
+      "statusCode": 201,
+      "latencyMs": 8631.448,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 68,
+      "statusCode": 201,
+      "latencyMs": 8649.951,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 69,
+      "statusCode": 201,
+      "latencyMs": 8670.557,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 70,
+      "statusCode": 201,
+      "latencyMs": 8689.133,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 71,
+      "statusCode": 201,
+      "latencyMs": 8708.268,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 72,
+      "statusCode": 201,
+      "latencyMs": 8726.072,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 73,
+      "statusCode": 201,
+      "latencyMs": 8753.273,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 74,
+      "statusCode": 201,
+      "latencyMs": 8770.928,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 75,
+      "statusCode": 201,
+      "latencyMs": 8790.403,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 76,
+      "statusCode": 201,
+      "latencyMs": 8808.963,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 77,
+      "statusCode": 201,
+      "latencyMs": 8826.12,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 78,
+      "statusCode": 201,
+      "latencyMs": 8843.486,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 79,
+      "statusCode": 201,
+      "latencyMs": 8860.957,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 80,
+      "statusCode": 201,
+      "latencyMs": 8878.325,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 81,
+      "statusCode": 201,
+      "latencyMs": 8896.005,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 82,
+      "statusCode": 201,
+      "latencyMs": 8922.472,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 83,
+      "statusCode": 201,
+      "latencyMs": 8939.833,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 84,
+      "statusCode": 201,
+      "latencyMs": 8957.977,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 85,
+      "statusCode": 201,
+      "latencyMs": 8976.389,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 86,
+      "statusCode": 201,
+      "latencyMs": 8994.974,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 87,
+      "statusCode": 201,
+      "latencyMs": 9013.443,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 88,
+      "statusCode": 201,
+      "latencyMs": 9031.764,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 89,
+      "statusCode": 201,
+      "latencyMs": 9049.903,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 90,
+      "statusCode": 201,
+      "latencyMs": 9068.215,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 91,
+      "statusCode": 201,
+      "latencyMs": 9086.552,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 92,
+      "statusCode": 201,
+      "latencyMs": 9105.188,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 93,
+      "statusCode": 201,
+      "latencyMs": 9124.27,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 94,
+      "statusCode": 201,
+      "latencyMs": 9142.814,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 95,
+      "statusCode": 201,
+      "latencyMs": 9165.002,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 96,
+      "statusCode": 201,
+      "latencyMs": 9183.084,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 97,
+      "statusCode": 201,
+      "latencyMs": 9201.24,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 98,
+      "statusCode": 201,
+      "latencyMs": 9228.433,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 99,
+      "statusCode": 201,
+      "latencyMs": 9248.401,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 100,
+      "statusCode": 201,
+      "latencyMs": 9267.423,
+      "registrationStatus": "CONFIRMED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 101,
+      "statusCode": 201,
+      "latencyMs": 9284.648,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 102,
+      "statusCode": 201,
+      "latencyMs": 9301.531,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 103,
+      "statusCode": 201,
+      "latencyMs": 9318.783,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 104,
+      "statusCode": 201,
+      "latencyMs": 9334.804,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 105,
+      "statusCode": 201,
+      "latencyMs": 9351.698,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 106,
+      "statusCode": 201,
+      "latencyMs": 9369.303,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 107,
+      "statusCode": 201,
+      "latencyMs": 9386.218,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 108,
+      "statusCode": 201,
+      "latencyMs": 9402.73,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 109,
+      "statusCode": 201,
+      "latencyMs": 9419.679,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 110,
+      "statusCode": 201,
+      "latencyMs": 9436.674,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 111,
+      "statusCode": 201,
+      "latencyMs": 9464.66,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 112,
+      "statusCode": 201,
+      "latencyMs": 9482.841,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 113,
+      "statusCode": 201,
+      "latencyMs": 9506.609,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 114,
+      "statusCode": 201,
+      "latencyMs": 9525.144,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 115,
+      "statusCode": 201,
+      "latencyMs": 9545.437,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 116,
+      "statusCode": 201,
+      "latencyMs": 9565.3,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 117,
+      "statusCode": 201,
+      "latencyMs": 9585.604,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 118,
+      "statusCode": 201,
+      "latencyMs": 9606.035,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 119,
+      "statusCode": 201,
+      "latencyMs": 9632.839,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 120,
+      "statusCode": 201,
+      "latencyMs": 9656.597,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 121,
+      "statusCode": 201,
+      "latencyMs": 9687.197,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 122,
+      "statusCode": 201,
+      "latencyMs": 9703.202,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 123,
+      "statusCode": 201,
+      "latencyMs": 9718.615,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 124,
+      "statusCode": 201,
+      "latencyMs": 9738.72,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 125,
+      "statusCode": 201,
+      "latencyMs": 9754.453,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 126,
+      "statusCode": 201,
+      "latencyMs": 9769.913,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 127,
+      "statusCode": 201,
+      "latencyMs": 9785.771,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 128,
+      "statusCode": 201,
+      "latencyMs": 9803.156,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 129,
+      "statusCode": 201,
+      "latencyMs": 9818.317,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 130,
+      "statusCode": 201,
+      "latencyMs": 9832.611,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 131,
+      "statusCode": 201,
+      "latencyMs": 9859.793,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 132,
+      "statusCode": 201,
+      "latencyMs": 9876.253,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 133,
+      "statusCode": 201,
+      "latencyMs": 9891.834,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 134,
+      "statusCode": 201,
+      "latencyMs": 9907.322,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 135,
+      "statusCode": 201,
+      "latencyMs": 9922.46,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 136,
+      "statusCode": 201,
+      "latencyMs": 9938.348,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 137,
+      "statusCode": 201,
+      "latencyMs": 9954.681,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 138,
+      "statusCode": 201,
+      "latencyMs": 9970.227,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 139,
+      "statusCode": 201,
+      "latencyMs": 9985.488,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 140,
+      "statusCode": 201,
+      "latencyMs": 10001.005,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 141,
+      "statusCode": 201,
+      "latencyMs": 10017.16,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 142,
+      "statusCode": 201,
+      "latencyMs": 10031.948,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 143,
+      "statusCode": 201,
+      "latencyMs": 10046.999,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 144,
+      "statusCode": 201,
+      "latencyMs": 10062.11,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 145,
+      "statusCode": 201,
+      "latencyMs": 10078.176,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 146,
+      "statusCode": 201,
+      "latencyMs": 10443.013,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 147,
+      "statusCode": 201,
+      "latencyMs": 10459.841,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 148,
+      "statusCode": 201,
+      "latencyMs": 10474.956,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 149,
+      "statusCode": 201,
+      "latencyMs": 10490.443,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 150,
+      "statusCode": 201,
+      "latencyMs": 10506.646,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 151,
+      "statusCode": 201,
+      "latencyMs": 10522.403,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 152,
+      "statusCode": 201,
+      "latencyMs": 10537.487,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 153,
+      "statusCode": 201,
+      "latencyMs": 10553.548,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 154,
+      "statusCode": 201,
+      "latencyMs": 10568.569,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 155,
+      "statusCode": 201,
+      "latencyMs": 10584.232,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 156,
+      "statusCode": 201,
+      "latencyMs": 10600.127,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 157,
+      "statusCode": 201,
+      "latencyMs": 10615.22,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 158,
+      "statusCode": 201,
+      "latencyMs": 10631.266,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 159,
+      "statusCode": 201,
+      "latencyMs": 10647.276,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 160,
+      "statusCode": 201,
+      "latencyMs": 10663.919,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 161,
+      "statusCode": 201,
+      "latencyMs": 10680.431,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 162,
+      "statusCode": 201,
+      "latencyMs": 10697.243,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 163,
+      "statusCode": 201,
+      "latencyMs": 10711.935,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 164,
+      "statusCode": 201,
+      "latencyMs": 10727.137,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 165,
+      "statusCode": 201,
+      "latencyMs": 10743.447,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 166,
+      "statusCode": 201,
+      "latencyMs": 10759.944,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 167,
+      "statusCode": 201,
+      "latencyMs": 10775.524,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 168,
+      "statusCode": 201,
+      "latencyMs": 10790.647,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 169,
+      "statusCode": 201,
+      "latencyMs": 10880.967,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 170,
+      "statusCode": 201,
+      "latencyMs": 10994.713,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 171,
+      "statusCode": 201,
+      "latencyMs": 11011.943,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 172,
+      "statusCode": 201,
+      "latencyMs": 11027.801,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 173,
+      "statusCode": 201,
+      "latencyMs": 11043.649,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 174,
+      "statusCode": 201,
+      "latencyMs": 11058.398,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 175,
+      "statusCode": 201,
+      "latencyMs": 11073.806,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 176,
+      "statusCode": 201,
+      "latencyMs": 11089.281,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 177,
+      "statusCode": 201,
+      "latencyMs": 11104.981,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 178,
+      "statusCode": 201,
+      "latencyMs": 11120.436,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 179,
+      "statusCode": 201,
+      "latencyMs": 11135.565,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 180,
+      "statusCode": 201,
+      "latencyMs": 11152.066,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 181,
+      "statusCode": 201,
+      "latencyMs": 11170.351,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 182,
+      "statusCode": 201,
+      "latencyMs": 11187.357,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 183,
+      "statusCode": 201,
+      "latencyMs": 11204.3,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 184,
+      "statusCode": 201,
+      "latencyMs": 11220.561,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 185,
+      "statusCode": 201,
+      "latencyMs": 11236.373,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 186,
+      "statusCode": 201,
+      "latencyMs": 11254.24,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 187,
+      "statusCode": 201,
+      "latencyMs": 11271.421,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 188,
+      "statusCode": 201,
+      "latencyMs": 11287.023,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 189,
+      "statusCode": 201,
+      "latencyMs": 11305.079,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 190,
+      "statusCode": 201,
+      "latencyMs": 11324.128,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 191,
+      "statusCode": 201,
+      "latencyMs": 11339.849,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 192,
+      "statusCode": 201,
+      "latencyMs": 11355.654,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 193,
+      "statusCode": 201,
+      "latencyMs": 11371.248,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 194,
+      "statusCode": 201,
+      "latencyMs": 11388.026,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 195,
+      "statusCode": 201,
+      "latencyMs": 11405.42,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 196,
+      "statusCode": 201,
+      "latencyMs": 11422.542,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 197,
+      "statusCode": 201,
+      "latencyMs": 11438.473,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 198,
+      "statusCode": 201,
+      "latencyMs": 11454.487,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 199,
+      "statusCode": 201,
+      "latencyMs": 11470.403,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 200,
+      "statusCode": 201,
+      "latencyMs": 11486.193,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 201,
+      "statusCode": 201,
+      "latencyMs": 11502.577,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 202,
+      "statusCode": 201,
+      "latencyMs": 11522.517,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 203,
+      "statusCode": 201,
+      "latencyMs": 11538.559,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 204,
+      "statusCode": 201,
+      "latencyMs": 11555.238,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 205,
+      "statusCode": 201,
+      "latencyMs": 11573.674,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 206,
+      "statusCode": 201,
+      "latencyMs": 11589.154,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 207,
+      "statusCode": 201,
+      "latencyMs": 11607.309,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 208,
+      "statusCode": 201,
+      "latencyMs": 11627.791,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 209,
+      "statusCode": 201,
+      "latencyMs": 11645.471,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 210,
+      "statusCode": 201,
+      "latencyMs": 11665.269,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 211,
+      "statusCode": 201,
+      "latencyMs": 11682.79,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 212,
+      "statusCode": 201,
+      "latencyMs": 11699.695,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 213,
+      "statusCode": 201,
+      "latencyMs": 11715.77,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 214,
+      "statusCode": 201,
+      "latencyMs": 11734.178,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 215,
+      "statusCode": 201,
+      "latencyMs": 11753.939,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 216,
+      "statusCode": 201,
+      "latencyMs": 11773.367,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 217,
+      "statusCode": 201,
+      "latencyMs": 11790.903,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 218,
+      "statusCode": 201,
+      "latencyMs": 11808.2,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 219,
+      "statusCode": 201,
+      "latencyMs": 11825.678,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 220,
+      "statusCode": 201,
+      "latencyMs": 11842.024,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 221,
+      "statusCode": 201,
+      "latencyMs": 11858.504,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 222,
+      "statusCode": 201,
+      "latencyMs": 11874.719,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 223,
+      "statusCode": 201,
+      "latencyMs": 11890.945,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 224,
+      "statusCode": 201,
+      "latencyMs": 11907.715,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 225,
+      "statusCode": 201,
+      "latencyMs": 11923.249,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 226,
+      "statusCode": 201,
+      "latencyMs": 11939.539,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 227,
+      "statusCode": 201,
+      "latencyMs": 11955.225,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 228,
+      "statusCode": 201,
+      "latencyMs": 11972.214,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 229,
+      "statusCode": 201,
+      "latencyMs": 11988.674,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 230,
+      "statusCode": 201,
+      "latencyMs": 12005.831,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 231,
+      "statusCode": 201,
+      "latencyMs": 12023.311,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 232,
+      "statusCode": 201,
+      "latencyMs": 12039.32,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 233,
+      "statusCode": 201,
+      "latencyMs": 12055.18,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 234,
+      "statusCode": 201,
+      "latencyMs": 12072.067,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 235,
+      "statusCode": 201,
+      "latencyMs": 12090.191,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 236,
+      "statusCode": 201,
+      "latencyMs": 12105.257,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 237,
+      "statusCode": 201,
+      "latencyMs": 12120.707,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 238,
+      "statusCode": 201,
+      "latencyMs": 12136.054,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 239,
+      "statusCode": 201,
+      "latencyMs": 12150.767,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 240,
+      "statusCode": 201,
+      "latencyMs": 12166.178,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 241,
+      "statusCode": 201,
+      "latencyMs": 12182.775,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 242,
+      "statusCode": 201,
+      "latencyMs": 12197.851,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 243,
+      "statusCode": 201,
+      "latencyMs": 12212.958,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 244,
+      "statusCode": 201,
+      "latencyMs": 12227.849,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 245,
+      "statusCode": 201,
+      "latencyMs": 12243.734,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 246,
+      "statusCode": 201,
+      "latencyMs": 12259.257,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 247,
+      "statusCode": 201,
+      "latencyMs": 12274.601,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 248,
+      "statusCode": 201,
+      "latencyMs": 12289.887,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 249,
+      "statusCode": 201,
+      "latencyMs": 12306.072,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 250,
+      "statusCode": 201,
+      "latencyMs": 12321.356,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 251,
+      "statusCode": 201,
+      "latencyMs": 12338.206,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 252,
+      "statusCode": 201,
+      "latencyMs": 12354.745,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 253,
+      "statusCode": 201,
+      "latencyMs": 12371.303,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 254,
+      "statusCode": 201,
+      "latencyMs": 12388.084,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 255,
+      "statusCode": 201,
+      "latencyMs": 12404.197,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 256,
+      "statusCode": 201,
+      "latencyMs": 12423.038,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 257,
+      "statusCode": 201,
+      "latencyMs": 12438.395,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 258,
+      "statusCode": 201,
+      "latencyMs": 12454.75,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 259,
+      "statusCode": 201,
+      "latencyMs": 12471.505,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 260,
+      "statusCode": 201,
+      "latencyMs": 12488.036,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 261,
+      "statusCode": 201,
+      "latencyMs": 12503.434,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 262,
+      "statusCode": 201,
+      "latencyMs": 12518.493,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 263,
+      "statusCode": 201,
+      "latencyMs": 12533.972,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 264,
+      "statusCode": 201,
+      "latencyMs": 12549.409,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 265,
+      "statusCode": 201,
+      "latencyMs": 12564.736,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 266,
+      "statusCode": 201,
+      "latencyMs": 12580.241,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 267,
+      "statusCode": 201,
+      "latencyMs": 12594.877,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 268,
+      "statusCode": 201,
+      "latencyMs": 12610.152,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 269,
+      "statusCode": 201,
+      "latencyMs": 12626.394,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 270,
+      "statusCode": 201,
+      "latencyMs": 12645.162,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 271,
+      "statusCode": 201,
+      "latencyMs": 12661.09,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 272,
+      "statusCode": 201,
+      "latencyMs": 12675.963,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 273,
+      "statusCode": 201,
+      "latencyMs": 12692.015,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 274,
+      "statusCode": 201,
+      "latencyMs": 12707.015,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 275,
+      "statusCode": 201,
+      "latencyMs": 12722.172,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 276,
+      "statusCode": 201,
+      "latencyMs": 12738.483,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 277,
+      "statusCode": 201,
+      "latencyMs": 12753.957,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 278,
+      "statusCode": 201,
+      "latencyMs": 12770.774,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 279,
+      "statusCode": 201,
+      "latencyMs": 12788.212,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 280,
+      "statusCode": 201,
+      "latencyMs": 12805.234,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 281,
+      "statusCode": 201,
+      "latencyMs": 12820.594,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 282,
+      "statusCode": 201,
+      "latencyMs": 12830.45,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 283,
+      "statusCode": 201,
+      "latencyMs": 12846.515,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 284,
+      "statusCode": 201,
+      "latencyMs": 12862.333,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 285,
+      "statusCode": 201,
+      "latencyMs": 12878.928,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 286,
+      "statusCode": 201,
+      "latencyMs": 12894.558,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 287,
+      "statusCode": 201,
+      "latencyMs": 12911.452,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 288,
+      "statusCode": 201,
+      "latencyMs": 12927.337,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 289,
+      "statusCode": 201,
+      "latencyMs": 12944.204,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 290,
+      "statusCode": 201,
+      "latencyMs": 12963.464,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 291,
+      "statusCode": 201,
+      "latencyMs": 12979.562,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 292,
+      "statusCode": 201,
+      "latencyMs": 12998.306,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 293,
+      "statusCode": 201,
+      "latencyMs": 13014.979,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 294,
+      "statusCode": 201,
+      "latencyMs": 13033.379,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 295,
+      "statusCode": 201,
+      "latencyMs": 13050.733,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 296,
+      "statusCode": 201,
+      "latencyMs": 13073.658,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 297,
+      "statusCode": 201,
+      "latencyMs": 13091.541,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 298,
+      "statusCode": 201,
+      "latencyMs": 13108.467,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 299,
+      "statusCode": 201,
+      "latencyMs": 13125.03,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 300,
+      "statusCode": 201,
+      "latencyMs": 13140.556,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 301,
+      "statusCode": 201,
+      "latencyMs": 13156.443,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 302,
+      "statusCode": 201,
+      "latencyMs": 13172.776,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 303,
+      "statusCode": 201,
+      "latencyMs": 13189.116,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 304,
+      "statusCode": 201,
+      "latencyMs": 13204.866,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 305,
+      "statusCode": 201,
+      "latencyMs": 13220.71,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 306,
+      "statusCode": 201,
+      "latencyMs": 13237.525,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 307,
+      "statusCode": 201,
+      "latencyMs": 13254.904,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 308,
+      "statusCode": 201,
+      "latencyMs": 13270.896,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 309,
+      "statusCode": 201,
+      "latencyMs": 13286.056,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 310,
+      "statusCode": 201,
+      "latencyMs": 13304.663,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 311,
+      "statusCode": 201,
+      "latencyMs": 13321.008,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 312,
+      "statusCode": 201,
+      "latencyMs": 13337.167,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 313,
+      "statusCode": 201,
+      "latencyMs": 13351.921,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 314,
+      "statusCode": 201,
+      "latencyMs": 13367.991,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 315,
+      "statusCode": 201,
+      "latencyMs": 13385.04,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 316,
+      "statusCode": 201,
+      "latencyMs": 13399.799,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 317,
+      "statusCode": 201,
+      "latencyMs": 13416.005,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 318,
+      "statusCode": 201,
+      "latencyMs": 13430.731,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 319,
+      "statusCode": 201,
+      "latencyMs": 13446.332,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 320,
+      "statusCode": 201,
+      "latencyMs": 13462.187,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 321,
+      "statusCode": 201,
+      "latencyMs": 13477.918,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 322,
+      "statusCode": 201,
+      "latencyMs": 13494.359,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 323,
+      "statusCode": 201,
+      "latencyMs": 13519.237,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 324,
+      "statusCode": 201,
+      "latencyMs": 13534.041,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 325,
+      "statusCode": 201,
+      "latencyMs": 13549.947,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 326,
+      "statusCode": 201,
+      "latencyMs": 13566.48,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 327,
+      "statusCode": 201,
+      "latencyMs": 13581.792,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 328,
+      "statusCode": 201,
+      "latencyMs": 13597.994,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 329,
+      "statusCode": 201,
+      "latencyMs": 13614.811,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 330,
+      "statusCode": 201,
+      "latencyMs": 13631.534,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 331,
+      "statusCode": 201,
+      "latencyMs": 13647.525,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 332,
+      "statusCode": 201,
+      "latencyMs": 13662.875,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 333,
+      "statusCode": 201,
+      "latencyMs": 13680.162,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 334,
+      "statusCode": 201,
+      "latencyMs": 13713.474,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 335,
+      "statusCode": 201,
+      "latencyMs": 13728.688,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 336,
+      "statusCode": 201,
+      "latencyMs": 13744.422,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 337,
+      "statusCode": 201,
+      "latencyMs": 13760.879,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 338,
+      "statusCode": 201,
+      "latencyMs": 13776.16,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 339,
+      "statusCode": 201,
+      "latencyMs": 13792.723,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 340,
+      "statusCode": 201,
+      "latencyMs": 13807.448,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 341,
+      "statusCode": 201,
+      "latencyMs": 13822.831,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 342,
+      "statusCode": 201,
+      "latencyMs": 13839.391,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 343,
+      "statusCode": 201,
+      "latencyMs": 13853.793,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 344,
+      "statusCode": 201,
+      "latencyMs": 13869.647,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 345,
+      "statusCode": 201,
+      "latencyMs": 13884.908,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 346,
+      "statusCode": 201,
+      "latencyMs": 13901.469,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 347,
+      "statusCode": 201,
+      "latencyMs": 13917.897,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 348,
+      "statusCode": 201,
+      "latencyMs": 13933.024,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 349,
+      "statusCode": 201,
+      "latencyMs": 13947.829,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 350,
+      "statusCode": 201,
+      "latencyMs": 13963.58,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 351,
+      "statusCode": 201,
+      "latencyMs": 13979.481,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 352,
+      "statusCode": 201,
+      "latencyMs": 13998.872,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 353,
+      "statusCode": 201,
+      "latencyMs": 14017.285,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 354,
+      "statusCode": 201,
+      "latencyMs": 14036.507,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 355,
+      "statusCode": 201,
+      "latencyMs": 14053.096,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 356,
+      "statusCode": 201,
+      "latencyMs": 14068.652,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 357,
+      "statusCode": 201,
+      "latencyMs": 14084.248,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 358,
+      "statusCode": 201,
+      "latencyMs": 14099.885,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 359,
+      "statusCode": 201,
+      "latencyMs": 14115.345,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 360,
+      "statusCode": 201,
+      "latencyMs": 14130.645,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 361,
+      "statusCode": 201,
+      "latencyMs": 14145.247,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 362,
+      "statusCode": 201,
+      "latencyMs": 14160.085,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 363,
+      "statusCode": 201,
+      "latencyMs": 14174.101,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 364,
+      "statusCode": 201,
+      "latencyMs": 14188.809,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 365,
+      "statusCode": 201,
+      "latencyMs": 14203.437,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 366,
+      "statusCode": 201,
+      "latencyMs": 14219.59,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 367,
+      "statusCode": 201,
+      "latencyMs": 14235.208,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 368,
+      "statusCode": 201,
+      "latencyMs": 14249.718,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 369,
+      "statusCode": 201,
+      "latencyMs": 14263.76,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 370,
+      "statusCode": 201,
+      "latencyMs": 14281.693,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 371,
+      "statusCode": 201,
+      "latencyMs": 14297.311,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 372,
+      "statusCode": 201,
+      "latencyMs": 14312.617,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 373,
+      "statusCode": 201,
+      "latencyMs": 14327.568,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 374,
+      "statusCode": 201,
+      "latencyMs": 14343.86,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 375,
+      "statusCode": 201,
+      "latencyMs": 14359.087,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 376,
+      "statusCode": 201,
+      "latencyMs": 14374.054,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 377,
+      "statusCode": 201,
+      "latencyMs": 14388.775,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 378,
+      "statusCode": 201,
+      "latencyMs": 14404.375,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 379,
+      "statusCode": 201,
+      "latencyMs": 14420.493,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 380,
+      "statusCode": 201,
+      "latencyMs": 14435.749,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 381,
+      "statusCode": 201,
+      "latencyMs": 14451.056,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 382,
+      "statusCode": 201,
+      "latencyMs": 14466.766,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 383,
+      "statusCode": 201,
+      "latencyMs": 14483.168,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 384,
+      "statusCode": 201,
+      "latencyMs": 14499.218,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 385,
+      "statusCode": 201,
+      "latencyMs": 14514.709,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 386,
+      "statusCode": 201,
+      "latencyMs": 14528.652,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 387,
+      "statusCode": 201,
+      "latencyMs": 14544.548,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 388,
+      "statusCode": 201,
+      "latencyMs": 14560.176,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 389,
+      "statusCode": 201,
+      "latencyMs": 14575.206,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 390,
+      "statusCode": 201,
+      "latencyMs": 14590.016,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 391,
+      "statusCode": 201,
+      "latencyMs": 14604.476,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 392,
+      "statusCode": 201,
+      "latencyMs": 14620.603,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 393,
+      "statusCode": 201,
+      "latencyMs": 14636.157,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 394,
+      "statusCode": 201,
+      "latencyMs": 14653.883,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 395,
+      "statusCode": 201,
+      "latencyMs": 14669.099,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 396,
+      "statusCode": 201,
+      "latencyMs": 14684.357,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 397,
+      "statusCode": 201,
+      "latencyMs": 14699.586,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 398,
+      "statusCode": 201,
+      "latencyMs": 14714.791,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 399,
+      "statusCode": 201,
+      "latencyMs": 14728.981,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 400,
+      "statusCode": 201,
+      "latencyMs": 14743.471,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 401,
+      "statusCode": 201,
+      "latencyMs": 14758.337,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 402,
+      "statusCode": 201,
+      "latencyMs": 14774.09,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 403,
+      "statusCode": 201,
+      "latencyMs": 14789.303,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 404,
+      "statusCode": 201,
+      "latencyMs": 14805.149,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 405,
+      "statusCode": 201,
+      "latencyMs": 14823.644,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 406,
+      "statusCode": 201,
+      "latencyMs": 14839.503,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 407,
+      "statusCode": 201,
+      "latencyMs": 14854.926,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 408,
+      "statusCode": 201,
+      "latencyMs": 14870.385,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 409,
+      "statusCode": 201,
+      "latencyMs": 14886.388,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 410,
+      "statusCode": 201,
+      "latencyMs": 14902.053,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 411,
+      "statusCode": 201,
+      "latencyMs": 14918.064,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 412,
+      "statusCode": 201,
+      "latencyMs": 14933.209,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 413,
+      "statusCode": 201,
+      "latencyMs": 14949.199,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 414,
+      "statusCode": 201,
+      "latencyMs": 14965.446,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 415,
+      "statusCode": 201,
+      "latencyMs": 14980.886,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 416,
+      "statusCode": 201,
+      "latencyMs": 14996.178,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 417,
+      "statusCode": 201,
+      "latencyMs": 15012.572,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 418,
+      "statusCode": 201,
+      "latencyMs": 15027.825,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 419,
+      "statusCode": 201,
+      "latencyMs": 15043.678,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 420,
+      "statusCode": 201,
+      "latencyMs": 15059.716,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 421,
+      "statusCode": 201,
+      "latencyMs": 15078.074,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 422,
+      "statusCode": 201,
+      "latencyMs": 15094.661,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 423,
+      "statusCode": 201,
+      "latencyMs": 15110.631,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 424,
+      "statusCode": 201,
+      "latencyMs": 15126.581,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 425,
+      "statusCode": 201,
+      "latencyMs": 15142.554,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 426,
+      "statusCode": 201,
+      "latencyMs": 15158.019,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 427,
+      "statusCode": 201,
+      "latencyMs": 15173.729,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 428,
+      "statusCode": 201,
+      "latencyMs": 15189.393,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 429,
+      "statusCode": 201,
+      "latencyMs": 15207.346,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 430,
+      "statusCode": 201,
+      "latencyMs": 15223.159,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 431,
+      "statusCode": 201,
+      "latencyMs": 15239.279,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 432,
+      "statusCode": 201,
+      "latencyMs": 15260.371,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 433,
+      "statusCode": 201,
+      "latencyMs": 15277.145,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 434,
+      "statusCode": 201,
+      "latencyMs": 15293.475,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 435,
+      "statusCode": 201,
+      "latencyMs": 15310.223,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 436,
+      "statusCode": 201,
+      "latencyMs": 15327.113,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 437,
+      "statusCode": 201,
+      "latencyMs": 15342.139,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 438,
+      "statusCode": 201,
+      "latencyMs": 15357.966,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 439,
+      "statusCode": 201,
+      "latencyMs": 15373.475,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 440,
+      "statusCode": 201,
+      "latencyMs": 15389.08,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 441,
+      "statusCode": 201,
+      "latencyMs": 15404.467,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 442,
+      "statusCode": 201,
+      "latencyMs": 15419.739,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 443,
+      "statusCode": 201,
+      "latencyMs": 15436.132,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 444,
+      "statusCode": 201,
+      "latencyMs": 15451.084,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 445,
+      "statusCode": 201,
+      "latencyMs": 15466.123,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 446,
+      "statusCode": 201,
+      "latencyMs": 15482.663,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 447,
+      "statusCode": 201,
+      "latencyMs": 15498.298,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 448,
+      "statusCode": 201,
+      "latencyMs": 15513.343,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 449,
+      "statusCode": 201,
+      "latencyMs": 15528.503,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 450,
+      "statusCode": 201,
+      "latencyMs": 15543.656,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 451,
+      "statusCode": 201,
+      "latencyMs": 15558.399,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 452,
+      "statusCode": 201,
+      "latencyMs": 15574.634,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 453,
+      "statusCode": 201,
+      "latencyMs": 15590.725,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 454,
+      "statusCode": 201,
+      "latencyMs": 15606.335,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 455,
+      "statusCode": 201,
+      "latencyMs": 15621.819,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 456,
+      "statusCode": 201,
+      "latencyMs": 15643.161,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 457,
+      "statusCode": 201,
+      "latencyMs": 15658.84,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 458,
+      "statusCode": 201,
+      "latencyMs": 15674.581,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 459,
+      "statusCode": 201,
+      "latencyMs": 15690.293,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 460,
+      "statusCode": 201,
+      "latencyMs": 15706.615,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 461,
+      "statusCode": 201,
+      "latencyMs": 15721.946,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 462,
+      "statusCode": 201,
+      "latencyMs": 15737.175,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 463,
+      "statusCode": 201,
+      "latencyMs": 15752.741,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 464,
+      "statusCode": 201,
+      "latencyMs": 15768.03,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 465,
+      "statusCode": 201,
+      "latencyMs": 15782.658,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 466,
+      "statusCode": 201,
+      "latencyMs": 15797.617,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 467,
+      "statusCode": 201,
+      "latencyMs": 15813.546,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 468,
+      "statusCode": 201,
+      "latencyMs": 15829.597,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 469,
+      "statusCode": 201,
+      "latencyMs": 15850.599,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 470,
+      "statusCode": 201,
+      "latencyMs": 15867.544,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 471,
+      "statusCode": 201,
+      "latencyMs": 15883.347,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 472,
+      "statusCode": 201,
+      "latencyMs": 15899.112,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 473,
+      "statusCode": 201,
+      "latencyMs": 15913.814,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 474,
+      "statusCode": 201,
+      "latencyMs": 15928.412,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 475,
+      "statusCode": 201,
+      "latencyMs": 15943.684,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 476,
+      "statusCode": 201,
+      "latencyMs": 15958.008,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 477,
+      "statusCode": 201,
+      "latencyMs": 15973.712,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 478,
+      "statusCode": 201,
+      "latencyMs": 15987.36,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 479,
+      "statusCode": 201,
+      "latencyMs": 16001.926,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 480,
+      "statusCode": 201,
+      "latencyMs": 16017.378,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 481,
+      "statusCode": 201,
+      "latencyMs": 16032.432,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 482,
+      "statusCode": 201,
+      "latencyMs": 16047.74,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 483,
+      "statusCode": 201,
+      "latencyMs": 16066.426,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 484,
+      "statusCode": 201,
+      "latencyMs": 16082.445,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 485,
+      "statusCode": 201,
+      "latencyMs": 16097.07,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 486,
+      "statusCode": 201,
+      "latencyMs": 16112.357,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 487,
+      "statusCode": 201,
+      "latencyMs": 16127.23,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 488,
+      "statusCode": 201,
+      "latencyMs": 16142.484,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 489,
+      "statusCode": 201,
+      "latencyMs": 16156.641,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 490,
+      "statusCode": 201,
+      "latencyMs": 16172.151,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 491,
+      "statusCode": 201,
+      "latencyMs": 16185.608,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 492,
+      "statusCode": 201,
+      "latencyMs": 16199.585,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 493,
+      "statusCode": 201,
+      "latencyMs": 16215.904,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 494,
+      "statusCode": 201,
+      "latencyMs": 16231.345,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 495,
+      "statusCode": 201,
+      "latencyMs": 16247.2,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 496,
+      "statusCode": 201,
+      "latencyMs": 16262.489,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 497,
+      "statusCode": 201,
+      "latencyMs": 16278.452,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 498,
+      "statusCode": 201,
+      "latencyMs": 16292.16,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 499,
+      "statusCode": 201,
+      "latencyMs": 16448.774,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    },
+    {
+      "attempt": 500,
+      "statusCode": 201,
+      "latencyMs": 16885.574,
+      "registrationStatus": "WAITLISTED",
+      "success": true,
+      "error": ""
+    }
+  ]
+}
