@@ -16,7 +16,7 @@
 | [#8](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/8) | Event Management API tests | GGO4411, minestevealex-ux | 5* | 23 Oct 2026 | [PR #15](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/15), [PR #17](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/17) |
 | [#10](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/10) | Frontend form validation | dshivasaivarun-lgtm | 3 | 23 Oct 2026 | [PR #16](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/16) |
 
-**Planned estimate:** 24 confirmed points plus 5 suggested points for Issue #8 = **26 points using the issue's suggested estimate**.
+**Planned estimate:** 21 confirmed points plus the 5-point suggested estimate for Issue #8 = **26 points using the issue's suggested estimate**.
 
 **Result:** Issue #3 was already closed before the official Sprint 1 start; 24/26 points were closed by 23 October; Issue #6 closed on 26 October. All seven backlog items were closed by 26 October. The chart deliberately shows the actual GitHub close dates instead of moving Issue #3 into the sprint window or hiding the late close of Issue #6.
 
