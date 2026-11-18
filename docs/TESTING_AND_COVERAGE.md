@@ -1,6 +1,6 @@
 # Test, unit-test and coverage reporting
 
-**Current evidence:** coverage-enabled PR #57 run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529), 18 November 2026.  
+**Current evidence:** coverage-enabled PR #57 run [#44241742992](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992), 18 November 2026.  
 **Result:** 56 backend tests passed, 0 failed; backend syntax validation and frontend production build passed. The same run uploaded the measured coverage artifact.  
 **Scope note:** these are Node.js test-runner results. Most API scenarios are HTTP integration/regression tests, not isolated unit tests.
 
@@ -55,7 +55,7 @@ The CI job uploads the complete `backend/coverage/` folder as the Actions artifa
 
 ### Coverage status
 
-**Measured baseline — 18 November 2026:** run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529) reports 92.79% line coverage, 77.81% branch coverage, 95.71% function coverage and 92.79% statement coverage. This includes 2,075/2,236 lines, 414/532 branches and 67/70 functions across backend `src/**/*.js`. The downloadable [coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529/artifacts/14400110583) contains the HTML/LCOV/JSON files. See the [detailed coverage baseline](test-reports/2026-11-18-coverage-baseline.md).
+**Measured baseline — 18 November 2026:** run [#44241427529](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241427529) reports 92.79% line coverage, 77.81% branch coverage, 95.71% function coverage and 92.79% statement coverage. This includes 2,075/2,236 lines, 414/532 branches and 67/70 functions across backend `src/**/*.js`. The downloadable [coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44241742992/artifacts/14399547708) contains the HTML/LCOV/JSON files. See the [detailed coverage baseline](test-reports/2026-11-18-coverage-baseline.md).
 
 The reminder job `src/jobs/sendReminders.js` has 0% line/branch/function coverage and is the clearest follow-up. Notification service/controller and error-handler branches also need more tests. No minimum line/branch threshold is enforced yet; agree a justified threshold after reviewing this baseline rather than adding an arbitrary CI gate.
 
