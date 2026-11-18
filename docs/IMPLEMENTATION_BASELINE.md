@@ -1,49 +1,54 @@
 # Implemented functionality baseline
 
-**Snapshot updated:** 10 November 2026 (main through security verification updates)
-**Purpose:** Distinguish delivered behavior from the intended full-product requirements in the SRS. This status reflects the source files in this repository snapshot; it is not a release certification.
+**Snapshot date:** 18 November 2026  
+**Source:** code and merged PRs on main through PR #56 (11 November 2026).  
+**Purpose:** separate working prototype behavior from requirements that are mocked, partially implemented or not verified. This is not a production release certification.
 
 ## Delivered in the current code baseline
 
-| Area | Implemented behavior | Source / evidence |
-| --- | --- | --- |
-| Account registration | Attendee and Organizer self-registration; name/email/password validation; duplicate email rejected; passwords stored as bcrypt hashes; safe user response excludes the hash. ADMIN cannot self-register. | `backend/src/controllers/authController.js`, `backend/src/utils/validators.js`, `backend/src/models/User.js`, `backend/test/auth-api.test.js` |
-| Email verification | Signed verification token, one-day expiry, verification route, and login gate for unverified accounts. The link is printed to the backend console for development; no email provider is integrated. | `backend/src/controllers/authController.js`, `backend/src/utils/jwt.js` |
-| Login protection | JWT access token; role in token; five consecutive failed passwords trigger a 15-minute lockout; login endpoint also has an IP-based rate limiter of 20 requests per 15 minutes. JWT absolute expiry is configurable through `JWT_EXPIRES_IN`; a database-backed idle session expires after a configurable inactivity period (`SESSION_IDLE_TIMEOUT_SECONDS`, default 1800 seconds), capped by the JWT expiry. | `backend/src/controllers/authController.js`, `backend/src/routes/authRoutes.js`, `backend/src/middleware/auth.js`, `backend/src/models/Session.js`, `backend/src/utils/jwt.js`, `backend/test/auth-api.test.js` |
-| Role/ownership checks | Protected event management routes require a Bearer JWT and ORGANIZER or ADMIN role. Organizers can change their own events; ADMIN can manage all events. | `backend/src/middleware/auth.js`, `backend/src/routes/eventRoutes.js`, `backend/src/controllers/eventController.js`, API tests |
-| Event lifecycle | Create DRAFT or valid PUBLISHED events; edit, publish and cancel; canceled events cannot be re-published or edited. | `backend/src/controllers/eventController.js`, `backend/src/models/Event.js`, `backend/test/event-api.test.js` |
-| Event discovery | Public listing of future PUBLISHED events, sorted by start date/time; keyword search in title/description; category, venue/location substring and date filters; pagination (default page 1, default limit 9, max limit 50). Public detail endpoint returns only published events. | `backend/src/controllers/eventController.js`, `frontend/src/pages/Events.jsx`, `backend/test/event-api.test.js` |
-| Browser interface | React/Vite pages for home, event discovery/details, account registration/login, event creation/editing and organizer event management. | `frontend/src/App.jsx`, `frontend/src/pages/`, `frontend/src/api/` |
-| Persistence | Sequelize models for `User`, `Session`, `Event`, `Registration`, `Notification` and `Feedback`; SQLite file for local development and isolated tests. Organizers own Events; Events have Registration records; notifications link to recipients/events/registrations. | `backend/src/config/db.js`, `backend/src/models/`, `backend/src/server.js` |
-| Automation | GitHub Actions installs dependencies, checks backend JavaScript syntax, runs backend tests, and builds the frontend. | `.github/workflows/ci.yml` |
+| Area | Implemented behavior | Main evidence |
+|---|---|---|
+| Authentication | Attendee/Organizer self-registration, duplicate-email rejection, bcrypt password hashing, verification gate, JWT access tokens and five-failure/15-minute lockout. Admin self-registration is rejected. | `backend/src/controllers/authController.js`, `backend/test/auth-api.test.js` |
+| Session security | Persisted Session rows, configurable idle expiry (`SESSION_IDLE_TIMEOUT_SECONDS`, default 1800 seconds), activity extends idle deadline but never beyond JWT absolute expiry. | PR #51; `backend/src/models/Session.js`, `backend/src/middleware/auth.js`, auth tests |
+| Role and ownership | Bearer authentication, route-level role authorization, Organizer ownership restrictions and Admin override on applicable event/check-in/feedback routes. | PR #55; `backend/test/event-api.test.js` route matrix and ownership tests |
+| Event management | Draft creation, editing, publishing, cancellation, validation and public event details. | `backend/src/controllers/eventController.js`, event API tests |
+| Event discovery | Upcoming published event listing, keyword/category/location/date filters and pagination. | `frontend/src/pages/Events.jsx`, `backend/test/event-api.test.js` |
+| Free registration | Authenticated attendee registration, capacity transaction, unique attendee/event registration, FIFO waitlist, cancellation cutoff and promotion. | PR #47; registration API tests |
+| Paid prototype | Payment/Refund persistence, 10-minute capacity reservations, mock payment success/failure/pending, retry, FIFO paid offers and simulated full refunds. | PR #48; `Payment.js`, `Refund.js`, `mockPaymentAdapter.js`, payment integration/rule tests |
+| Notifications | Notification records/service, deduplication and reminder job; queue/console development adapter. | PR #42; `notificationService.js`, `sendReminders.js` |
+| Ticket/check-in | One-use ticket tokens and organizer/Admin check-in API. | PR #42/#47; registration API tests |
+| Feedback | Feedback model/API, checked-in attendee eligibility and organizer/Admin event-scoped access. | PR #42; feedback API tests |
+| Frontend | React/Vite pages for discovery, event lifecycle, accounts, attendee registration/payment demo and user dashboards. | `frontend/src/pages/`, `frontend/src/components/` |
+| CI | GitHub Actions backend syntax validation/tests and frontend production build. Coverage artifact is being added in the assessor-evidence branch. | `.github/workflows/ci.yml` |
 
-## Partially implemented and not implemented requirements
+## Partial, mock-only and unverified requirements
 
-The following are still target requirements/backlog items, not delivered features. They must not be shown as implemented in the SRS, diagrams, demo, or test results.
+| SRS area | Status | Current evidence / limitation |
+|---|---|---|
+| REQ-11–REQ-14 registration | **Partially implemented** | Free registration, capacity and FIFO waitlist are implemented. Paid prototype is mock-only. External notification delivery remains unconfigured. 500-attempt load result is not yet recorded. |
+| REQ-15–REQ-17 payment/refund | **Mock prototype only** | PR #48 adds mock checkout/refund states. No live provider, gateway sandbox, signed callback or provider-confirmed money movement is configured. |
+| REQ-18–REQ-20 notifications | **Partially implemented** | Notification queue/reminder job exists; external email/SMS provider delivery and end-to-end delivery evidence are absent. |
+| REQ-21–REQ-23 ticket/check-in | **Partially implemented** | One-use token and check-in API exist. QR image/ticket rendering and camera/scanner UI remain incomplete. |
+| REQ-24–REQ-26 reporting | **Not implemented** | Organizer/admin dashboards and CSV reporting remain backlog issue #29. |
+| REQ-27–REQ-28 feedback | **Partially implemented** | Model/API and eligibility rules exist; complete attendee feedback prompt and organizer-facing dashboard UI remain incomplete. |
+| NFR-PERF-01 | **Locally measured** | 8 Nov event-search benchmark: 1,000/1,000 requests succeeded using 100 workers; p95 194.802 ms, max 301.311 ms, all below 2 seconds. Local synthetic data only; no production SLA claim. |
+| NFR-PERF-02 | **Not verified** | PR #54 adds an isolated 500-registration harness; no registration-specific result JSON/CSV is committed. |
+| NFR-SEC-01 | **Regression-tested for covered paths** | bcrypt storage, response redaction and no plaintext test-password log assertion. |
+| NFR-SEC-02 | **Blocked / not verified** | Mock adapter is not a provider. No PCI/provider sandbox or signed callbacks; no PCI-compliance claim. |
+| NFR-SEC-03 | **Verified for current mounted protected route matrix** | PR #55 exercises anonymous/Attendee/Organizer/Admin roles; object ownership tests are separate. Extend matrix as routes change. |
+| NFR-SEC-04 | **Implemented / regression-tested** | Persisted idle deadline, idle extension, rejection of expired sessions and JWT absolute expiry cap; default 30 minutes. |
+| NFR-USAB-01 | **Not verified** | PR #56 prepared procedure; no representative timed participant result exists. |
+| NFR-REL-01 | **Not verified** | Local-only environment; no production monitoring contract or 99% uptime time series. |
+| NFR-MAINT-01 | **Partially satisfied** | Routes/controllers/models separated; business logic and persistence coupling remain in controllers. |
+| NFR-SCAL-01 | **Not demonstrated** | Single-process/local SQLite setup does not demonstrate horizontal scaling or shared transactional database behavior. |
 
-| SRS area | Status | Current evidence / consequence |
-| --- | --- | --- |
-| REQ-11–REQ-14: Event registration, waitlist and cancellation | **Partially implemented** | Free-event registration, capacity protection, FIFO waitlist promotion, attendee cancellation and configured cutoff are implemented. Paid checkout/refunds and external notification delivery are absent. Six simultaneous last-seat requests are covered by integration testing; the SRS 500-attempt load target is not verified. |
-| REQ-15–REQ-17: Payments and refunds | **Not implemented** | No Payment model, payment route, gateway integration or refund workflow exists. |
-| REQ-18–REQ-20: Confirmation/reminder/change notifications | **Partially implemented** | Registration/event-change/reminder notification records can be queued with deduplication; development dispatch logs a test-delivery line to the backend console. No external email/SMS provider or delivery evidence is present, so real notification delivery is not implemented. |
-| REQ-21–REQ-23: QR tickets and check-in | **Partially implemented** | Confirmed registrations receive unique one-use ticket tokens (stored as hashes) and an organizer/admin check-in API exists. QR image generation and camera/scanner UI are absent. |
-| REQ-24–REQ-26: Dashboards and CSV reporting | **Not implemented** | No organizer/admin dashboard or export endpoints exist. ADMIN is an access role for event management routes, not a delivered dashboard. |
-| REQ-27–REQ-28: Feedback and ratings | **Partially implemented** | Feedback model/API supports eligible checked-in attendee submissions and restricted organizer/admin views; the complete attendee feedback prompt/UI is absent. |
-| NFR-PERF-02: 500 concurrent registrations / no overbooking | **Functional concurrency covered; load target not verified** | Six simultaneous attempts for the last seat are covered by the registration integration suite and preserve capacity; the SRS target of 500 concurrent attempts has not been run. |
-| NFR-SEC-02: Payment data / PCI gateway flow | **Not implemented** | There is no payment workflow in this snapshot. This is not evidence of PCI compliance. |
-| NFR-SEC-04: Expiration after inactivity | **Implemented in the current backend** | Login creates a persisted Session row; authenticated activity advances the idle deadline, expired/deleted sessions are rejected, and the idle deadline cannot exceed JWT absolute expiry. `SESSION_IDLE_TIMEOUT_SECONDS` defaults to 1800 seconds (30 minutes). |
-| NFR-REL-01 / NFR-SCAL-01: 99% uptime / horizontal scale | **Not verified** | No deployed production environment or availability study is included. Local SQLite results are not production reliability evidence. |
+## Source-of-truth documents
 
-## Local performance observation for the event search/listing API
-
-A developer-run benchmark on 29 October 2026 used 1,000 synthetic future published events, 100 concurrent workers and 1,000 measured requests against a local SQLite-backed API. The terminal output recorded 1,000/1,000 successful requests, p95 latency **178.211 ms**, maximum latency **259.926 ms**, and **100%** under two seconds. This is evidence for that specific local workload only, not a production service-level guarantee. The historical search benchmark did not exercise registration. The free-event registration API has functional concurrency coverage (six simultaneous requests for the last seat), but the SRS 500-attempt load target and paid-record retention remain **NOT VERIFIED**. The historical search benchmark does not measure registration and must not be used as evidence for that target.
-
-## Source of truth and maintenance
-
-- API routes and payloads: [API Reference](API_REFERENCE.md)
-- Test commands and current evidence: [Testing and Results](TESTING_AND_RESULTS.md)
-- UML source files / diagrams: [`diagrams/`](diagrams/)
-- Original target requirements: `Event_Management_System_SRS.docx`
-- Architecture and design: `Event_Management_System_SAD.docx`
-
-When a planned module is implemented, update this baseline, the SRS/SAD diagrams, API reference and test evidence in the same release or PR. Keep planned requirements separate from verified behavior.
+- [API reference](API_REFERENCE.md)
+- [Testing and results](TESTING_AND_RESULTS.md)
+- [Testing and coverage](TESTING_AND_COVERAGE.md)
+- [Security controls](SECURITY_CONTROLS.md)
+- [Operations runbook](OPERATIONS_RUNBOOK.md)
+- [Architecture/NFR assessment](ARCHITECTURE_NFR_ASSESSMENT.md)
+- [FR traceability](FR_TRACEABILITY_MATRIX.md)
+- [NFR traceability](NFR_TRACEABILITY.md)
