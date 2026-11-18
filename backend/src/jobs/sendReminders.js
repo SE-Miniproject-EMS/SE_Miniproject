@@ -83,4 +83,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { runReminderJob };
+module.exports = { loadDependencies, runReminderJob };
