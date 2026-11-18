@@ -1,9 +1,9 @@
 # Backend Coverage Baseline and Current-Main Validation — 18 November 2026
 
 **Current assessor PR:** [PR #61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61)  
-**Latest successful run:** [GitHub Actions #44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661)  
-**Validated commit:** `d7a8858fab1410b483d69e3ce0540af6235ee92d`  
-**Artifact:** [backend-test-coverage-114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318)  
+**Latest successful run:** [GitHub Actions #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404)  
+**Validated commit:** `dfec487aa5de9cb075c37dd19f061ae771b7002e`  
+**Artifact:** [backend-test-coverage-116](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533)  
 **Runtime:** Node.js 24 on GitHub-hosted Ubuntu runner  
 **Command:** `cd backend && npm run test:coverage`
 
@@ -41,8 +41,8 @@ The reminder job was refactored into an injectable runner and now has direct tes
 
 ## How to inspect
 
-1. Open [Actions run #44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661).
-2. Download [backend-test-coverage-114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318).
+1. Open [Actions run #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404).
+2. Download [backend-test-coverage-116](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
 3. Open `index.html` for the browsable HTML report.
 4. Use `lcov.info` for LCOV-compatible tooling and `coverage-summary.json` for machine-readable totals.
 

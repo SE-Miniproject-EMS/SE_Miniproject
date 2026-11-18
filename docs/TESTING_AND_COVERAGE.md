@@ -1,8 +1,8 @@
 # Test, unit-test and coverage reporting
 
-**Current evidence:** current-main PR #61 run [#44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661), 18 November 2026.  
+**Current evidence:** current-main PR #61 run [#44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404), 18 November 2026.  
 **Result:** **73 backend tests passed, 0 failed**; backend syntax validation and frontend production build passed.  
-**Coverage artifact:** [backend-test-coverage-114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318).
+**Coverage artifact:** [backend-test-coverage-116](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
 
 ## What is tested
 
@@ -66,12 +66,12 @@ CI uploads `backend/coverage/` as `backend-test-coverage-<run number>` with 90-d
 
 ### Latest measured current-main result
 
-[Actions run #44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661) reports:
+[Actions run #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404) reports:
 - Backend tests: **73 passed, 0 failed**.
 - Line/statement coverage: **93.56%**.
 - Branch coverage: **76.62%**.
 - Function coverage: **94.25%**.
-- [Download the HTML/LCOV/JSON artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318).
+- [Download the HTML/LCOV/JSON artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
 
 Selected worker coverage:
 - `sendReminders.js`: **95.83% lines, 81.81% branches, 100% functions**.

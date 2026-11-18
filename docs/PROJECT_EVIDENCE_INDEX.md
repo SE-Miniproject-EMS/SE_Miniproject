@@ -37,6 +37,8 @@ For an individual assignment-by-assignment trail, see [GGO4411 — Individual Wo
 - [Source tree](../) — inspect `backend/src/`, `backend/test/`, `frontend/src/` and `.github/workflows/`.
 - [Architecture and NFR assessment](ARCHITECTURE_NFR_ASSESSMENT.md) plus [as-built architecture source](diagrams/as-built-architecture.dot).
 
+The repository includes the [SRS](Event_Management_System_SRS.docx), [SAD](Event_Management_System_SAD.docx) and [Software Test Plan](Event_Management_System_Test_Plan.docx) Word documents. These files were already tracked in main; the uploaded SRS/Test Plan copies were not used to overwrite the repository versions.
+
 The website is reproducibly runnable locally using the README commands. The repository does **not** evidence a public production URL or production hosting environment. The runbook describes what can be demonstrated and explicitly marks mock-only or incomplete features.
 
 ## 4. Testing and coverage
@@ -54,15 +56,16 @@ The website is reproducibly runnable locally using the README commands. The repo
 
 ### Latest coverage-enabled validation
 
-[PR #57 CI run #44248457569](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569), 18 November 2026:
-- Backend: **60 tests passed, 0 failed**.
+[PR #61 CI run #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404), 18 November 2026:
+- Backend: **73 tests passed, 0 failed**.
 - Backend syntax validation: passed.
 - Frontend production build: passed.
-- Backend line/statement coverage: **94.06%**.
-- Backend branch coverage: **78.04%**.
-- Backend function coverage: **97.18%**.
-- The reminder job has **95.34% line, 81.81% branch and 100% function coverage** after new direct tests.
-- [Coverage artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44248457569/artifacts/14403085905) includes HTML, LCOV and JSON summary. The detailed [coverage baseline report](test-reports/2026-11-18-coverage-baseline.md) preserves the earlier baseline and records this follow-up.
+- Backend line/statement coverage: **93.56%**.
+- Backend branch coverage: **76.62%**.
+- Backend function coverage: **94.25%**.
+- Reminder job: **95.83% line, 81.81% branch, 100% function**.
+- Notification dispatcher job: **92.30% line, 81.81% branch, 66.66% function**.
+- [Coverage artifact #116](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533) includes HTML, LCOV and JSON summary. See the [coverage baseline](test-reports/2026-11-18-coverage-baseline.md) and [PR #61 current-main validation report](test-reports/2026-11-18-PR61-current-main-validation.md).
 
 Historical integrated application result: [PR #48 run #42747239410](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/42747239410) reported 55 passed, 0 failed. Counts differ because they are from different commits; do not add them together.
 
@@ -84,10 +87,10 @@ The current Word source documents are already tracked under `docs/`: [SRS](Event
 |---|---|
 | 500 concurrent registrations | Harness merged in PR #54; no registration-specific result file; Issue #31 remains open |
 | Payment | Mock simulator only; no real gateway/signed callbacks/provider-confirmed refunds; no PCI claim |
-| Notifications | Queue/console dev adapter; no configured email/SMS delivery |
+| Notifications | Resend adapter and dispatcher are present in PR #58; production email requires Resend API key/sender configuration; no SMS adapter |
 | QR | One-use token/check-in API; no camera/QR scanner UI |
 | Feedback | Backend/API exists; complete attendee prompt/display UI is incomplete |
-| Dashboards/CSV | Not implemented; backlog #29 |
+| Dashboards/CSV | Implemented in PR #59 for Organizer/Admin roles with ownership scope, filters and CSV escaping |
 | Usability NFR | Procedure documented; no participant timing result |
 | Availability NFR | No deployed monitoring contract or uptime observation |
 | Scalability | Local SQLite/single-process implementation does not demonstrate horizontal scaling |
@@ -95,4 +98,4 @@ The current Word source documents are already tracked under `docs/`: [SRS](Event
 
 ## 7. Review and merge status of this evidence pack
 
-This pack is submitted in a reviewable branch/PR. It includes evidence and report-generation configuration; it does not change application business logic. Merge only after a teammate reviews the docs, verifies the new CI coverage report and confirms all evidence links resolve.
+The current-main evidence refresh is submitted in [PR #61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61). Its exact head passed 73 backend tests, syntax validation and the frontend build in run #44370948404. PR #57 is closed as superseded. PR #61 remains open pending Alex's independent review; it is not yet merged into main.

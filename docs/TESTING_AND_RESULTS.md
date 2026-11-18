@@ -71,12 +71,12 @@ GitHub Actions (`.github/workflows/ci.yml`) installs Node.js 24 dependencies, sy
 
 ## Current-main validation — PR #61
 
-[Actions run #44370034661](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661), commit `d7a8858fab1410b483d69e3ce0540af6235ee92d`:
+[Actions run #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404), commit `dfec487aa5de9cb075c37dd19f061ae771b7002e`:
 - Backend: **73 passed, 0 failed**.
 - Backend syntax validation: passed.
 - Frontend production build: passed.
 - Backend coverage: **93.56% lines/statements, 76.62% branches, 94.25% functions**.
-- [Coverage artifact #114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370034661/artifacts/14457259318).
+- [Coverage artifact #114](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
 
 PR #61 adds direct tests for the reminder and notification dispatch jobs. These worker tests use injected dependencies rather than a live database or external email provider. They do not claim that actual email delivery or a production scheduled-job deployment was exercised.
 
