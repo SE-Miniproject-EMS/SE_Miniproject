@@ -1,5 +1,6 @@
 const { DataTypes, Op, literal } = require("sequelize");
 const sequelize = require("../config/db");
+const { sqliteWrite } = require("../services/sqliteWrites");
 
 // SQLite evaluates this clock when the statement runs, including after lock waits.
 const now = "CAST(unixepoch('subsec') * 1000 AS INTEGER)";
@@ -29,7 +30,7 @@ async function startSession({ jti, exp }) {
 async function touchSession({ jti, exp }) {
   if (typeof jti !== "string" || !Number.isSafeInteger(exp)) return false;
   const absoluteDeadline = exp * 1000;
-  const [updated] = await Session.update({
+  const [updated] = await sqliteWrite(() => Session.update({
     idleExpiresAt: literal(`MIN(${absoluteDeadline}, MAX("idleExpiresAt", ${now} + ${idleMs}))`),
   }, {
     where: {
@@ -37,7 +38,7 @@ async function touchSession({ jti, exp }) {
       idleExpiresAt: { [Op.gt]: literal(now) },
       [Op.and]: sequelize.where(literal(now), Op.lt, absoluteDeadline),
     },
-  });
+  }));
   return updated === 1;
 }
 
