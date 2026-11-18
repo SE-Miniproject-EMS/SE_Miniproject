@@ -1832,3 +1832,54 @@ test("organizer cancellation expires pending checkout and releases its seat with
     [checkout.payload.payment.id]
   ).then((row) => row.count), 0);
 });
+
+test("reports scope metrics and CSV to authorized events", async () => {
+  const organizer = await createAccount("ORGANIZER");
+  const other = await createAccount("ORGANIZER");
+  const attendee = await createAccount("ATTENDEE");
+  const admin = await createAdminAccount();
+  const input = validEvent({ title: '=Example, "quoted"', capacity: 2 });
+  const created = await request("/api/events", { method: "POST", token: organizer.token, body: input });
+  assert.equal(created.response.status, 201, JSON.stringify(created.payload));
+  const eventId = created.payload.event.id;
+  const publish = await request("/api/events/" + eventId + "/publish", { method: "POST", token: organizer.token });
+  assert.equal(publish.response.status, 200);
+  const registration = await request("/api/registrations/events/" + eventId, { method: "POST", token: attendee.token });
+  assert.equal(registration.response.status, 201);
+  const checked = await request("/api/registrations/check-in", {
+    method: "POST", token: organizer.token, body: { eventId, ticketToken: registration.payload.ticketToken },
+  });
+  assert.equal(checked.response.status, 200);
+
+  const query = "?eventId=" + eventId;
+  const endpoint = "/api/reports" + query;
+  assert.equal((await request(endpoint)).response.status, 401);
+  assert.equal((await request(endpoint, { token: attendee.token })).response.status, 403);
+  const own = await request(endpoint + "&from=" + input.startDateTime.slice(0, 10), { token: organizer.token });
+  assert.equal(own.response.status, 200, JSON.stringify(own.payload));
+  assert.deepEqual(own.payload.totals, {
+    confirmed: 1, waitlisted: 0, checkedIn: 1, capacity: 2, seatsTaken: 1,
+    revenuePaise: 0, simulatedRevenuePaise: 0, events: 1,
+  });
+  assert.deepEqual((await request(endpoint, { token: other.token })).payload.events, []);
+  const platform = await request(endpoint, { token: admin.token });
+  assert.equal(platform.payload.totals.events, 1);
+  assert.ok(platform.payload.totals.users >= 4);
+  assert.equal((await request(endpoint + "&to=2000-01-01", { token: organizer.token })).payload.totals.events, 0);
+  assert.equal((await request("/api/reports?from=2026-02-30", { token: organizer.token })).response.status, 400);
+
+  const csvHeader = "event_id,event_title,registration_id,attendee_id,status,registered_at,checked_in_at";
+  for (const kind of ["registrations", "attendance"]) {
+    const path = baseUrl + "/api/reports/" + kind + ".csv" + query;
+    const download = (token) => fetch(path, { headers: { authorization: "Bearer " + token } });
+    assert.equal((await download(attendee.token)).status, 403);
+    assert.equal(await (await download(other.token)).text(), csvHeader + "\r\n");
+    const response = await download(organizer.token);
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-disposition"), /attachment/);
+    const csv = await response.text();
+    assert.ok(csv.startsWith(csvHeader + "\r\n"));
+    assert.ok(csv.includes("\"'=Example, \"\"quoted\"\"\""));
+    assert.equal(await (await download(admin.token)).text(), csv);
+  }
+});

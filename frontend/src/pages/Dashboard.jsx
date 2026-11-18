@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import EventReports from "../components/EventReports";
 import MyRegistrations from "../components/MyRegistrations";
 
 export default function Dashboard() {
@@ -17,7 +18,7 @@ export default function Dashboard() {
         <span className="badge">{user.role}</span>
       </section>
       {!user.isVerified && <p className="alert-success">Your account is not yet verified.</p>}
-      {!isOrganizer && <MyRegistrations />}
+      {isOrganizer ? <EventReports /> : <MyRegistrations />}
       <div className="dashboard-card card">
         <h2>{isOrganizer ? "Make something happen" : "See what’s happening"}</h2>
         <p>{isOrganizer ? "Create an event when you’re ready, then keep drafts and published events organized here." : "Browse public events and open any listing to see its date, venue, and host."}</p>
