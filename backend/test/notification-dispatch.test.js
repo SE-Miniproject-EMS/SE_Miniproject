@@ -13,9 +13,11 @@ process.env.NODE_ENV = "test";
 const sequelize = require("../src/config/db");
 const User = require("../src/models/User");
 const Event = require("../src/models/Event");
+const Registration = require("../src/models/Registration");
 const Notification = require("../src/models/Notification");
 const {
   enqueue,
+  queueEventNotice,
   dispatchPending,
   ensureNotificationSchema,
 } = require("../src/services/notificationService");
@@ -142,4 +144,32 @@ test("failed delivery is retained and retried after the backoff interval", async
   assert.equal(stored.attempts, 2);
   assert.equal(stored.lastError, null);
   assert.equal(stored.claimToken, null);
+});
+
+test("event-change notices target confirmed and waitlisted attendees once", async () => {
+  const secondRecipient = await User.create({
+    name: "Waitlisted Test Attendee",
+    email: "waitlisted-test@example.com",
+    passwordHash: "test-only-not-a-real-password-hash",
+    role: "ATTENDEE",
+    isVerified: true,
+  });
+
+  await Registration.bulkCreate([
+    { eventId: event.id, attendeeId: recipient.id, status: "CONFIRMED" },
+    { eventId: event.id, attendeeId: secondRecipient.id, status: "WAITLISTED" },
+    { eventId: event.id, attendeeId: secondRecipient.id + 1000, status: "CANCELLED" },
+  ]);
+
+  const firstQueueCount = await queueEventNotice(event, "EVENT_RESCHEDULED");
+  const duplicateQueueCount = await queueEventNotice(event, "EVENT_RESCHEDULED");
+  assert.equal(firstQueueCount, 2);
+  assert.equal(duplicateQueueCount, 0);
+
+  const notices = await Notification.findAll({
+    where: { eventId: event.id, type: "EVENT_RESCHEDULED" },
+    order: [["recipientId", "ASC"]],
+  });
+  assert.deepEqual(notices.map((notice) => notice.recipientId), [recipient.id, secondRecipient.id]);
+  assert.ok(notices.every((notice) => notice.status === "PENDING"));
 });
