@@ -12,6 +12,12 @@
 | **minestevealex-ux** | Event API and authentication/RBAC tests; event notification, ticket-token/check-in and feedback API modules; functional requirements and architecture documentation; search benchmark and 500-attempt harness; security route matrix. | [#17](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/17), [#18](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/18), [#39](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/39), [#40](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/40), [#42](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/42), [#43](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/43), [#44](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/44), [#54](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/54), [#55](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/55) |
 | **GGO4411** | Event API validation/integration test work; Sprint 2 API integration evidence; security regression tests; architecture/NFR assessment documentation; product backlog and NFR issue creation/coordination; assessor evidence index, sprint/contributor/PR ledger, operations/security runbooks and backend coverage-reporting CI setup. | [#15](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/15), [#21](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/21), [#52](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/52), [#53](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/53), [#57](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/57) |
 
+
+
+### Individual assignment-level audit
+
+The detailed [GGO4411 Individual Work Evidence](GGO4411_INDIVIDUAL_WORK_EVIDENCE.md) maps each Sprint 1/Sprint 2 assignment and later NFR responsibility to the relevant issue, authored PR, review record, CI run and remaining limitation. It deliberately distinguishes GGO4411's own PRs (#15, #21, #52, #53, #57) from shared/team implementation and the formal review on PR #48.
+
 ## Workstream view
 
 | Workstream | Evidence from repository | Contributors evidenced |
