@@ -14,6 +14,10 @@ Open [Contributor Delivery Log](project-management/CONTRIBUTOR_DELIVERY_LOG.md) 
 - representative PR links and changed file evidence;
 - distinction between issue assignee and PR author.
 
+
+
+For an individual assignment-by-assignment trail, see [GGO4411 — Individual Work Evidence](project-management/GGO4411_INDIVIDUAL_WORK_EVIDENCE.md). It separates personally authored PRs from shared assignments, peer-review work and work completed by other team members.
+
 ## 2. Backlogs, issues and PR/review records
 
 - [Sprint 1 and Sprint 2 backlog + burn-up](project-management/SPRINT_BACKLOG_AND_BURNUP.md) — estimates, assignees, close dates, actual completion curve and source CSV.
