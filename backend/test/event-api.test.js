@@ -180,7 +180,8 @@ async function request(route, { method = "GET", token, body } = {}) {
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  const payload = await response.json();
+  const payload = response.headers.get("content-type")?.includes("application/json")
+    ? await response.json() : await response.text();
   return { response, payload };
 }
 
@@ -1091,6 +1092,50 @@ test("security NFR route matrix: every mounted protected endpoint enforces role 
       expected: { ATTENDEE: 403, ORGANIZER: 404, ADMIN: 404 },
     },
     {
+      name: "retry own mock checkout",
+      method: "POST",
+      path: "/api/registrations/987654321/retry-payment",
+      expected: { ATTENDEE: 404, ORGANIZER: 403, ADMIN: 403 },
+    },
+    {
+      name: "simulate own payment outcome",
+      method: "POST",
+      path: "/api/payments/987654321/mock-outcome",
+      body: { outcome: "SUCCESS" },
+      expected: { ATTENDEE: 404, ORGANIZER: 403, ADMIN: 403 },
+    },
+    {
+      name: "simulate own refund outcome",
+      method: "POST",
+      path: "/api/payments/987654321/mock-refund-outcome",
+      body: { outcome: "SUCCESS" },
+      expected: { ATTENDEE: 404, ORGANIZER: 403, ADMIN: 403 },
+    },
+    {
+      name: "dispatch notifications",
+      method: "POST",
+      path: "/api/notifications/jobs/dispatch",
+      expected: { ATTENDEE: 403, ORGANIZER: 403, ADMIN: 200 },
+    },
+    {
+      name: "view reports",
+      method: "GET",
+      path: "/api/reports",
+      expected: { ATTENDEE: 403, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
+      name: "export registrations",
+      method: "GET",
+      path: "/api/reports/registrations.csv",
+      expected: { ATTENDEE: 403, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
+      name: "export attendance",
+      method: "GET",
+      path: "/api/reports/attendance.csv",
+      expected: { ATTENDEE: 403, ORGANIZER: 200, ADMIN: 200 },
+    },
+    {
       name: "run reminder job",
       method: "POST",
       path: "/api/notifications/jobs/reminders",
@@ -1161,6 +1206,18 @@ test("paid checkout ignores and never reflects or logs submitted card-data senti
   assert.equal(result.payload.registration.status, "PENDING_PAYMENT");
   assert.equal(result.payload.payment.status, "PENDING");
   assert.equal(result.payload.payment.adapter, "MOCK");
+  for (const table of ["registrations", "payments", "refunds", "notifications"]) {
+    // Inspect every column, including serialized notification payloads, using the test database.
+    const db = new sqlite3.Database(databaseFile);
+    try {
+      const rows = await new Promise((resolve, reject) => db.all(`SELECT * FROM "${table}"`, (error, rows) => error ? reject(error) : resolve(rows)));
+      const serialized = JSON.stringify(rows);
+      assert.equal(serialized.includes(cardSentinel), false, `${table} must not store card sentinel`);
+      assert.equal(serialized.includes(cvvSentinel), false, `${table} must not store CVV sentinel`);
+    } finally {
+      await new Promise((resolve, reject) => db.close((error) => error ? reject(error) : resolve()));
+    }
+  }
   assert.equal(JSON.stringify(result.payload).includes(cardSentinel), false);
   assert.equal(JSON.stringify(result.payload).includes(cvvSentinel), false);
   assert.equal(serverOutput.includes(cardSentinel), false);
@@ -1809,7 +1866,7 @@ test("concurrent expiry and late mock success create one refund and no confirmed
   assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 0);
 });
 
-test("unrelated attendee cannot simulate another user's payment outcome", async () => {
+test("unrelated attendee cannot simulate, retry or refund another user's payment", async () => {
   const organizer = await createAccount("ORGANIZER");
   const owner = await createAccount("ATTENDEE");
   const other = await createAccount("ATTENDEE");
@@ -1824,11 +1881,29 @@ test("unrelated attendee cannot simulate another user's payment outcome", async 
     method: "POST", token: other.token, body: { outcome: "SUCCESS" },
   });
   assert.equal(forbidden.response.status, 403);
+  const forbiddenRetry = await request("/api/registrations/" + checkout.payload.registration.id + "/retry-payment", {
+    method: "POST", token: other.token,
+  });
+  assert.equal(forbiddenRetry.response.status, 403);
   assert.equal((await request("/api/events/" + eventId)).payload.event.seatsTaken, 1);
   assert.equal(await queryTestDatabase(
     'SELECT "status" FROM "payments" WHERE "id" = ?',
     [checkout.payload.payment.id]
   ).then((row) => row.status), "PENDING");
+  const success = await request("/api/payments/" + checkout.payload.payment.id + "/mock-outcome", {
+    method: "POST", token: owner.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(success.response.status, 200);
+  const cancelled = await request("/api/registrations/" + checkout.payload.registration.id + "/cancel", {
+    method: "POST", token: owner.token,
+  });
+  assert.equal(cancelled.response.status, 200);
+  const forbiddenRefund = await request("/api/payments/" + checkout.payload.payment.id + "/mock-refund-outcome", {
+    method: "POST", token: other.token, body: { outcome: "SUCCESS" },
+  });
+  assert.equal(forbiddenRefund.response.status, 403);
+  assert.equal((await queryTestDatabase('SELECT status FROM refunds WHERE "paymentId" = ?',
+    [checkout.payload.payment.id])).status, "PENDING");
 });
 
 test("organizer cancellation expires pending checkout and releases its seat without refund", async () => {

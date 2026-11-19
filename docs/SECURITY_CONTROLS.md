@@ -33,6 +33,14 @@ When a new protected route is added:
 
 PR #48 introduces a mock-only checkout/refund simulator. It is not a third-party gateway. No real card/UPI processor, hosted checkout, signed provider callback, or provider-confirmed refund is configured. The mock tests prove selected code paths ignore card-data sentinels and label refund outcomes as simulated; they do **not** prove PCI compliance. Do not enter real card data or claim that PCI requirements have been satisfied.
 
+### Approved academic scope for issues #26 and #32
+
+The project owner approved mock payments only for this academic mini-project. For NFR-SEC-02, completion is limited to the simulator's security boundary: authentication and role/ownership checks; ignoring submitted card/CVV data in the tested API, database rows and logs; rejecting unsupported simulation outcomes; and blocking mock checkout/retry/payment/refund operations when `NODE_ENV=production`. It does not verify the original third-party provider/PCI requirement. Real gateway signatures, provider-confirmed refunds and PCI assessment are explicitly deferred, rather than recorded as passed. This decision does not silently replace the historical SRS wording.
+
+`backend/test/event-api.test.js` extends the role matrix to payment simulation, refund simulation, checkout retry, notification dispatch and both CSV report exports. Its ownership scenario checks that an unrelated attendee cannot simulate, retry or resolve another attendee's refund. The card/CVV sentinel check inspects stored registration, payment, refund and notification rows as well as the API response and captured backend output. These are synthetic-data tests of selected paths, not a universal data-leakage guarantee.
+
+`backend/test/mock-security.test.js` checks unsupported outcome rejection and runs a separate production-mode process to verify mock service entry points fail before database access. Password hashing/redaction and idle/absolute session expiry remain covered by the existing authentication/JWT suites. Keep these tests aligned with future route changes.
+
 ## Notification delivery boundary
 
 PR #58 adds a Resend adapter using `RESEND_API_KEY` and `NOTIFICATION_FROM_EMAIL`, plus notification worker claims, retries and idempotency. The credentials are deployment secrets and must not be committed. The console adapter remains a non-production test adapter. SMS is not configured. A merged adapter and passing adapter tests do not prove that a production sender/domain has been verified or that real emails were delivered; check provider configuration and delivery logs before making that claim.
@@ -43,7 +51,7 @@ PR #59 adds Organizer/Admin reporting routes. `GET /api/reports` and CSV endpoin
 
 ## Remaining security/operational work
 
-- Choose and integrate a payment provider sandbox, verify signed callbacks/idempotency and provider-confirmed refunds before enabling real paid transactions.
+- Real payments are outside the approved academic scope. If introduced later, integrate a provider sandbox and verify signed callbacks/idempotency and provider-confirmed refunds before enabling real paid transactions.
 - Configure Resend credentials and sender address in deployment secrets before claiming real event email delivery; no SMS adapter is configured.
 - Review production TLS, deployment secrets, database access, logging, monitoring, backup and recovery controls in the target deployment.
 - Keep route-level and object-level authorization tests aligned with every new endpoint.
