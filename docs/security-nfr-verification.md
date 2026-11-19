@@ -1,4 +1,4 @@
-# Issue #32: Security NFR Verification — Passwords, Payments, RBAC and Session Expiry
+# Security NFR Verification — Passwords, Payments, RBAC and Session Expiry
 
 **SRS traceability:** NFR-SEC-01 through NFR-SEC-04  
 **Reviewed baseline:** uploaded repository snapshot dated 8 November 2026  
@@ -153,4 +153,4 @@ The tests use disposable temporary SQLite databases. They do not need payment-pr
 
 ## 8. Conclusion
 
-NFR-SEC-01 and NFR-SEC-04 have implementation and regression-test evidence in the reviewed snapshot. NFR-SEC-03 now has a broader route-level matrix, but object-level authorization must remain covered and the matrix must evolve with new endpoints. NFR-SEC-02 remains blocked: the application safely refuses paid registration, but no provider-backed payment flow or PCI verification exists. Keep Issue #32 open until the payment dependency is resolved or formally accepted as outside project scope and the RBAC evidence is reviewed.
+NFR-SEC-01 and NFR-SEC-04 have implementation and regression-test evidence in the reviewed snapshot. NFR-SEC-03 now has a broader route-level matrix, but object-level authorization must remain covered and the matrix must evolve with new endpoints. NFR-SEC-02 remains blocked: the application safely refuses paid registration, but no provider-backed payment flow or PCI verification exists. Provider-backed PCI verification is deferred; the historical RBAC evidence does not establish production security certification.

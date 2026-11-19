@@ -38,7 +38,7 @@ Example for a team-approved seven-day window, after replacing the API URL:
 
 Arguments are URL, interval seconds, duration minutes, timeout seconds and output file. The script creates a JSONL observation log immediately and a .summary.json at normal completion. It refuses to overwrite an existing log. Keep the raw logs even if interrupted. Missing monitor coverage must be disclosed.
 
-Record the frontend/backend URLs, deployed commit, UTC and local window boundaries, event IDs, probe interval/timeout, hosting tier, restarts, planned maintenance, observed incidents and recovery steps. Do not commit keys or personal data. Review the final results before marking Issue 34 verified.
+Record the frontend/backend URLs, deployed commit, UTC and local window boundaries, event IDs, probe interval/timeout, hosting tier, restarts, planned maintenance, observed incidents and recovery steps. Do not commit keys or personal data. Review the final results before claiming the availability target is verified.
 
 ## Recovery and lifecycle
 

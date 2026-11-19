@@ -1,4 +1,4 @@
-# Issue #32 — Security NFR verification
+# Security NFR verification
 
 **Reviewed baseline:** integrated code through PR #55 (10 November 2026).  
 **Scope:** NFR-SEC-01 through NFR-SEC-04 from SRS §6.3.2. This report is evidence for tested paths, not a production security certification or PCI assessment.

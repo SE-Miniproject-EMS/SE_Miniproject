@@ -1,8 +1,8 @@
-# Issue #34 — Availability and reliability assessment
+# Availability and reliability assessment
 
 **Requirement:** NFR-REL-01 — target 99% uptime during active event-registration windows.
 
-**Current result: NOT MEASURED / NOT VERIFIED.** The project has local development only. No deployed service, independent monitor, or approved availability measurement contract was available for this assessment. No uptime percentage is claimed.
+**Historical assessment: NOT MEASURED / NOT VERIFIED.** At the original assessment, the project had local development only and no deployed service, independent monitor, or approved availability measurement contract. Subsequent Render deployment preparation is recorded in [the deployment report](render-deployment.md). The later availability observation was stopped at the owner's request; no uptime percentage is claimed. See [the current evidence index](PROJECT_EVIDENCE_INDEX.md) for the latest scope.
 
 ## Current health signal and limits
 

@@ -31,7 +31,7 @@ For an individual assignment-by-assignment trail, see [GGO4411 — Individual Wo
 
 **Sprint and freeze note:** the course plan specifies Sprint 1 (19–23 October 2026), Sprint 2 (26–30 October 2026), then freeze. The current board also records Sprint 3 (2–4 November) and later changes; these are an extension/deviation, not work completed before the original freeze. Obtain instructor acceptance of that deviation. No final release tag/freeze approval is asserted here. The burn-up remains a dated closure-date reconstruction rather than a native daily status export.
 
-On 20 November the project audit found 19 cards, all Done, each linked to merged PRs. This describes board state, not proof of every original requirement. See issue-level evidence and scope limits below. A merged PR is not itself a submitted peer review; PR #70 had no submitted GitHub review at merge, so do not claim universal formal-review compliance.
+The latest 20 November project query found 17 cards, all Done, each linked to merged PRs. This describes board state, not proof of every original requirement. See issue-level evidence and scope limits below. A merged PR is not itself a submitted peer review; PR #70 had no submitted GitHub review at merge, so do not claim universal formal-review compliance.
 
 ## 3. Code and working website
 
@@ -96,9 +96,9 @@ The current Word source documents are already tracked under `docs/`: [SRS](requi
 
 - [Performance, concurrency and data-integrity report](issue-31-performance-and-integrity-report.md) and [raw search benchmark results](issue-31-results/) — includes raw search and registration results; [19 November registration benchmark](issue-31-results/registration-run-2026-11-19.md) passed 500/500 free-event requests.
 - [Security controls register](SECURITY_CONTROLS.md) — bcrypt, JWT/session expiry, RBAC, ownership boundaries, mock-card-data behavior and unresolved provider/PCI requirements.
-- [Security NFR verification](issue-32-security-verification.md) and [route-matrix security report](issue-32-security-nfr-verification.md).
+- [Security NFR verification](security-verification.md) and [route-matrix security report](security-nfr-verification.md).
 - [Usability study protocol](issue-33-usability-study.md) plus [#33 manual result](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/33): P1 had no technical background or prior EMS experience and reportedly published without help/errors in under 5 minutes. Exact elapsed time and execution timestamp were not supplied. One user-attested session is not a population-wide usability result.
-- [Availability assessment](issue-34-availability-assessment.md) and [deployment/monitoring preparation](issue-34-render-deployment.md) are historical preparation. Monitoring was stopped at the owner's request; #34 is closed NOT_PLANNED. There is no completed 99% uptime result.
+- [Availability assessment](availability-assessment.md) and [deployment/monitoring preparation](render-deployment.md) are historical preparation. Monitoring was stopped at the owner's request. There is no completed 99% uptime result.
 - [#25 manual promotion/email result](https://github.com/SE-Miniproject-EMS/SE_Miniproject/issues/25): the owner reported A cancelled, waitlisted B became CONFIRMED, and B received the promotion email. No screenshot/video, event ID, exact execution timestamp or Resend message ID was supplied for that test. It verifies only the reported scenario, not live delivery of all notification types.
 
 ## 6. Open limitations that must be disclosed
@@ -112,7 +112,7 @@ The current Word source documents are already tracked under `docs/`: [SRS](requi
 | Feedback | Backend/API exists; complete attendee prompt/display UI is incomplete |
 | Dashboards/CSV | Implemented in PR #59 for Organizer/Admin roles with ownership scope, filters and CSV escaping |
 | Usability NFR | #33 P1 user-attested under-5-minute, unassisted pass; exact duration unavailable, one participant |
-| Availability NFR | Observation stopped; #34 closed NOT_PLANNED; 99% target remains unverified |
+| Availability NFR | Observation stopped; 99% target remains unverified |
 | Scalability | PostgreSQL support and dedicated integration CI exist; multi-replica/horizontal scaling not demonstrated |
 | Frontend automated unit tests | No separate frontend test runner/script in the current package; production build is checked |
 | Dependency/security audit | Existing dependency audit findings are not resolved by passing regression tests; PR #70 is a bounded security review, not a clean audit or penetration-test certificate |
@@ -125,7 +125,7 @@ Subsequent delivered evidence includes PR #66 (SQLite contention fix and saved 5
 
 ## 8. Submission scope — 20 November 2026
 
-Original real-provider/PCI scope in #26/#32 remains deferred; GitHub currently records those issues CLOSED with reason NOT_PLANNED. Separately, the project owner approved mock-only academic completion, and PR #70 verifies that simulator boundary. Do not describe the original gateway/PCI targets as passed or the delivered simulator as absent. The original SRS requirements are retained with explicit implementation deviations.
+Original real-provider/PCI requirements remain deferred. Separately, the project owner approved mock-only academic completion, and PR #70 verifies that simulator boundary. Do not describe the original gateway/PCI targets as passed or the delivered simulator as absent. The original SRS requirements are retained with explicit implementation deviations.
 
 Render demo uses PostgreSQL and public HTTPS endpoints. Initial readiness checks passed, but the approved seven-day observation was stopped at the owner's request. No completed 99% result or multi-replica-scale verification exists. Free service sleep and database limits must be disclosed; local fallback remains useful for the demo.
 
