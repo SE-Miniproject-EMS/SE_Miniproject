@@ -360,3 +360,30 @@ test("authenticated activity extends a session and expired or removed sessions s
     await db.close();
   }
 });
+
+test("verification recovery regenerates a link without disclosing account state or bypassing verification", async () => {
+  const account = accountDetails();
+  assert.equal((await request("/api/auth/register", { method: "POST", body: account })).response.status, 201);
+  const blocked = await loginAccount(account);
+  assert.equal(blocked.response.status, 403);
+  const before = serverOutput.length;
+  const recovered = await request("/api/auth/resend-verification", { method: "POST", body: { email: account.email } });
+  assert.equal(recovered.response.status, 200);
+  assert.equal(JSON.stringify(recovered.payload).includes("/api/auth/verify/"), false);
+  for (let i = 0; i < 30 && !serverOutput.slice(before).includes("Verification link for " + account.email); i++) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+  assert.ok(serverOutput.slice(before).includes("Verification link for " + account.email));
+  assert.equal((await loginAccount(account)).response.status, 403);
+  const absent = await request("/api/auth/resend-verification", { method: "POST", body: { email: "absent-verification@example.com" } });
+  assert.deepEqual(absent.payload, recovered.payload);
+  await verifyAccount(account);
+  assert.equal((await loginAccount(account)).response.status, 200);
+  const after = serverOutput.length;
+  const verified = await request("/api/auth/resend-verification", { method: "POST", body: { email: account.email } });
+  assert.deepEqual(verified.payload, recovered.payload);
+  assert.equal(serverOutput.slice(after).includes("Verification link for " + account.email), false);
+  assert.equal((await request("/api/auth/resend-verification", { method: "POST", body: { email: "bad" } })).response.status, 400);
+  await request("/api/auth/resend-verification", { method: "POST", body: { email: account.email } });
+  assert.equal((await request("/api/auth/resend-verification", { method: "POST", body: { email: account.email } })).response.status, 429);
+});

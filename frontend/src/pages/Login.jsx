@@ -1,3 +1,4 @@
+import apiClient from "../api/client";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -9,6 +10,23 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [verificationNotice, setVerificationNotice] = useState("");
+  const [requestingVerification, setRequestingVerification] = useState(false);
+
+  async function requestVerification() {
+    setVerificationNotice("");
+    setError("");
+    setRequestingVerification(true);
+    try {
+      const { data } = await apiClient.post("/auth/resend-verification", { email: form.email });
+      setVerificationNotice(data.message);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRequestingVerification(false);
+    }
+  }
 
   function update(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -49,6 +67,11 @@ export default function Login() {
         <button className="btn-primary" type="submit" disabled={submitting}>
           {submitting ? "Logging in..." : "Log In"}
         </button>
+
+        <button className="button-secondary" type="button" disabled={!form.email || requestingVerification} onClick={requestVerification}>
+          {requestingVerification ? "Requesting link..." : "Request a verification link"}
+        </button>
+        {verificationNotice && <p role="status">{verificationNotice}</p>}
 
         <div className="form-footer">
           Don't have an account? <Link to="/register">Sign up</Link>
