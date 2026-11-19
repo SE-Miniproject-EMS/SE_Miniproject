@@ -25,6 +25,7 @@ const registrationRoutes = require("./routes/registrationRoutes");
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const { processExpiredPayments } = require("./services/registrationPaymentService");
+const { runReminderJob } = require("./jobs/sendReminders");
 const migrateIssue26 = require("./migrations/issue26");
 const paymentRoutes = require("./routes/paymentRoutes");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
@@ -70,6 +71,31 @@ sequelize
     const configuredScanInterval = Number(process.env.PAYMENT_EXPIRY_SCAN_INTERVAL_MS || 30000);
     const scanInterval = Number.isInteger(configuredScanInterval) && configuredScanInterval >= 1000 ? configuredScanInterval : 30000;
     const paymentExpiryTimer = setInterval(runPaymentExpirySweep, scanInterval);
+	// Automatically check for upcoming event reminders.
+const runReminderSweep = async () => {
+  try {
+    await runReminderJob();
+  } catch (error) {
+    console.error("[Reminders] Automatic reminder scan failed:", error.message);
+  }
+};
+
+// Run once when the backend starts.
+runReminderSweep();
+
+// Repeat every hour by default.
+const configuredReminderInterval = Number(
+  process.env.REMINDER_SCAN_INTERVAL_MS || 60 * 60 * 1000
+);
+
+const reminderScanInterval =
+  Number.isInteger(configuredReminderInterval) && configuredReminderInterval >= 60000
+    ? configuredReminderInterval
+    : 60 * 60 * 1000;
+
+const reminderTimer = setInterval(runReminderSweep, reminderScanInterval);
+reminderTimer.unref();
+
     paymentExpiryTimer.unref();
     app.listen(PORT, () => {
       console.log(`EMS backend listening on http://localhost:${PORT}`);
