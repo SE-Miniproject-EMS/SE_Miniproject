@@ -1,4 +1,5 @@
-const { Op, Transaction } = require("sequelize");
+const { writeTransaction } = require("../services/databaseWrites");
+const { Op } = require("sequelize");
 const sequelize = require("../config/db");
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
@@ -549,7 +550,7 @@ async function publishEvent(req, res, next) {
 
 async function cancelEvent(req, res, next) {
   try {
-    const result = await sequelize.transaction({ type: Transaction.TYPES.IMMEDIATE }, async (transaction) => {
+    const result = await writeTransaction(async (transaction) => {
       const event = await Event.findByPk(req.params.id, { transaction });
       if (!event) throw new ApiError(404, "NOT_FOUND", "Event not found");
       ensureCanModify(event, req.user);

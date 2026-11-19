@@ -9,10 +9,15 @@ const CLAIM_TIMEOUT_MS = 5 * 60 * 1000;
 
 async function enqueue({ recipientId, eventId, registrationId = null, type, dedupeKey, payload, transaction }) {
   try {
-    return await Notification.create({
-      recipientId, eventId, registrationId, type, dedupeKey,
-      payload: JSON.stringify(payload),
-    }, { transaction });
+    const [notification, created] = await Notification.findOrCreate({
+      where: { dedupeKey },
+      defaults: {
+        recipientId, eventId, registrationId, type, dedupeKey,
+        payload: JSON.stringify(payload),
+      },
+      transaction,
+    });
+    return created ? notification : null;
   } catch (error) {
     if (error.name === "SequelizeUniqueConstraintError") return null;
     throw error;

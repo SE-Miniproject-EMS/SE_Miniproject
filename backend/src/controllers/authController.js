@@ -38,9 +38,10 @@ async function register(req, res, next) {
     // Service), we just log the verification link. Replace this call
     // once the Notification Service module exists.
     const verificationToken = signEmailVerificationToken(user);
+    const apiOrigin = process.env.PUBLIC_API_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 5000}`;
     console.log(
       `[DEV ONLY] Verification link for ${user.email}: ` +
-        `http://localhost:${process.env.PORT || 5000}/api/auth/verify/${verificationToken}`
+        `${apiOrigin}/api/auth/verify/${verificationToken}`
     );
 
     res.status(201).json({

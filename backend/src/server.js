@@ -30,6 +30,8 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
+// Render terminates HTTPS at one reverse proxy.
+if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());

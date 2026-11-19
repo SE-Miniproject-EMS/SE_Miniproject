@@ -1,17 +1,12 @@
 const { Sequelize } = require("sequelize");
 
-// SQLite is used for easy local development with zero setup — the
-// database is just a file (dev.db) created automatically.
-//
-// For a shared/staging environment, switch to Postgres/MySQL (per the SAD)
-// by changing `dialect` and supplying host/user/password/database, e.g.:
-//
-// const sequelize = new Sequelize(process.env.DATABASE_URL, { dialect: "postgres" });
+const options = { logging: false };
+if (process.env.DATABASE_SSL === "true") {
+  options.dialectOptions = { ssl: { require: true, rejectUnauthorized: true } };
+}
 
-const sequelize = new Sequelize({
-  dialect: "sqlite",
-  storage: process.env.DATABASE_FILE || "./dev.db",
-  logging: false,
-});
+const sequelize = process.env.DATABASE_URL
+  ? new Sequelize(process.env.DATABASE_URL, { ...options, dialect: "postgres" })
+  : new Sequelize({ ...options, dialect: "sqlite", storage: process.env.DATABASE_FILE || "./dev.db" });
 
 module.exports = sequelize;

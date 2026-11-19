@@ -11,7 +11,7 @@ function eventScope(query, user) {
   const filters = [];
   const replacements = {};
   if (user.role !== "ADMIN") {
-    filters.push("e.organizerId = :owner");
+    filters.push('e."organizerId" = :owner');
     replacements.owner = user.id;
   }
   if (query.eventId !== undefined) {
@@ -31,7 +31,7 @@ function eventScope(query, user) {
       throw new ApiError(400, "INVALID_REPORT_FILTER", "Dates must be valid YYYY-MM-DD values.");
     }
     replacements[key] = value;
-    filters.push("date(e.startDateTime) " + operator + " :" + key);
+    filters.push('date(e."startDateTime") ' + operator + " :" + key);
   }
   if (replacements.from && replacements.to && replacements.from > replacements.to) {
     throw new ApiError(400, "INVALID_REPORT_FILTER", "Start date must be on or before end date.");
@@ -52,22 +52,27 @@ router.get("/", async (req, res, next) => {
     const report = await db.transaction(async (transaction) => {
       const options = { replacements, transaction, type: QueryTypes.SELECT };
       const events = await db.query(`
-        SELECT e.id, e.title, e.status, e.startDateTime, e.capacity, e.seatsTaken,
-          (SELECT COUNT(*) FROM registrations r WHERE r.eventId = e.id AND r.status = 'CONFIRMED') AS confirmed,
-          (SELECT COUNT(*) FROM registrations r WHERE r.eventId = e.id AND r.status = 'WAITLISTED') AS waitlisted,
-          (SELECT COUNT(*) FROM registrations r WHERE r.eventId = e.id AND r.checkedInAt IS NOT NULL) AS checkedIn,
+        SELECT e.id, e.title, e.status, e."startDateTime", e.capacity, e."seatsTaken",
+          (SELECT COUNT(*) FROM registrations r WHERE r."eventId" = e.id AND r.status = 'CONFIRMED') AS confirmed,
+          (SELECT COUNT(*) FROM registrations r WHERE r."eventId" = e.id AND r.status = 'WAITLISTED') AS waitlisted,
+          (SELECT COUNT(*) FROM registrations r WHERE r."eventId" = e.id AND r."checkedInAt" IS NOT NULL) AS "checkedIn",
           COALESCE(SUM(CASE WHEN p.adapter <> 'MOCK' AND p.status = 'SUCCEEDED'
-            THEN p.amountPaise - CASE WHEN f.status = 'COMPLETED' THEN f.amountPaise ELSE 0 END END), 0) AS revenuePaise,
+            THEN p."amountPaise" - CASE WHEN f.status = 'COMPLETED' THEN f."amountPaise" ELSE 0 END END), 0) AS "revenuePaise",
           COALESCE(SUM(CASE WHEN p.adapter = 'MOCK' AND p.status = 'SUCCEEDED'
-            THEN p.amountPaise - CASE WHEN f.status = 'SIMULATED' THEN f.amountPaise ELSE 0 END END), 0) AS simulatedRevenuePaise
+            THEN p."amountPaise" - CASE WHEN f.status = 'SIMULATED' THEN f."amountPaise" ELSE 0 END END), 0) AS "simulatedRevenuePaise"
         FROM events e
-        LEFT JOIN registrations pr ON pr.eventId = e.id
-        LEFT JOIN payments p ON p.registrationId = pr.id
-        LEFT JOIN refunds f ON f.paymentId = p.id
+        LEFT JOIN registrations pr ON pr."eventId" = e.id
+        LEFT JOIN payments p ON p."registrationId" = pr.id
+        LEFT JOIN refunds f ON f."paymentId" = p.id
         ${where}
         GROUP BY e.id
-        ORDER BY e.startDateTime, e.id
+        ORDER BY e."startDateTime", e.id
       `, options);
+      for (const event of events) {
+        for (const key of ["confirmed", "waitlisted", "checkedIn", "capacity", "seatsTaken", "revenuePaise", "simulatedRevenuePaise"]) {
+          event[key] = Number(event[key]);
+        }
+      }
       const totals = events.reduce((sum, event) => {
         for (const key of Object.keys(sum)) sum[key] += event[key];
         return sum;
@@ -75,7 +80,7 @@ router.get("/", async (req, res, next) => {
       totals.events = events.length;
       if (req.user.role === "ADMIN") {
         const [row] = await db.query("SELECT COUNT(*) AS users FROM users", options);
-        totals.users = row.users;
+        totals.users = Number(row.users);
       }
       return { events, totals };
     });
@@ -95,10 +100,10 @@ router.get("/:kind.csv", async (req, res, next) => {
     const columns = ["event_id", "event_title", "registration_id", "attendee_id", "status", "registered_at", "checked_in_at"];
     const attendance = kind === "attendance";
     const rows = await db.query(`
-      SELECT e.id AS eventId, e.title, r.id, r.attendeeId, r.status, r.createdAt, r.checkedInAt
-      FROM events e JOIN registrations r ON r.eventId = e.id
+      SELECT e.id AS "eventId", e.title, r.id, r."attendeeId", r.status, r."createdAt", r."checkedInAt"
+      FROM events e JOIN registrations r ON r."eventId" = e.id
       ${where}
-      ${attendance ? (where ? "AND" : "WHERE") + " r.checkedInAt IS NOT NULL" : ""}
+      ${attendance ? (where ? "AND" : "WHERE") + ' r."checkedInAt" IS NOT NULL' : ""}
       ORDER BY e.id, r.id
     `,
     { replacements, type: QueryTypes.SELECT });
