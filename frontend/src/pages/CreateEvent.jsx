@@ -2,40 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createEvent } from "../api/event";
 
-function validateEventForm(form) {
-  if (!form.title.trim() || !form.category.trim() || !form.venue.trim()) {
-    return "Title, category, and venue are required.";
-  }
-
-  const start = new Date(form.startDateTime);
-  const end = new Date(form.endDateTime);
-  if (!form.startDateTime || !form.endDateTime || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return "Please enter valid event dates and times.";
-  }
-  if (end <= start) {
-    return "End date and time must be later than start date and time.";
-  }
-
-  const capacity = Number(form.capacity);
-  if (!Number.isInteger(capacity) || capacity < 1) {
-    return "Capacity must be a whole number greater than zero.";
-  }
-
-  const ticketPrice = Number(form.ticketPrice);
-  if (!Number.isFinite(ticketPrice) || ticketPrice < 0) {
-    return "Ticket price must be zero or greater.";
-  }
-
-  if (form.refundWindowHours !== "") {
-    const refundWindowHours = Number(form.refundWindowHours);
-    if (!Number.isInteger(refundWindowHours) || refundWindowHours < 0) {
-      return "Refund window must be a whole number of zero or more hours.";
-    }
-  }
-
-  return "";
-}
-
 export default function CreateEvent() {
   const navigate = useNavigate();
 
@@ -65,12 +31,6 @@ export default function CreateEvent() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    const validationError = validateEventForm(form);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
 
     try {
       setSubmitting(true);
@@ -113,7 +73,7 @@ export default function CreateEvent() {
       </section>
 
       <form className="event-form" onSubmit={handleSubmit}>
-        {error && <p className="error-message" role="alert">{error}</p>}
+        {error && <p className="error-message">{error}</p>}
 
         <label>
           Event Title
