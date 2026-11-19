@@ -39,7 +39,7 @@ For an individual assignment-by-assignment trail, see [GGO4411 — Individual Wo
 
 The repository includes the [SRS](requirements/Event_Management_System_SRS.docx), [SAD](architecture/Event_Management_System_SAD.docx) and [Software Test Plan](testing/Event_Management_System_Test_Plan.docx) Word documents. These files were already tracked in main; the uploaded SRS/Test Plan copies were not used to overwrite the repository versions.
 
-The website is reproducibly runnable locally using the README commands. The repository does **not** evidence a public production URL or production hosting environment. The runbook describes what can be demonstrated and explicitly marks mock-only or incomplete features.
+The website is reproducibly runnable locally using the README commands. A public academic demo is hosted at https://ems-demo-web.onrender.com with API https://ems-demo-api.onrender.com; this is not a production SLA or certification. The runbook describes what can be demonstrated and explicitly marks mock-only or incomplete features.
 
 ## 4. Testing and coverage
 
@@ -75,27 +75,35 @@ The current Word source documents are already tracked under `docs/`: [SRS](requi
 
 ## 5. Performance, security and operational controls
 
-- [Performance, concurrency and data-integrity report](issue-31-performance-and-integrity-report.md) and [raw search benchmark results](issue-31-results/) — search benchmark only; the separate registration-load harness exists but its 500-attempt run is not yet recorded.
+- [Performance, concurrency and data-integrity report](issue-31-performance-and-integrity-report.md) and [raw search benchmark results](issue-31-results/) — includes raw search and registration results; [19 November registration benchmark](issue-31-results/registration-run-2026-11-19.md) passed 500/500 free-event requests.
 - [Security controls register](SECURITY_CONTROLS.md) — bcrypt, JWT/session expiry, RBAC, ownership boundaries, mock-card-data behavior and unresolved provider/PCI requirements.
 - [Security NFR verification](issue-32-security-verification.md) and [route-matrix security report](issue-32-security-nfr-verification.md).
 - [Usability study protocol](issue-33-usability-study.md) — the participant study is not yet run.
-- [Availability assessment](issue-34-availability-assessment.md) — local-only setup; no 99% uptime result.
+- [Availability assessment](issue-34-availability-assessment.md) — historical local assessment; [Render deployment and monitoring](issue-34-render-deployment.md) now documented, but no completed 99% uptime result.
 
 ## 6. Open limitations that must be disclosed
 
 | Area | Current state |
 |---|---|
-| 500 concurrent registrations | Harness merged in PR #54; no registration-specific result file; Issue #31 remains open |
+| 500 concurrent registrations | 19 November local SQLite run: 500/500 successful, 100 confirmed, 400 waitlisted; no overbooking; no multi-instance or paid-provider claim |
 | Payment | Mock simulator only; no real gateway/signed callbacks/provider-confirmed refunds; no PCI claim |
 | Notifications | Resend adapter and dispatcher are present in PR #58; production email requires Resend API key/sender configuration; no SMS adapter |
 | QR | One-use token/check-in API; no camera/QR scanner UI |
 | Feedback | Backend/API exists; complete attendee prompt/display UI is incomplete |
 | Dashboards/CSV | Implemented in PR #59 for Organizer/Admin roles with ownership scope, filters and CSV escaping |
 | Usability NFR | Procedure documented; no participant timing result |
-| Availability NFR | No deployed monitoring contract or uptime observation |
+| Availability NFR | Approved seven-day readiness observation 19–26 November; incomplete at submission; #34 deferred |
 | Scalability | Local SQLite/single-process implementation does not demonstrate horizontal scaling |
 | Frontend automated unit tests | No separate frontend test runner/script in the current package; production build is checked |
 
 ## 7. Review and merge status of this evidence pack
 
 The current-main evidence refresh was merged through [PR #61](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/61) on 18 November 2026. After synchronizing with the latest main and repairing documentation links, the final PR head passed backend tests, syntax validation, coverage collection and the frontend build in [Actions run #44378798728](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44378798728). Merge commit: `e102592b457f92d53d0b348af4b90629363ed26d`. PR #57 and duplicate PR #62 were closed without merge.
+
+## 8. Submission scope — 19 November 2026
+
+Submission scope: issues #26 and #32 are closed as not planned for the academic release; provider integration and PCI verification remain deferred, not passed. Mock payments are local-only; production mock checkout is disabled.
+
+Render demo provisioned; initial readiness check passed. The approved 19–26 November seven-day API/database readiness observation is incomplete at submission; the 99% target is not verified. Issue #34 is deferred, not completed.
+
+[PR #68](https://github.com/SE-Miniproject-EMS/SE_Miniproject/pull/68) merged email verification recovery after all three CI jobs passed. Hosted console verification still requires access to Render logs; real delivery requires provider configuration.
