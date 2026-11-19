@@ -34,23 +34,49 @@ async function register(req, res, next) {
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({ name, email, passwordHash, role });
 
-    // Stub: in place of a real email provider (Member 4's Notification
-    // Service), we just log the verification link. Replace this call
-    // once the Notification Service module exists.
-    const verificationToken = signEmailVerificationToken(user);
-    const apiOrigin = process.env.PUBLIC_API_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 5000}`;
-    console.log(
-      `[DEV ONLY] Verification link for ${user.email}: ` +
-        `${apiOrigin}/api/auth/verify/${verificationToken}`
-    );
+    await issueVerificationLink(user);
 
     res.status(201).json({
-      message: "Account created. Check the server console for your (stubbed) verification link.",
+      message: verificationMessage(),
       user: toPublicUser(user),
     });
   } catch (err) {
     next(err);
   }
+}
+
+function verificationMessage() {
+  return process.env.NOTIFICATION_ADAPTER === "resend"
+    ? "If this account needs verification, a link has been sent to its email address."
+    : "If this account needs verification, a fresh link is available in the backend service logs. Search for Verification link.";
+}
+
+async function issueVerificationLink(user) {
+  const token = signEmailVerificationToken(user);
+  const origin = process.env.PUBLIC_API_URL || process.env.RENDER_EXTERNAL_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const link = origin + "/api/auth/verify/" + token;
+  if (process.env.NOTIFICATION_ADAPTER === "resend") {
+    const { createResendAdapter } = require("../services/notificationService");
+    await createResendAdapter().send({
+      to: user.email,
+      subject: "Verify your Event Management System account",
+      text: "Open this link to verify your account. It expires in 24 hours.\n\n" + link,
+      html: '<p>Verify your Event Management System account. This link expires in 24 hours.</p><p><a href="' + link.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;") + '">Verify account</a></p>',
+      idempotencyKey: "account-verification:" + user.id + ":" + Math.floor(Date.now() / 60000),
+    });
+  } else {
+    console.log(`[DEV ONLY] Verification link for ${user.email}: ${link}`);
+  }
+}
+
+async function resendVerification(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!isValidEmail(email)) throw new ApiError(400, "INVALID_EMAIL", "Enter a valid email address.");
+    const user = await User.findOne({ where: { email } });
+    if (user && !user.isVerified) await issueVerificationLink(user);
+    res.json({ message: verificationMessage() });
+  } catch (error) { next(error); }
 }
 
 // GET /api/auth/verify/:token  (SRS REQ-2)
@@ -150,4 +176,4 @@ function toPublicUser(user) {
   return { id, name, email, role, isVerified, createdAt };
 }
 
-module.exports = { register, verifyEmail, login, me };
+module.exports = { register, resendVerification, verifyEmail, login, me };
