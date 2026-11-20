@@ -287,6 +287,10 @@ Set-Location "$HOME\Documents\SE_Miniproject\frontend"
 npm run build
 ```
 
+### Backend coverage reports
+
+[View the saved code and branch coverage report](docs/testing/coverage/2026-11-20/README.md): **94.00% line/statement coverage**, **78.84% branch coverage**, measured on 20 November 2026. Includes a downloadable HTML report, per-file CSV, JSON summary and LCOV data.
+
 ## Backend utility scripts
 
 Run from `backend/`:

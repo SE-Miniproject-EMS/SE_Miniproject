@@ -1,8 +1,10 @@
 # Test, unit-test and coverage reporting
 
-**Current evidence:** current-main PR #61 run [#44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404), 18 November 2026.  
-**Result:** **73 backend tests passed, 0 failed**; backend syntax validation and frontend production build passed.  
-**Coverage artifact:** [backend-test-coverage-116](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
+**Current evidence:** main commit `74c1912`, run [#44665800768](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44665800768), 20 November 2026.
+**Result:** **83 backend tests total: 82 passed, 0 failed, 1 PostgreSQL test skipped in this job**; backend syntax validation and frontend production build passed.
+**Coverage artifact:** [backend-test-coverage-155](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44665800768/artifacts/14597303129).
+
+[Versioned coverage snapshot and per-file branch report](testing/coverage/2026-11-20/README.md). The HTML ZIP, CSV, JSON and LCOV copies remain available after CI artifact expiry.
 
 ## What is tested
 
@@ -66,18 +68,18 @@ CI uploads `backend/coverage/` as `backend-test-coverage-<run number>` with 90-d
 
 ### Latest measured current-main result
 
-[Actions run #44370948404](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404) reports:
-- Backend tests: **73 passed, 0 failed**.
-- Line/statement coverage: **93.56%**.
-- Branch coverage: **76.62%**.
-- Function coverage: **94.25%**.
-- [Download the HTML/LCOV/JSON artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44370948404/artifacts/14459028533).
+[Actions run #44665800768](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44665800768) reports:
+- Backend coverage job: **82 passed, 0 failed, 1 skipped**. The dedicated PostgreSQL integration job passed separately.
+- Line/statement coverage: **94.00%**.
+- Branch coverage: **78.84%**.
+- Function coverage: **96.73%**.
+- [Download the HTML/LCOV/JSON artifact](https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44665800768/artifacts/14597303129).
 
 Selected worker coverage:
 - `sendReminders.js`: **95.83% lines, 81.81% branches, 100% functions**.
 - `dispatchNotifications.js`: **92.30% lines, 81.81% branches, 66.66% functions**.
 
-The remaining uncovered worker paths are the CLI entry-point blocks (reminder job lines 91–94; notification dispatcher lines 47–50). The notification controller still needs direct HTTP route tests for Admin-only reminder/dispatch paths. Other selected remaining branch gaps are in `notificationService.js`, `reportRoutes.js`, `errorHandler.js`, and payment expiry/refund logic. No arbitrary coverage threshold is enforced.
+Use the saved HTML report to inspect exact uncovered lines and decision branches for this commit. Remaining gaps do not mean every case in a file is untested, and passing route tests do not imply all error branches executed. No arbitrary coverage threshold is enforced.
 
 Coverage is a repository-wide backend metric, not an individual contributor score. The previous PR #57 run had a different source tree before the recent notification and reporting merges, so its percentages are historical and not directly comparable.
 
@@ -88,7 +90,7 @@ The frontend has a Vite production build check but no dedicated automated React 
 ## Separate performance, security and deployment evidence
 
 - The event-search benchmark results live in `docs/issue-31-results/`; they do not measure registration concurrency.
-- PR #54 supplies a 500-registration harness, but no 500-attempt registration result JSON/CSV is committed. Issue #31 remains open.
+- PR #54 supplies the 500-registration harness; PR #66 saves a passing local free-event run: 500 requests, 100 confirmed, 400 waitlisted and no overbooking. See [the saved registration result](issue-31-results/registration-run-2026-11-19.md).
 - PR #48 is a mock payment/refund prototype; no provider-backed payment, signed callback, real refund or PCI certification is evidenced.
 - PR #58 adds a Resend notification adapter; external delivery depends on private deployment configuration and provider-side delivery evidence. SMS is not configured.
 - PR #59 adds Organizer/Admin report aggregates, a dashboard component and registration/attendance CSV exports with role scoping.
