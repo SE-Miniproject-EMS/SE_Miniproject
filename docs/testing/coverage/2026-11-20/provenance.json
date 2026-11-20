@@ -1,0 +1,19 @@
+{
+  "source_commit": "74c1912044928c4a32375ff19d581d12600e3d73",
+  "ci_run": 44665800768,
+  "ci_url": "https://github.com/SE-Miniproject-EMS/SE_Miniproject/actions/runs/44665800768",
+  "artifact_name": "backend-test-coverage-155",
+  "artifact_id": 14597303129,
+  "measurement_date": "2026-11-20",
+  "scope": "backend/src/**/*.js",
+  "command": "npm run test:coverage",
+  "summary_transformation": "Normalize only per-file keys to backend-relative src paths; retain numeric values.",
+  "html_transformation": "ZIP of the artifact lcov-report directory; excludes raw V8 tmp data and duplicate HTML output.",
+  "files_sha256": {
+    "coverage-summary.json": "23d4361b2e9303be2643c83f66a5f3e2012eb9c1306c39913eebb8bfb736ecdf",
+    "html-coverage-report.zip": "7d5fe24349cff1271c3656a6b65d27e9131a0d30871ac1617a459c002dc32e0d",
+    "lcov.info": "81fdb54d370b71357b72696885714732118e9941fdb6f2a79480f78d6b22a122",
+    "per-file-coverage.csv": "a04b75889d916e7bf5ff9ef34ec31745cb11d4dc8c0f2a84e1324b0b9ca3f12c",
+    "README.md": "bf6666a544c0391ff3ae8b7d2fa1fcd1b0d7eeddf6d281211a785a1ca36ea3d0"
+  }
+}

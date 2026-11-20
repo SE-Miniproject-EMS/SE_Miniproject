@@ -47,6 +47,8 @@ The website is reproducibly runnable locally using the README commands. A public
 
 ## 4. Testing and coverage
 
+- [Saved 20 November backend code and branch coverage report](testing/coverage/2026-11-20/README.md) — current-main CI snapshot: 94.00% lines/statements and 78.84% branches, with HTML, CSV, JSON and LCOV downloads.
+
 - [Testing and results](testing/TESTING_AND_RESULTS.md) — historical CI runs and current known gaps.
 - [Detailed PR #48 backend test report](test-reports/2026-11-10-PR48-backend-test-report.md) — all 55 recorded test names and their grouped areas.
 - [PR #61 current-main validation report](test-reports/2026-11-18-PR61-current-main-validation.md) — 73 backend tests, build checks, current coverage totals and worker-file results.
