@@ -10,10 +10,11 @@
   "summary_transformation": "Normalize only per-file keys to backend-relative src paths; retain numeric values.",
   "html_transformation": "ZIP of the artifact lcov-report directory; excludes raw V8 tmp data and duplicate HTML output.",
   "files_sha256": {
-    "coverage-summary.json": "23d4361b2e9303be2643c83f66a5f3e2012eb9c1306c39913eebb8bfb736ecdf",
+    "coverage-summary.json": "3b3c8c64c0a4cf2aed71a0095888e5c0eb8816b8bc5b46e4aa12559f6a5ba422",
     "html-coverage-report.zip": "7d5fe24349cff1271c3656a6b65d27e9131a0d30871ac1617a459c002dc32e0d",
-    "lcov.info": "81fdb54d370b71357b72696885714732118e9941fdb6f2a79480f78d6b22a122",
-    "per-file-coverage.csv": "a04b75889d916e7bf5ff9ef34ec31745cb11d4dc8c0f2a84e1324b0b9ca3f12c",
-    "README.md": "bf6666a544c0391ff3ae8b7d2fa1fcd1b0d7eeddf6d281211a785a1ca36ea3d0"
-  }
+    "lcov.info": "da50e3500d352b91f1e977b3d9e1bdd93f03303e2fa17202d98b2e983523a4fb",
+    "per-file-coverage.csv": "c82195ba1b5a3602224304a1e18070746109323a778169153c0b5b3b5fd89384",
+    "README.md": "2b1657d643e7fe17ca2ead3b9fdc79ef9b15d465126d5d1193148502304dca67"
+  },
+  "checksum_scope": "SHA-256 of Git repository blob bytes (LF-normalized text), independent of checkout line-ending conversion."
 }
