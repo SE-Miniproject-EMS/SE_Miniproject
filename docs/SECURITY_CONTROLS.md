@@ -33,7 +33,7 @@ When a new protected route is added:
 
 PR #48 introduces a mock-only checkout/refund simulator. It is not a third-party gateway. No real card/UPI processor, hosted checkout, signed provider callback, or provider-confirmed refund is configured. The mock tests prove selected code paths ignore card-data sentinels and label refund outcomes as simulated; they do **not** prove PCI compliance. Do not enter real card data or claim that PCI requirements have been satisfied.
 
-### Approved academic scope for issues #26 and #32
+### Approved academic payment and security scope
 
 The project owner approved mock payments only for this academic mini-project. For NFR-SEC-02, completion is limited to the simulator's security boundary: authentication and role/ownership checks; ignoring submitted card/CVV data in the tested API, database rows and logs; rejecting unsupported simulation outcomes; and blocking mock checkout/retry/payment/refund operations when `NODE_ENV=production`. It does not verify the original third-party provider/PCI requirement. Real gateway signatures, provider-confirmed refunds and PCI assessment are explicitly deferred, rather than recorded as passed. This decision does not silently replace the historical SRS wording.
 

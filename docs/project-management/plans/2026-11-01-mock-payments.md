@@ -1,4 +1,4 @@
-# Issue #26 Payment, Checkout, and Refund Implementation Plan
+# Mock Payment Checkout and Refund Implementation Plan
 
 > **For Codex:** Execute this plan task-by-task with tests first. Do not commit, push, merge, or close the issue.
 
@@ -98,8 +98,8 @@ A read-only independent review confirmed the single-process SQLite locking appro
 
 ## Execution record — 2026-11-01
 
-- Backend: `npm test` — **51 passed, 0 failed**. The suite included Issue #25 registration regressions, Issue #26 payment/refund rules, FIFO/expiry races, concurrency, and migration preservation.
+- Backend: `npm test` — **51 passed, 0 failed**. The suite included Issue #25 registration regressions, mock payment/refund rules, FIFO/expiry races, concurrency, and migration preservation.
 - Frontend: `npm run build` — **passed** (`vite build`, 106 modules transformed).
 - `git diff --check` — passed.
 - Browser smoke test used a temporary SQLite database and test-only users. Checkout, failure, retry, success, one-minute offer expiry/FIFO advancement, and refund UI were verified. The event page does not auto-refresh when an offer expires; revisiting the page showed the updated status and next offer.
-- The original `codex/issue-25-registration` checkout remained unchanged. The Issue #26 changes are isolated in this worktree on `codex/issue-26-payments`.
+- The original `codex/issue-25-registration` checkout remained unchanged. The mock payment changes were isolated from the registration checkout; the original branch is recorded in PR #48.

@@ -19,7 +19,7 @@
 | Payment rule conversion and migration | 5 | Passed |
 | **Total** | **55** | **55 passed / 0 failed** |
 
-Counts are grouped by the test names below for assessor navigation. The repository uses Node's built-in `node:test` runner; the event/auth scenarios use HTTP requests against a local Express child process and temporary SQLite database.
+Counts are grouped by the test cases below for assessor navigation. The migration case is displayed without its historical work-item prefix; consult the linked CI log for the exact runner label. Execution counts and results are unchanged. The repository uses Node's built-in `node:test` runner; the event/auth scenarios use HTTP requests against a local Express child process and temporary SQLite database.
 
 ## Authentication, password storage, sessions and access
 
@@ -85,7 +85,7 @@ Counts are grouped by the test names below for assessor navigation. The reposito
 
 ## Payment rule and migration tests
 
-51. `Issue 26 migration preserves registrations and idempotently backfills FIFO position`
+51. `Registration migration preserves registrations and idempotently backfills FIFO position`
 52. `ticket prices convert to exact integer paise`
 53. `ticket prices with fractional paise are rejected`
 54. `24-hour default refund cutoff allows before and exactly at cutoff only`

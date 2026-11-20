@@ -34,4 +34,4 @@ This is one API process with SQLite. Other writers and other API processes still
 
 ## Remaining verification
 
-The local free-event 500-request target now has passing evidence. Real provider-backed paid-registration persistence remains pending under Issue 26. No real payment, production availability, or multi-instance scaling result is claimed.
+The local free-event 500-request target now has passing evidence. Real provider-backed paid-registration persistence remains unverified. No real payment, production availability, or multi-instance scaling result is claimed.
